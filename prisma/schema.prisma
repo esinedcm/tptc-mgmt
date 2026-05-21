@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String       @unique
+  passwordHash String
+  streetNumber String?
+  streetName   String?
+  city         String?
+  postalCode   String?
+  phoneNumber  String?
+  gender       String?
+  householdId  String?
+  tagNumber    String?
+  memberNumber String?      @unique
+  editToken    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  memberships  Membership[]
+}
+
+model Membership {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  membershipType    String
+  status            String
+  amountPaid        Float?
+  paymentNotes      String?
+  paymentRecordedAt DateTime?
+  createdAt         DateTime  @default(now())
+}
+
+model MembershipPlan {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  cost        Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phoneNumber String?
+  gender      String?
+  status      String   @default("Pending")
+  createdAt   DateTime @default(now())
+}
+
+model ArchivedMembership {
+  id                   String    @id @default(cuid())
+  originalUserId       String
+  originalMembershipId String
+  firstName            String
+  lastName             String
+  email                String
+  phoneNumber          String?
+  gender               String?
+  membershipType       String
+  status               String
+  amountPaid           Float?
+  paymentNotes         String?
+  paymentRecordedAt    DateTime?
+  originalCreatedAt    DateTime
+  archivedAt           DateTime  @default(now())
+}
