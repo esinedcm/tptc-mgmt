@@ -17,13 +17,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    if (user.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Not authorized to access the admin dashboard' }, { status: 403 });
-    }
-
     const token = await signJwt({ userId: user.id, role: user.role });
 
-    const response = NextResponse.json({ success: true }, { status: 200 });
+    const response = NextResponse.json({ success: true, role: user.role }, { status: 200 });
     response.cookies.set({
       name: 'auth_token',
       value: token,

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function AdminLogin() {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -28,7 +28,11 @@ export default function AdminLogin() {
         throw new Error(data.error || 'Login failed');
       }
 
-      router.push('/admin');
+      if (data.role === 'ADMIN') {
+        router.push('/admin');
+      } else {
+        router.push('/portal');
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -40,7 +44,7 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Admin Login
+          Sign In
         </h2>
       </div>
 
