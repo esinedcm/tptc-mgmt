@@ -27,6 +27,7 @@ model User {
   householdId  String?
   tagNumber    String?
   memberNumber String?      @unique
+  role         String       @default("MEMBER")
   editToken    String?
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
