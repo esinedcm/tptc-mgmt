@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendWelcomeEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -53,6 +54,15 @@ export async function POST(request: Request) {
 
       return updatedPrimary;
     });
+
+    // Send welcome email to the primary member
+    if (membership.user && membership.user.email) {
+      await sendWelcomeEmail({
+        to: membership.user.email,
+        firstName: membership.user.firstName,
+        memberNumber: membership.user.memberNumber,
+      });
+    }
 
     return NextResponse.json({ success: true, membership: updatedMemberships }, { status: 200 });
   } catch (error) {

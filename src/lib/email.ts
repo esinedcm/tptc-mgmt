@@ -4,27 +4,105 @@ let transporter: nodemailer.Transporter | null = null;
 
 async function getTransporter() {
   if (!transporter) {
-    const testAccount = await nodemailer.createTestAccount();
-    transporter = nodemailer.createTransport({
-      host: testAccount.smtp.host,
-      port: testAccount.smtp.port,
-      secure: testAccount.smtp.secure,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      // Use real SMTP (e.g. Gmail) if credentials are provided
+      transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS, // App Password
+        },
+      });
+    } else {
+      // Fallback to ethereal for local dev without credentials
+      const testAccount = await nodemailer.createTestAccount();
+      transporter = nodemailer.createTransport({
+        host: testAccount.smtp.host,
+        port: testAccount.smtp.port,
+        secure: testAccount.smtp.secure,
+        auth: {
+          user: testAccount.user,
+          pass: testAccount.pass,
+        },
+      });
+    }
   }
   return transporter;
 }
 
+export async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  try {
+    const mailer = await getTransporter();
+    const info = await mailer.sendMail({
+      from: `"Tennis Club Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+      to,
+      subject,
+      html,
+    });
+    
+    console.log("==========================================");
+    console.log('Message sent: %s', info.messageId);
+    if (!process.env.SMTP_USER) {
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
+    console.log("==========================================");
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return { success: false, error };
+  }
+}
+
+export async function sendWelcomeEmail({
+  to,
+  firstName,
+  memberNumber,
+}: {
+  to: string;
+  firstName: string;
+  memberNumber?: string | null;
+}) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const loginLink = `${baseUrl}/login`;
+
+  const memberNumberText = memberNumber ? `<p>Your official Member Number is: <strong>${memberNumber}</strong></p>` : '';
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">Welcome to the Tennis Club!</h2>
+      <p>Hi ${firstName},</p>
+      <p>Great news! Your club membership has been approved and activated.</p>
+      ${memberNumberText}
+      <p>You can now log into the Member Portal to view your status, update your contact details, and (coming soon) book tennis courts!</p>
+      <a href="${loginLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Log In to Member Portal</a>
+      <p>If you haven't set a password yet, simply click the "Forgot your password?" link on the login page.</p>
+      <p>See you on the courts!</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: 'Welcome to the Tennis Club! Your account is active.',
+    html
+  });
+}
+
 export async function sendEditLinkEmail(recipientEmail: string, editToken: string) {
   const mailer = await getTransporter();
-
-  const editUrl = `http://localhost:3000/register?editToken=${editToken}`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const editUrl = `${baseUrl}/register?editToken=${editToken}`;
 
   const info = await mailer.sendMail({
-    from: '"Tennis Club Admin" <admin@tennisclub.local>',
+    from: `"Tennis Club Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Registration Details & Edit Link",
     text: `Thank you for registering! You can edit your household registration at any time using this link: ${editUrl}`,
@@ -34,7 +112,9 @@ export async function sendEditLinkEmail(recipientEmail: string, editToken: strin
   const previewUrl = nodemailer.getTestMessageUrl(info);
   console.log("==========================================");
   console.log("Message sent: %s", info.messageId);
-  console.log("Preview URL: %s", previewUrl);
+  if (!process.env.SMTP_USER && previewUrl) {
+    console.log("Preview URL: %s", previewUrl);
+  }
   console.log("==========================================");
   
   return previewUrl;
@@ -47,7 +127,7 @@ export async function sendProfileUpdatedEmail(recipientEmail: string, changes: {
   const changesText = changes.map(c => `- ${c.field}: ${c.oldVal || '(empty)'} -> ${c.newVal || '(empty)'}`).join('\n');
 
   const info = await mailer.sendMail({
-    from: '"Tennis Club Admin" <admin@tennisclub.local>',
+    from: `"Tennis Club Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Club Registration Details Were Updated",
     text: `Your registration details were recently updated by an administrator. Here are the changes:\n\n${changesText}`,
@@ -57,7 +137,9 @@ export async function sendProfileUpdatedEmail(recipientEmail: string, changes: {
   const previewUrl = nodemailer.getTestMessageUrl(info);
   console.log("==========================================");
   console.log("Update Message sent: %s", info.messageId);
-  console.log("Preview URL: %s", previewUrl);
+  if (!process.env.SMTP_USER && previewUrl) {
+    console.log("Preview URL: %s", previewUrl);
+  }
   console.log("==========================================");
   
   return previewUrl;
