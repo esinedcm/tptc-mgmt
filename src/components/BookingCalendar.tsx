@@ -23,6 +23,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
 
   // Booking Modal State
   const [showModal, setShowModal] = useState(false);
+  const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [selectedCourtId, setSelectedCourtId] = useState('');
   const [selectedStartTime, setSelectedStartTime] = useState<Date | null>(null);
   const [selectedEndTime, setSelectedEndTime] = useState<Date | null>(null);
@@ -91,8 +92,11 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
     if (!selectedCourtId || !selectedStartTime || !selectedEndTime) return;
 
     try {
-      const res = await fetch('/api/bookings', {
-        method: 'POST',
+      const url = editingBookingId ? `/api/bookings/${editingBookingId}` : '/api/bookings';
+      const method = editingBookingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           courtId: selectedCourtId,
@@ -107,6 +111,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
       if (!res.ok) throw new Error(data.error || 'Failed to create booking');
 
       setShowModal(false);
+      setEditingBookingId(null);
       fetchCourtsAndBookings();
     } catch (err: any) {
       setError(err.message);
@@ -218,6 +223,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
                         
                         setBookingType('MEMBER');
                         setSelectedParticipants([]);
+                        setEditingBookingId(null);
                         setShowModal(true);
                       }}
                     >
@@ -346,7 +352,10 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
               <div className="flex justify-end space-x-3 pt-4 border-t">
                 <button 
                   type="button" 
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingBookingId(null);
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   Cancel
@@ -355,7 +364,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
                   type="submit"
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
                 >
-                  Confirm Booking
+                  {editingBookingId ? 'Save Changes' : 'Confirm Booking'}
                 </button>
               </div>
             </form>
@@ -377,6 +386,24 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t">
+              {isAdmin && (
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setSelectedCourtId(viewBooking.courtId);
+                    setSelectedStartTime(new Date(viewBooking.startTime));
+                    setSelectedEndTime(new Date(viewBooking.endTime));
+                    setBookingType(viewBooking.type);
+                    setSelectedParticipants(viewBooking.participants);
+                    setEditingBookingId(viewBooking.id);
+                    setViewBooking(null);
+                    setShowModal(true);
+                  }}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Edit Booking
+                </button>
+              )}
               {(isAdmin || viewBooking.organizer.id === currentUserId) && (
                 <button 
                   type="button" 
