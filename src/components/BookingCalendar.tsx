@@ -48,13 +48,11 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
   const fetchCourtsAndBookings = async () => {
     setLoading(true);
     try {
-      // First get courts (we'll just derive them from the bookings or an API, but since we didn't make a /api/courts, let's just hardcode the 3 courts for the UI or fetch them. Actually we should just fetch bookings and assume Courts 1, 2, 3 if not provided. Let's create a quick API for courts or just hardcode.)
-      // Since Courts are static:
-      setCourts([
-        { id: '1', name: 'Court 1' },
-        { id: '2', name: 'Court 2' },
-        { id: '3', name: 'Court 3' },
-      ]);
+      const courtsRes = await fetch('/api/courts');
+      const courtsData = await courtsRes.json();
+      if (courtsData.courts) {
+        setCourts(courtsData.courts);
+      }
 
       const start = new Date(currentDate);
       start.setHours(0, 0, 0, 0);
@@ -294,54 +292,56 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
                 </div>
               )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Add Playing Partners</label>
-                <div className="mt-1 flex rounded-md shadow-sm">
-                  <input
-                    type="text"
-                    placeholder="Search by name or email..."
-                    value={searchTerm}
-                    onChange={(e) => handleSearch(e.target.value)}
-                    className="flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
-                  />
-                </div>
-                {searchResults.length > 0 && (
-                  <ul className="mt-1 border border-gray-200 rounded-md max-h-40 overflow-y-auto bg-white absolute w-full max-w-sm z-10 shadow-lg">
-                    {searchResults.map(user => (
-                      <li 
-                        key={user.id} 
-                        className="p-2 hover:bg-gray-50 cursor-pointer text-sm"
-                        onClick={() => {
-                          if (!selectedParticipants.find(p => p.id === user.id) && user.id !== currentUserId) {
-                            setSelectedParticipants([...selectedParticipants, user]);
-                          }
-                          setSearchTerm('');
-                          setSearchResults([]);
-                        }}
-                      >
-                        {user.firstName} {user.lastName} ({user.email})
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                
-                {selectedParticipants.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {selectedParticipants.map(p => (
-                      <span key={p.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                        {p.firstName} {p.lastName}
-                        <button 
-                          type="button" 
-                          onClick={() => setSelectedParticipants(selectedParticipants.filter(sp => sp.id !== p.id))}
-                          className="ml-1 text-indigo-500 hover:text-indigo-700 focus:outline-none"
-                        >
-                          &times;
-                        </button>
-                      </span>
-                    ))}
+              {bookingType === 'MEMBER' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Add Playing Partners</label>
+                  <div className="mt-1 flex rounded-md shadow-sm">
+                    <input
+                      type="text"
+                      placeholder="Search by name or email..."
+                      value={searchTerm}
+                      onChange={(e) => handleSearch(e.target.value)}
+                      className="flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    />
                   </div>
-                )}
-              </div>
+                  {searchResults.length > 0 && (
+                    <ul className="mt-1 border border-gray-200 rounded-md max-h-40 overflow-y-auto bg-white absolute w-full max-w-sm z-10 shadow-lg">
+                      {searchResults.map(user => (
+                        <li 
+                          key={user.id} 
+                          className="p-2 hover:bg-gray-50 cursor-pointer text-sm"
+                          onClick={() => {
+                            if (!selectedParticipants.find(p => p.id === user.id) && user.id !== currentUserId) {
+                              setSelectedParticipants([...selectedParticipants, user]);
+                            }
+                            setSearchTerm('');
+                            setSearchResults([]);
+                          }}
+                        >
+                          {user.firstName} {user.lastName} ({user.email})
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  
+                  {selectedParticipants.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {selectedParticipants.map(p => (
+                        <span key={p.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                          {p.firstName} {p.lastName}
+                          <button 
+                            type="button" 
+                            onClick={() => setSelectedParticipants(selectedParticipants.filter(sp => sp.id !== p.id))}
+                            className="ml-1 text-indigo-500 hover:text-indigo-700 focus:outline-none"
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="flex justify-end space-x-3 pt-4 border-t">
                 <button 
