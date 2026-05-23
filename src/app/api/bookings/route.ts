@@ -50,9 +50,9 @@ export async function POST(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { courtId, startTime, endTime, type, participantIds, notes } = await req.json();
+    const { courtId, startTime, endTime, type, participantIds, notes, bookAllCourts, recurrence } = await req.json();
 
-    if (!courtId || !startTime || !endTime) {
+    if ((!courtId && !bookAllCourts) || !startTime || !endTime) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -104,57 +104,112 @@ export async function POST(req: Request) {
       }
     }
 
-    // Overlapping booking check
-    const overlapping = await prisma.booking.findFirst({
-      where: {
-        courtId,
-        startTime: { lt: end },
-        endTime: { gt: start }
-      }
-    });
-
-    if (overlapping) {
-      return NextResponse.json({ error: 'This court is already booked for the selected time.' }, { status: 400 });
+    // Build the list of slots
+    let courtsToBook = [courtId];
+    if (isAdmin && bookAllCourts) {
+      const allCourts = await prisma.court.findMany();
+      courtsToBook = allCourts.map(c => c.id);
     }
 
-    const booking = await prisma.booking.create({
-      data: {
-        courtId,
-        startTime: start,
-        endTime: end,
-        type: bookingType,
-        notes,
-        organizerId: payload.userId as string,
-        participants: {
-          connect: finalParticipantIds.map((id: string) => ({ id }))
+    const slots: { courtId: string; start: Date; end: Date }[] = [];
+    
+    if (isAdmin && recurrence && recurrence.weeks > 0 && recurrence.daysOfWeek && recurrence.daysOfWeek.length > 0) {
+      const durationMs = end.getTime() - start.getTime();
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      for (let w = 0; w < recurrence.weeks; w++) {
+        for (const dow of recurrence.daysOfWeek) {
+          const currentDow = start.getDay();
+          const diffDays = dow - currentDow;
+          
+          const slotStart = new Date(start);
+          slotStart.setDate(slotStart.getDate() + (w * 7) + diffDays);
+          
+          // Only book if it's on or after the initial requested date
+          if (slotStart.getTime() >= startOfDay.getTime()) {
+            const slotEnd = new Date(slotStart.getTime() + durationMs);
+            for (const cid of courtsToBook) {
+              slots.push({ courtId: cid, start: slotStart, end: slotEnd });
+            }
+          }
         }
-      },
-      include: {
-        court: true,
-        participants: true
       }
-    });
+    } else {
+      for (const cid of courtsToBook) {
+        slots.push({ courtId: cid, start, end });
+      }
+    }
+
+    const validSlots = [];
+    const conflicts = [];
+
+    for (const slot of slots) {
+      const overlapping = await prisma.booking.findFirst({
+        where: {
+          courtId: slot.courtId,
+          startTime: { lt: slot.end },
+          endTime: { gt: slot.start }
+        },
+        include: { court: true }
+      });
+
+      if (overlapping) {
+        conflicts.push(`${overlapping.court.name} on ${slot.start.toLocaleDateString()} at ${slot.start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`);
+      } else {
+        validSlots.push(slot);
+      }
+    }
+
+    if (validSlots.length === 0) {
+      return NextResponse.json({ error: 'All requested slots conflict with existing bookings.', conflicts }, { status: 400 });
+    }
+
+    const createdBookings = await prisma.$transaction(
+      validSlots.map(slot => prisma.booking.create({
+        data: {
+          courtId: slot.courtId,
+          startTime: slot.start,
+          endTime: slot.end,
+          type: bookingType,
+          notes,
+          organizerId: payload.userId as string,
+          participants: {
+            connect: finalParticipantIds.map((id: string) => ({ id }))
+          }
+        },
+        include: {
+          court: true,
+          participants: true
+        }
+      }))
+    );
 
     // Send emails
-    const participantNames = booking.participants.map(p => `${p.firstName} ${p.lastName}`);
-    for (const participant of booking.participants) {
-      if (participant.email) {
-        await sendBookingEmail({
-          to: participant.email,
-          subject: 'Court Booking Confirmed',
-          bookingDetails: {
-            action: 'created',
-            courtName: booking.court.name,
-            startTime: booking.startTime,
-            endTime: booking.endTime,
-            type: booking.type,
-            participantNames
-          }
-        });
+    if (createdBookings.length > 0) {
+      const firstBooking = createdBookings[0];
+      const participantNames = firstBooking.participants.map(p => `${p.firstName} ${p.lastName}`);
+      const isBatch = createdBookings.length > 1;
+
+      for (const participant of firstBooking.participants) {
+        if (participant.email) {
+          await sendBookingEmail({
+            to: participant.email,
+            subject: isBatch ? 'Multiple Court Bookings Confirmed' : 'Court Booking Confirmed',
+            bookingDetails: {
+              action: 'created',
+              courtName: isBatch ? 'Multiple Courts/Dates' : firstBooking.court.name,
+              startTime: firstBooking.startTime,
+              endTime: firstBooking.endTime,
+              type: firstBooking.type,
+              participantNames
+            }
+          });
+        }
       }
     }
 
-    return NextResponse.json({ success: true, booking }, { status: 201 });
+    return NextResponse.json({ success: true, count: createdBookings.length, conflicts }, { status: 201 });
   } catch (error) {
     console.error('Create booking error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

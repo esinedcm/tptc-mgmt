@@ -38,6 +38,12 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
   const [selectedEndTime, setSelectedEndTime] = useState<Date | null>(null);
   const [bookingType, setBookingType] = useState('MEMBER');
   
+  // Advanced Admin Block Booking State
+  const [bookAllCourts, setBookAllCourts] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceWeeks, setRecurrenceWeeks] = useState(4);
+  const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
+  
   // Member Search State
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -116,7 +122,12 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
           startTime: selectedStartTime.toISOString(),
           endTime: selectedEndTime.toISOString(),
           type: bookingType,
-          participantIds: selectedParticipants.map(p => p.id)
+          participantIds: selectedParticipants.map(p => p.id),
+          bookAllCourts: isAdmin ? bookAllCourts : undefined,
+          recurrence: (isAdmin && isRecurring && !editingBookingId) ? {
+            daysOfWeek: recurrenceDays,
+            weeks: recurrenceWeeks
+          } : undefined
         })
       });
 
@@ -125,6 +136,10 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
 
       setShowModal(false);
       setEditingBookingId(null);
+      
+      if (data.conflicts && data.conflicts.length > 0) {
+        alert(`Successfully booked ${data.count} slots, but skipped ${data.conflicts.length} conflicts:\n\n` + data.conflicts.slice(0, 10).join('\n') + (data.conflicts.length > 10 ? '\n...and more' : ''));
+      }
       
       // Update URL with the date and reload so they stay on the correct day
       const dateString = currentDate.toISOString().split('T')[0];
@@ -251,6 +266,9 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
                         setBookingType('MEMBER');
                         setSelectedParticipants([]);
                         setEditingBookingId(null);
+                        setBookAllCourts(false);
+                        setIsRecurring(false);
+                        setRecurrenceDays([currentDate.getDay()]);
                         setShowModal(true);
                       }}
                     >
@@ -310,18 +328,87 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
               </div>
 
               {isAdmin && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Booking Type</label>
-                  <select 
-                    value={bookingType} 
-                    onChange={(e) => setBookingType(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-                  >
-                    <option value="MEMBER">Member Play</option>
-                    <option value="LESSON">Lesson</option>
-                    <option value="LEAGUE">League Match</option>
-                    <option value="MAINTENANCE">Maintenance</option>
-                  </select>
+                <div className="space-y-4 border border-indigo-100 bg-indigo-50 p-4 rounded-md">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Booking Type</label>
+                    <select 
+                      value={bookingType} 
+                      onChange={(e) => setBookingType(e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-white"
+                    >
+                      <option value="MEMBER">Member Play</option>
+                      <option value="LESSON">Lesson</option>
+                      <option value="LEAGUE">League Match</option>
+                      <option value="MAINTENANCE">Maintenance</option>
+                    </select>
+                  </div>
+
+                  {!editingBookingId && (
+                    <div className="space-y-4">
+                      <div className="flex items-center">
+                        <input
+                          id="bookAllCourts"
+                          type="checkbox"
+                          checked={bookAllCourts}
+                          onChange={(e) => setBookAllCourts(e.target.checked)}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="bookAllCourts" className="ml-2 block text-sm font-medium text-gray-900">
+                          Book all courts
+                        </label>
+                      </div>
+
+                      <div className="flex items-center">
+                        <input
+                          id="isRecurring"
+                          type="checkbox"
+                          checked={isRecurring}
+                          onChange={(e) => setIsRecurring(e.target.checked)}
+                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                        />
+                        <label htmlFor="isRecurring" className="ml-2 block text-sm font-medium text-gray-900">
+                          Make this a recurring block booking
+                        </label>
+                      </div>
+
+                      {isRecurring && (
+                        <div className="pl-6 space-y-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Days of the Week</label>
+                            <div className="flex flex-wrap gap-2">
+                              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, idx) => (
+                                <button
+                                  key={day}
+                                  type="button"
+                                  onClick={() => {
+                                    if (recurrenceDays.includes(idx)) {
+                                      setRecurrenceDays(recurrenceDays.filter(d => d !== idx));
+                                    } else {
+                                      setRecurrenceDays([...recurrenceDays, idx]);
+                                    }
+                                  }}
+                                  className={`px-3 py-1 text-xs font-medium rounded-full border ${recurrenceDays.includes(idx) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                                >
+                                  {day}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Number of Weeks</label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="52"
+                              value={recurrenceWeeks}
+                              onChange={(e) => setRecurrenceWeeks(parseInt(e.target.value) || 1)}
+                              className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1.5 border sm:text-sm bg-white"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
