@@ -23,6 +23,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
 
   // Booking Modal State
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
   const [selectedCourtId, setSelectedCourtId] = useState('');
   const [selectedStartTime, setSelectedStartTime] = useState<Date | null>(null);
@@ -88,8 +89,12 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
   const handleCreateBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
     
-    if (!selectedCourtId || !selectedStartTime || !selectedEndTime) return;
+    if (!selectedCourtId || !selectedStartTime || !selectedEndTime) {
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const url = editingBookingId ? `/api/bookings/${editingBookingId}` : '/api/bookings';
@@ -112,9 +117,11 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
 
       setShowModal(false);
       setEditingBookingId(null);
-      fetchCourtsAndBookings();
+      // Wait briefly for modal to visually close, then refresh
+      setTimeout(() => window.location.reload(), 100);
     } catch (err: any) {
       setError(err.message);
+      setIsSubmitting(false);
     }
   };
 
@@ -362,9 +369,10 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
                 </button>
                 <button 
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                  disabled={isSubmitting}
+                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 >
-                  {editingBookingId ? 'Save Changes' : 'Confirm Booking'}
+                  {isSubmitting ? 'Saving...' : (editingBookingId ? 'Save Changes' : 'Confirm Booking')}
                 </button>
               </div>
             </form>
