@@ -20,8 +20,15 @@ export default function ForgotPassword() {
         body: JSON.stringify({ email })
       });
 
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        // Ignore JSON parse errors
+      }
+
       if (!res.ok) {
-        throw new Error('Failed to send reset link');
+        throw new Error((data && data.error) || 'Failed to send reset link');
       }
 
       setStatus('success');
