@@ -25,6 +25,7 @@ export default async function PortalLayout({
               <span className="text-xl font-bold text-white tracking-tight">Tennis Club</span>
               <div className="hidden md:flex gap-4">
                 <Link href="/portal" className="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</Link>
+                <Link href="/portal/book" className="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Book a Court</Link>
                 <Link href="/portal/profile" className="text-indigo-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">My Profile</Link>
               </div>
             </div>

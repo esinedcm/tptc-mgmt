@@ -31,9 +31,11 @@ model User {
   editToken        String?
   resetToken       String?      @unique
   resetTokenExpiry DateTime?
-  createdAt        DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  memberships  Membership[]
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  memberships           Membership[]
+  organizedBookings     Booking[]    @relation("BookingOrganizer")
+  participatingBookings Booking[]    @relation("BookingParticipants")
 }
 
 model Membership {
@@ -84,4 +86,28 @@ model ArchivedMembership {
   paymentRecordedAt    DateTime?
   originalCreatedAt    DateTime
   archivedAt           DateTime  @default(now())
+}
+
+model Court {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  courtId     String
+  court       Court    @relation(fields: [courtId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
+  type        String   @default("MEMBER") // 'MEMBER', 'LESSON', 'LEAGUE', 'MAINTENANCE'
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  organizerId String?
+  organizer   User?    @relation("BookingOrganizer", fields: [organizerId], references: [id])
+  
+  participants User[]  @relation("BookingParticipants")
 }

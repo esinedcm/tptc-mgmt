@@ -144,3 +144,53 @@ export async function sendProfileUpdatedEmail(recipientEmail: string, changes: {
   
   return previewUrl;
 }
+
+export async function sendBookingEmail({
+  to,
+  subject,
+  bookingDetails,
+}: {
+  to: string;
+  subject: string;
+  bookingDetails: {
+    action: 'created' | 'updated' | 'cancelled';
+    courtName: string;
+    startTime: Date;
+    endTime: Date;
+    type: string;
+    participantNames: string[];
+  }
+}) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const portalLink = `${baseUrl}/portal/book`;
+
+  const { action, courtName, startTime, endTime, type, participantNames } = bookingDetails;
+  
+  const formattedStart = startTime.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  const formattedEnd = endTime.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  
+  let actionText = '';
+  if (action === 'created') actionText = 'A new court booking has been made.';
+  if (action === 'updated') actionText = 'An existing court booking has been updated.';
+  if (action === 'cancelled') actionText = 'A court booking has been CANCELLED.';
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">Court Booking ${action === 'cancelled' ? 'Cancelled' : (action === 'created' ? 'Confirmed' : 'Updated')}</h2>
+      <p>${actionText}</p>
+      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Court:</strong> ${courtName}</p>
+        <p style="margin: 5px 0;"><strong>Time:</strong> ${formattedStart} to ${formattedEnd}</p>
+        <p style="margin: 5px 0;"><strong>Type:</strong> ${type}</p>
+        <p style="margin: 5px 0;"><strong>Players:</strong> ${participantNames.join(', ')}</p>
+      </div>
+      ${action !== 'cancelled' ? `<p><a href="${portalLink}" style="color: #4f46e5;">Manage your bookings in the Member Portal</a></p>` : ''}
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject,
+    html
+  });
+}
