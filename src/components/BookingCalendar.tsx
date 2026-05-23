@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 type Court = { id: string; name: string };
 type User = { id: string; firstName: string; lastName: string; email: string };
@@ -16,7 +17,14 @@ type Booking = {
 };
 
 export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: boolean; currentUserId: string }) {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  
+  const initialDateParam = searchParams.get('date');
+  const initialDate = initialDateParam ? new Date(initialDateParam + 'T12:00:00Z') : new Date();
+
+  const [currentDate, setCurrentDate] = useState<Date>(initialDate);
   const [courts, setCourts] = useState<Court[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,8 +125,10 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
 
       setShowModal(false);
       setEditingBookingId(null);
-      // Wait briefly for modal to visually close, then refresh
-      setTimeout(() => window.location.reload(), 100);
+      
+      // Update URL with the date and reload so they stay on the correct day
+      const dateString = currentDate.toISOString().split('T')[0];
+      window.location.href = `${pathname}?date=${dateString}`;
     } catch (err: any) {
       setError(err.message);
       setIsSubmitting(false);
@@ -153,7 +163,12 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
         <h2 className="text-2xl font-bold text-gray-800">Court Schedule</h2>
         <div className="flex space-x-4 items-center">
           <button 
-            onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() - 1); setCurrentDate(d); }}
+            onClick={() => { 
+              const d = new Date(currentDate); 
+              d.setDate(d.getDate() - 1); 
+              setCurrentDate(d); 
+              router.replace(`${pathname}?date=${d.toISOString().split('T')[0]}`, { scroll: false });
+            }}
             className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"
           >
             &larr; Prev
@@ -162,7 +177,12 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
             {currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </span>
           <button 
-            onClick={() => { const d = new Date(currentDate); d.setDate(d.getDate() + 1); setCurrentDate(d); }}
+            onClick={() => { 
+              const d = new Date(currentDate); 
+              d.setDate(d.getDate() + 1); 
+              setCurrentDate(d); 
+              router.replace(`${pathname}?date=${d.toISOString().split('T')[0]}`, { scroll: false });
+            }}
             className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200"
           >
             Next &rarr;
