@@ -7,7 +7,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { firstName, lastName, email, phoneNumber, gender, membershipType, streetNumber, streetName, city, postalCode, tagNumber, amountPaid, paymentNotes, paymentRecordedAt } = body;
+    const { firstName, lastName, email, phoneNumber, gender, dateOfBirth, membershipType, streetNumber, streetName, city, postalCode, tagNumber, amountPaid, paymentNotes, paymentRecordedAt } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Membership ID is required' }, { status: 400 });
@@ -51,6 +51,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           email,
           phoneNumber,
           gender,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
           streetNumber,
           streetName,
           city,
@@ -91,6 +92,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
     if ((membership.user.gender || '') !== (gender || '')) {
       changes.push({ field: 'Gender', oldVal: membership.user.gender || '', newVal: gender || '' });
+    }
+    const oldDobStr = membership.user.dateOfBirth ? membership.user.dateOfBirth.toISOString().split('T')[0] : '';
+    const newDobStr = dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : '';
+    if (oldDobStr !== newDobStr) {
+      changes.push({ field: 'Date of Birth', oldVal: oldDobStr || '', newVal: newDobStr || '' });
     }
     if ((membership.user.streetNumber || '') !== (streetNumber || '')) {
       changes.push({ field: 'Street No.', oldVal: membership.user.streetNumber || '', newVal: streetNumber || '' });
@@ -161,6 +167,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
           email: membership.user.email,
           phoneNumber: membership.user.phoneNumber,
           gender: membership.user.gender,
+          dateOfBirth: membership.user.dateOfBirth,
           membershipType: membership.membershipType,
           status: membership.status,
           amountPaid: membership.amountPaid,

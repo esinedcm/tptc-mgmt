@@ -21,6 +21,7 @@ type Membership = {
     email: string;
     phoneNumber?: string;
     gender?: string;
+    dateOfBirth?: string | Date;
     streetNumber?: string;
     streetName?: string;
     city?: string;
@@ -65,6 +66,7 @@ export default function AdminDashboard() {
     email: '',
     phoneNumber: '',
     gender: '',
+    dateOfBirth: '',
     membershipType: '',
     streetNumber: '',
     streetName: '',
@@ -109,6 +111,7 @@ export default function AdminDashboard() {
       email: a.email,
       phoneNumber: a.phoneNumber || undefined,
       gender: a.gender || undefined,
+      dateOfBirth: a.dateOfBirth || undefined,
       memberNumber: undefined,
       tagNumber: undefined,
       streetNumber: undefined,
@@ -217,6 +220,7 @@ export default function AdminDashboard() {
       email: m.user.email,
       phoneNumber: m.user.phoneNumber || '',
       gender: m.user.gender || '',
+      dateOfBirth: m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toISOString().split('T')[0] : '',
       membershipType: m.membershipType,
       streetNumber: m.user.streetNumber || '',
       streetName: m.user.streetName || '',
@@ -538,6 +542,13 @@ export default function AdminDashboard() {
                                 onChange={e => setEditForm({ ...editForm, lastName: e.target.value })}
                                 placeholder="Last Name"
                               />
+                              <label className="block text-xs font-semibold text-gray-700 mt-2 mb-1">Date of Birth</label>
+                              <input 
+                                type="date"
+                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                                value={editForm.dateOfBirth}
+                                onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })}
+                              />
                               <label className="block text-xs font-semibold text-gray-700 mt-2 mb-1">Tag Number</label>
                               <input type="text" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.tagNumber} onChange={e => setEditForm({...editForm, tagNumber: e.target.value})} placeholder="Tag Number" />
                             </div>
@@ -669,7 +680,15 @@ export default function AdminDashboard() {
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500">Registered {new Date(m.createdAt).toLocaleDateString()}</div>
+                          <div className="text-sm text-gray-500 mb-1">Registered {new Date(m.createdAt).toLocaleDateString()}</div>
+                          {m.user.dateOfBirth && (
+                            <div className="text-xs text-gray-500">
+                              DOB: {new Date(m.user.dateOfBirth).toLocaleDateString()} 
+                              <span className="text-gray-400 ml-1">
+                                ({Math.abs(new Date(Date.now() - new Date(m.user.dateOfBirth).getTime()).getUTCFullYear() - 1970)} yrs)
+                              </span>
+                            </div>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           <div>{m.user.email}</div>

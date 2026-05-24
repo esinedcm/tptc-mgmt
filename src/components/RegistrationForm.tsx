@@ -27,6 +27,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
     password: '',
     phoneNumber: '',
     gender: '',
+    dateOfBirth: '',
     membershipType: '',
   }]);
 
@@ -62,8 +63,12 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
         .then(data => {
           if (data.address) setAddress(data.address);
           if (data.members) {
-            // Password comes back empty from API for security
-            setMembers(data.members);
+            // Format dates for input type="date"
+            const formattedMembers = data.members.map((m: any) => ({
+              ...m,
+              dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : ''
+            }));
+            setMembers(formattedMembers);
           }
         })
         .finally(() => setLoadingHousehold(false));
@@ -79,6 +84,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
               password: '',
               phoneNumber: data.lead.phoneNumber || '',
               gender: data.lead.gender || '',
+              dateOfBirth: '',
               membershipType: '',
             }]);
           }
@@ -105,7 +111,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
     e.preventDefault();
     setMembers((prev) => [
       ...prev,
-      { firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', membershipType: '' }
+      { firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', membershipType: '' }
     ]);
   };
 
@@ -309,7 +315,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
           <button 
             onClick={() => {
               setAddress({ streetNumber: '', streetName: '', city: '', postalCode: '' });
-              setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', membershipType: '' }]);
+              setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', membershipType: '' }]);
               setSuccess(false);
             }}
             className="px-6 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition-colors"
@@ -391,7 +397,8 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
                   required 
                 />
               </div>
-              <div className="mt-4">
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <Input label="Date of Birth" type="date" name="dateOfBirth" value={member.dateOfBirth} onChange={(e) => handleMemberChange(index, e)} required />
                 <Select 
                   label="Membership Type" 
                   name="membershipType" 

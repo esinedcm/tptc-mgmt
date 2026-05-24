@@ -9,6 +9,7 @@ type ProfileData = {
   streetName: string;
   city: string;
   postalCode: string;
+  dateOfBirth: string | null;
 };
 
 export function ProfileForm({ initialData }: { initialData: ProfileData }) {
@@ -103,6 +104,14 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
           className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black ${fieldErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
         />
         {fieldErrors.phoneNumber && <span className="text-xs text-red-500 mt-1 block">{fieldErrors.phoneNumber}</span>}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+        <div className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm text-gray-500 cursor-not-allowed">
+          {formData.dateOfBirth || 'Not provided'}
+        </div>
+        <p className="mt-1 text-xs text-gray-500">Contact an administrator to change your date of birth.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

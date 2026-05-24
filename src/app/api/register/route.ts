@@ -21,6 +21,7 @@ export async function POST(request: Request) {
         phoneNumber?: string;
         password?: string;
         gender: string;
+        dateOfBirth: string;
         membershipType: string;
       }[];
       editToken?: string;
@@ -124,6 +125,7 @@ export async function POST(request: Request) {
                passwordHash,
                phoneNumber: member.phoneNumber,
                gender: member.gender,
+               dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
                streetNumber: address.streetNumber,
                streetName: address.streetName,
                city: address.city,

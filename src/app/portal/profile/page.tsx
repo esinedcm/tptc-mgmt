@@ -40,7 +40,8 @@ export default async function ProfilePage() {
           streetNumber: user.streetNumber || '',
           streetName: user.streetName || '',
           city: user.city || '',
-          postalCode: user.postalCode || ''
+          postalCode: user.postalCode || '',
+          dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : null
         }} />
       </div>
     </div>

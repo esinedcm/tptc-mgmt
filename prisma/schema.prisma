@@ -30,6 +30,7 @@ model User {
   postalCode   String?
   phoneNumber  String?
   gender       String?
+  dateOfBirth  DateTime?
   householdId  String?
   tagNumber    String?
   memberNumber String?      @unique
@@ -85,6 +86,7 @@ model ArchivedMembership {
   email                String
   phoneNumber          String?
   gender               String?
+  dateOfBirth          DateTime?
   membershipType       String
   status               String
   amountPaid           Float?
