@@ -27,7 +27,22 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    await prisma.booking.delete({ where: { id } });
+    if (payload.role !== 'ADMIN') {
+      const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+      const cutoffMinutes = settings?.cancellationCutoffMinutes ?? 90;
+      
+      const cutoffTime = new Date();
+      cutoffTime.setMinutes(cutoffTime.getMinutes() + cutoffMinutes);
+      
+      if (new Date(booking.startTime) < cutoffTime) {
+        return NextResponse.json({ error: `Bookings cannot be cancelled less than ${cutoffMinutes} minutes before start time.` }, { status: 400 });
+      }
+    }
+
+    await prisma.booking.update({
+      where: { id },
+      data: { status: 'CANCELLED' }
+    });
 
     // Send emails
     const participantNames = booking.participants.map(p => `${p.firstName} ${p.lastName}`);
@@ -87,6 +102,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       where: {
         courtId,
         id: { not: id },
+        status: 'ACTIVE',
         startTime: { lt: end },
         endTime: { gt: start }
       }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyJwt } from '@/lib/auth';
 import { cookies } from 'next/headers';
+import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 export async function PATCH(req: Request) {
   try {
@@ -19,6 +20,14 @@ export async function PATCH(req: Request) {
 
     const body = await req.json();
     const { phoneNumber, streetNumber, streetName, city, postalCode } = body;
+
+    if (postalCode && !isValidPostalCode(postalCode)) {
+      return NextResponse.json({ error: 'Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).' }, { status: 400 });
+    }
+
+    if (phoneNumber && !isValidPhoneNumber(phoneNumber)) {
+      return NextResponse.json({ error: 'Invalid phone number format. Please use a standard 10-digit number.' }, { status: 400 });
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: payload.userId as string },

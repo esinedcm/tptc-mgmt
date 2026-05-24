@@ -3,6 +3,7 @@ import { verifyJwt } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
+import MyBookingsList from './MyBookingsList';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,9 +26,16 @@ export default async function MemberDashboard() {
       memberships: {
         orderBy: { createdAt: 'desc' },
         take: 1
+      },
+      participatingBookings: {
+        include: { court: true },
+        orderBy: { startTime: 'desc' }
       }
     }
   });
+
+  const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+  const cutoffMinutes = settings?.cancellationCutoffMinutes ?? 90;
 
   if (!user) {
     redirect('/login');
@@ -39,7 +47,7 @@ export default async function MemberDashboard() {
     <div className="max-w-4xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user.firstName}!</h1>
-        <p className="mt-1 text-gray-500">Manage your membership and view club updates.</p>
+        <p className="mt-1 text-gray-500">Manage your membership and view court bookings.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -74,17 +82,18 @@ export default async function MemberDashboard() {
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-50 to-white p-6 rounded-lg shadow-sm border border-indigo-100 flex flex-col justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-indigo-900 mb-2">Court Bookings</h2>
-            <p className="text-indigo-700/80 text-sm">
-              We are rolling out our new digital court reservation system soon! Check back later to book your next match online.
-            </p>
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">My Court Bookings</h2>
+            <Link href="/portal/book" className="px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded hover:bg-indigo-700 transition-colors shadow-sm">
+              Book a Court
+            </Link>
           </div>
-          <div className="mt-4">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-              Coming Soon
-            </span>
+          <div className="flex-1 overflow-y-auto max-h-[500px] pr-2">
+            <MyBookingsList 
+              initialBookings={user.participatingBookings as any} 
+              cutoffMinutes={cutoffMinutes} 
+            />
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/hash';
 import { sendEditLinkEmail } from '@/lib/email';
+import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
@@ -29,6 +30,16 @@ export async function POST(request: Request) {
 
     if (!address || !members || members.length === 0) {
       return NextResponse.json({ error: 'Missing household address or members' }, { status: 400 });
+    }
+
+    if (address.postalCode && !isValidPostalCode(address.postalCode)) {
+      return NextResponse.json({ error: 'Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).' }, { status: 400 });
+    }
+
+    for (let i = 0; i < members.length; i++) {
+      if (members[i].phoneNumber && !isValidPhoneNumber(members[i].phoneNumber)) {
+        return NextResponse.json({ error: `Invalid phone number format for Member ${i + 1}. Please use a standard 10-digit number.` }, { status: 400 });
+      }
     }
 
     // Validate emails are unique within the incoming request

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
+import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 type MembershipPlan = {
   id: string;
@@ -31,6 +32,9 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [postalError, setPostalError] = useState('');
+  const [memberErrors, setMemberErrors] = useState<Record<number, string>>({});
+  
   const [success, setSuccess] = useState(false);
   const [editToken, setEditToken] = useState<string | undefined>(initialEditToken);
   const [emailPreviewUrl, setEmailPreviewUrl] = useState('');
@@ -107,6 +111,32 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
 
   const removeMember = (index: number) => {
     setMembers((prev) => prev.filter((_, i) => i !== index));
+    const newErrors = { ...memberErrors };
+    delete newErrors[index];
+    // We should ideally shift the keys, but this is a simple form.
+    // For a robust solution, we can just clear all errors or re-validate.
+    setMemberErrors({});
+  };
+
+  const handleAddressBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.name === 'postalCode') {
+      if (address.postalCode && !isValidPostalCode(address.postalCode)) {
+        setPostalError('Invalid format (e.g. M1M 1M1)');
+      } else {
+        setPostalError('');
+      }
+    }
+  };
+
+  const handleMemberBlur = (index: number, e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.name === 'phoneNumber') {
+      const value = members[index].phoneNumber;
+      if (value && !isValidPhoneNumber(value)) {
+        setMemberErrors(prev => ({ ...prev, [index]: 'Invalid 10-digit format' }));
+      } else {
+        setMemberErrors(prev => ({ ...prev, [index]: '' }));
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -114,6 +144,20 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
     setLoading(true);
     setError('');
     
+    if (!isValidPostalCode(address.postalCode)) {
+      setError('Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).');
+      setLoading(false);
+      return;
+    }
+
+    for (let i = 0; i < members.length; i++) {
+      if (members[i].phoneNumber && !isValidPhoneNumber(members[i].phoneNumber)) {
+        setError(`Invalid phone number format for Member ${i + 1}. Please use a standard 10-digit number.`);
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       const res = await fetch('/api/register', {
         method: 'POST',
@@ -302,7 +346,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Input label="City" name="city" value={address.city} onChange={handleAddressChange} required />
-          <Input label="Postal Code" name="postalCode" value={address.postalCode} onChange={handleAddressChange} required />
+          <Input label="Postal Code" name="postalCode" value={address.postalCode} onChange={handleAddressChange} onBlur={handleAddressBlur} error={postalError} required />
         </div>
       </div>
 
@@ -337,7 +381,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
                 <Input label="Password" type="password" name="password" value={member.password} onChange={(e) => handleMemberChange(index, e)} required />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Phone Number" type="tel" name="phoneNumber" value={member.phoneNumber} onChange={(e) => handleMemberChange(index, e)} required />
+                <Input label="Phone Number" type="tel" name="phoneNumber" value={member.phoneNumber} onChange={(e) => handleMemberChange(index, e)} onBlur={(e) => handleMemberBlur(index, e)} error={memberErrors[index]} required />
                 <Select 
                   label="Gender" 
                   name="gender" 

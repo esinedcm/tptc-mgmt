@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 type ProfileData = {
   phoneNumber: string;
@@ -15,6 +16,8 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+  
+  const [fieldErrors, setFieldErrors] = useState({ phoneNumber: '', postalCode: '' });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,11 +25,39 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
     setError('');
   };
 
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (name === 'postalCode') {
+      if (value && !isValidPostalCode(value)) {
+        setFieldErrors(prev => ({ ...prev, postalCode: 'Invalid format (e.g. M1M 1M1)' }));
+      } else {
+        setFieldErrors(prev => ({ ...prev, postalCode: '' }));
+      }
+    } else if (name === 'phoneNumber') {
+      if (value && !isValidPhoneNumber(value)) {
+        setFieldErrors(prev => ({ ...prev, phoneNumber: 'Invalid 10-digit format' }));
+      } else {
+        setFieldErrors(prev => ({ ...prev, phoneNumber: '' }));
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setSuccess(false);
     setError('');
+
+    if (formData.postalCode && !isValidPostalCode(formData.postalCode)) {
+      setError('Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).');
+      setLoading(false);
+      return;
+    }
+    if (formData.phoneNumber && !isValidPhoneNumber(formData.phoneNumber)) {
+      setError('Invalid phone number format. Please use a standard 10-digit number.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/portal/profile', {
@@ -68,8 +99,10 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
           name="phoneNumber"
           value={formData.phoneNumber}
           onChange={handleChange}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+          onBlur={handleBlur}
+          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black ${fieldErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
         />
+        {fieldErrors.phoneNumber && <span className="text-xs text-red-500 mt-1 block">{fieldErrors.phoneNumber}</span>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -113,8 +146,10 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
             name="postalCode"
             value={formData.postalCode}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+            onBlur={handleBlur}
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black ${fieldErrors.postalCode ? 'border-red-500' : 'border-gray-300'}`}
           />
+          {fieldErrors.postalCode && <span className="text-xs text-red-500 mt-1 block">{fieldErrors.postalCode}</span>}
         </div>
       </div>
 

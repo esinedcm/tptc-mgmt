@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendProfileUpdatedEmail } from '@/lib/email';
+import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,6 +11,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     if (!id) {
       return NextResponse.json({ error: 'Membership ID is required' }, { status: 400 });
+    }
+
+    if (postalCode && !isValidPostalCode(postalCode)) {
+      return NextResponse.json({ error: 'Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).' }, { status: 400 });
+    }
+
+    if (phoneNumber && !isValidPhoneNumber(phoneNumber)) {
+      return NextResponse.json({ error: 'Invalid phone number format. Please use a standard 10-digit number.' }, { status: 400 });
     }
 
     // Find the membership to ensure it exists

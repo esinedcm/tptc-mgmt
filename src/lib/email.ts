@@ -42,7 +42,7 @@ export async function sendEmail({
   try {
     const mailer = await getTransporter();
     const info = await mailer.sendMail({
-      from: `"Tennis Club Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+      from: `"TPTC Admin" <${process.env.SMTP_USER || 'tptccourts@gmail.com'}>`,
       to,
       subject,
       html,
@@ -78,7 +78,7 @@ export async function sendWelcomeEmail({
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #4f46e5;">Welcome to the Tennis Club!</h2>
+      <h2 style="color: #4f46e5;">Welcome to the Thomson Park Tennis Club!</h2>
       <p>Hi ${firstName},</p>
       <p>Great news! Your club membership has been approved and activated.</p>
       ${memberNumberText}
@@ -91,7 +91,7 @@ export async function sendWelcomeEmail({
 
   return sendEmail({
     to,
-    subject: 'Welcome to the Tennis Club! Your account is active.',
+    subject: 'Welcome to the Thomson Park Tennis Club! Your account is active.',
     html
   });
 }
@@ -102,7 +102,7 @@ export async function sendEditLinkEmail(recipientEmail: string, editToken: strin
   const editUrl = `${baseUrl}/register?editToken=${editToken}`;
 
   const info = await mailer.sendMail({
-    from: `"Tennis Club Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+    from: `"TPTC Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Registration Details & Edit Link",
     text: `Thank you for registering! You can edit your household registration at any time using this link: ${editUrl}`,
@@ -127,7 +127,7 @@ export async function sendProfileUpdatedEmail(recipientEmail: string, changes: {
   const changesText = changes.map(c => `- ${c.field}: ${c.oldVal || '(empty)'} -> ${c.newVal || '(empty)'}`).join('\n');
 
   const info = await mailer.sendMail({
-    from: `"Tennis Club Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+    from: `"TPTC Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Club Registration Details Were Updated",
     text: `Your registration details were recently updated by an administrator. Here are the changes:\n\n${changesText}`,

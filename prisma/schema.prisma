@@ -12,6 +12,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model SystemSetting {
+  id                        String   @id @default("global")
+  cancellationCutoffMinutes Int      @default(90)
+  updatedAt                 DateTime @updatedAt
+}
+
 model User {
   id           String       @id @default(cuid())
   firstName    String
@@ -102,6 +108,7 @@ model Booking {
   startTime   DateTime
   endTime     DateTime
   type        String   @default("MEMBER") // 'MEMBER', 'LESSON', 'LEAGUE', 'MAINTENANCE'
+  status      String   @default("ACTIVE") // 'ACTIVE', 'CANCELLED'
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

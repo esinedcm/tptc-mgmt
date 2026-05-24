@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 type Membership = {
   id: string;
@@ -74,6 +75,7 @@ export default function AdminDashboard() {
     paymentNotes: '',
     paymentRecordedAt: '',
   });
+  const [editErrors, setEditErrors] = useState({ phoneNumber: '', postalCode: '' });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived'>('Pending');
@@ -225,13 +227,41 @@ export default function AdminDashboard() {
       paymentNotes: m.paymentNotes || '',
       paymentRecordedAt: m.paymentRecordedAt ? new Date(m.paymentRecordedAt).toISOString().split('T')[0] : '',
     });
+    setEditErrors({ phoneNumber: '', postalCode: '' });
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setEditErrors({ phoneNumber: '', postalCode: '' });
+  };
+
+  const handleEditBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { placeholder, value } = e.target;
+    if (placeholder === 'Zip') { // Using placeholder since it's an inline form without a name attribute
+      if (value && !isValidPostalCode(value)) {
+        setEditErrors(prev => ({ ...prev, postalCode: 'Invalid format' }));
+      } else {
+        setEditErrors(prev => ({ ...prev, postalCode: '' }));
+      }
+    } else if (placeholder === 'Phone Number') {
+      if (value && !isValidPhoneNumber(value)) {
+        setEditErrors(prev => ({ ...prev, phoneNumber: 'Invalid 10-digit format' }));
+      } else {
+        setEditErrors(prev => ({ ...prev, phoneNumber: '' }));
+      }
+    }
   };
 
   const handleSaveEdit = async (id: string) => {
+    if (editForm.postalCode && !isValidPostalCode(editForm.postalCode)) {
+      alert('Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).');
+      return;
+    }
+    if (editForm.phoneNumber && !isValidPhoneNumber(editForm.phoneNumber)) {
+      alert('Invalid phone number format. Please use a standard 10-digit number.');
+      return;
+    }
+
     try {
       const res = await fetch(`/api/admin/memberships/${id}`, {
         method: 'PUT',
@@ -305,6 +335,16 @@ export default function AdminDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               Manage Bookings
+            </Link>
+            <Link
+              href="/admin/settings"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
             </Link>
             <button
               onClick={() => window.open('/api/admin/export-emails', '_blank')}
@@ -523,11 +563,13 @@ export default function AdminDashboard() {
                                 placeholder="Email"
                               />
                               <input 
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                                className={`border rounded px-2 py-1 text-sm w-full ${editErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
                                 value={editForm.phoneNumber}
                                 onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })}
+                                onBlur={handleEditBlur}
                                 placeholder="Phone Number"
                               />
+                              {editErrors.phoneNumber && <span className="text-xs text-red-500">{editErrors.phoneNumber}</span>}
                               <select
                                 className="border border-gray-300 rounded px-2 py-1 text-sm w-full bg-white"
                                 value={editForm.gender}
@@ -561,12 +603,14 @@ export default function AdminDashboard() {
                                   placeholder="City"
                                 />
                                 <input 
-                                  className="border border-gray-300 rounded px-2 py-1 text-sm w-20"
+                                  className={`border rounded px-2 py-1 text-sm w-20 ${editErrors.postalCode ? 'border-red-500' : 'border-gray-300'}`}
                                   value={editForm.postalCode}
                                   onChange={e => setEditForm({ ...editForm, postalCode: e.target.value })}
+                                  onBlur={handleEditBlur}
                                   placeholder="Zip"
                                 />
                               </div>
+                              {editErrors.postalCode && <span className="text-xs text-red-500">{editErrors.postalCode}</span>}
                             </div>
                           </td>
                           <td className="px-6 py-4">

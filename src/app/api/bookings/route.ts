@@ -12,9 +12,10 @@ export async function GET(req: Request) {
     const startParam = searchParams.get('start');
     const endParam = searchParams.get('end');
 
-    let whereClause = {};
+    let whereClause: any = { status: 'ACTIVE' };
     if (startParam && endParam) {
       whereClause = {
+        ...whereClause,
         startTime: { gte: new Date(startParam) },
         endTime: { lte: new Date(endParam) }
       };
@@ -88,6 +89,7 @@ export async function POST(req: Request) {
       const existingBookings = await prisma.booking.findMany({
         where: {
           participants: { some: { id: payload.userId as string } },
+          status: 'ACTIVE',
           startTime: { gte: startOfDay },
           endTime: { lte: endOfDay }
         }
@@ -148,6 +150,7 @@ export async function POST(req: Request) {
       const overlapping = await prisma.booking.findFirst({
         where: {
           courtId: slot.courtId,
+          status: 'ACTIVE',
           startTime: { lt: slot.end },
           endTime: { gt: slot.start }
         },

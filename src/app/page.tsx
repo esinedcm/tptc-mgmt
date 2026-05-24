@@ -5,10 +5,10 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Tennis Club Management
+          Thomson Park Tennis Club
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Welcome to the club portal.
+          Welcome to the TPTC Portal.
         </p>
       </div>
 
@@ -18,7 +18,13 @@ export default function Home() {
             href="/interest"
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
           >
-            I'm interested in joining (Public Form)
+            I would like more information about Thomson Park	
+          </Link>
+          <Link 
+            href="/register"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          >
+            I'm ready to register at Thomson Park
           </Link>
           
           <Link 
