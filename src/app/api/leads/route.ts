@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
     // Send confirmation email and await it so Vercel doesn't kill the function early
     try {
-      await sendInterestConfirmationEmail({ to: email, firstName });
+      await sendInterestConfirmationEmail({ to: email, firstName, leadId: lead.id });
     } catch (err) {
       console.error('Failed to send interest confirmation email:', err);
     }

@@ -6,6 +6,9 @@ const getBaseUrl = () => {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL;
   }
+  if (process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
@@ -208,12 +211,14 @@ export async function sendBookingEmail({
 export async function sendInterestConfirmationEmail({
   to,
   firstName,
+  leadId,
 }: {
   to: string;
   firstName: string;
+  leadId: string;
 }) {
   const baseUrl = getBaseUrl();
-  const registerLink = `${baseUrl}/register`;
+  const registerLink = `${baseUrl}/register?leadId=${leadId}`;
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
