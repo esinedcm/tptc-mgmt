@@ -2,6 +2,16 @@ import nodemailer from 'nodemailer';
 
 let transporter: nodemailer.Transporter | null = null;
 
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return 'http://localhost:3000';
+};
+
 async function getTransporter() {
   if (!transporter) {
     if (process.env.SMTP_USER && process.env.SMTP_PASS) {
@@ -71,7 +81,7 @@ export async function sendWelcomeEmail({
   firstName: string;
   memberNumber?: string | null;
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getBaseUrl();
   const loginLink = `${baseUrl}/login`;
 
   const memberNumberText = memberNumber ? `<p>Your official Member Number is: <strong>${memberNumber}</strong></p>` : '';
@@ -98,7 +108,7 @@ export async function sendWelcomeEmail({
 
 export async function sendEditLinkEmail(recipientEmail: string, editToken: string) {
   const mailer = await getTransporter();
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getBaseUrl();
   const editUrl = `${baseUrl}/register?editToken=${editToken}`;
 
   const info = await mailer.sendMail({
@@ -161,7 +171,7 @@ export async function sendBookingEmail({
     participantNames: string[];
   }
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = getBaseUrl();
   const portalLink = `${baseUrl}/portal/book`;
 
   const { action, courtName, startTime, endTime, type, participantNames } = bookingDetails;
@@ -191,6 +201,35 @@ export async function sendBookingEmail({
   return sendEmail({
     to,
     subject,
+    html
+  });
+}
+
+export async function sendInterestConfirmationEmail({
+  to,
+  firstName,
+}: {
+  to: string;
+  firstName: string;
+}) {
+  const baseUrl = getBaseUrl();
+  const registerLink = `${baseUrl}/register`;
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">Thanks for your interest in Thomson Park Tennis Club!</h2>
+      <p>Hi ${firstName},</p>
+      <p>We've received your information and are thrilled you're interested in joining our community.</p>
+      <p>A club administrator will review your details and reach out soon if they need any more information.</p>
+      <p>If you're ready to take the next step and officially register your household, you can do so at any time using the link below:</p>
+      <a href="${registerLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Register for the Club</a>
+      <p>We look forward to seeing you on the courts!</p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: 'Thanks for your interest in Thomson Park Tennis Club!',
     html
   });
 }
