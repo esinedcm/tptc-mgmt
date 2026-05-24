@@ -109,7 +109,7 @@ export async function sendWelcomeEmail({
   });
 }
 
-export async function sendEditLinkEmail(recipientEmail: string, editToken: string) {
+export async function sendEditLinkEmail(recipientEmail: string, editToken: string, memberNames: string[] = [], totalDue: number = 0) {
   const mailer = await getTransporter();
   const baseUrl = getBaseUrl();
   const editUrl = `${baseUrl}/register?editToken=${editToken}`;
@@ -118,8 +118,8 @@ export async function sendEditLinkEmail(recipientEmail: string, editToken: strin
     from: `"TPTC Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Registration Details & Edit Link",
-    text: `Thank you for registering! You can edit your household registration at any time using this link: ${editUrl}`,
-    html: `<b>Thank you for registering!</b><br><p>You can edit your household registration at any time using this link:</p><p><a href="${editUrl}">${editUrl}</a></p>`,
+    text: `Thank you for registering! Your household (${memberNames.join(', ')}) is now pending approval. Your total amount due is $${totalDue}. You can edit your household registration at any time using this link: ${editUrl}`,
+    html: `<b>Thank you for registering!</b><br><p>Your household is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> ${memberNames.join(', ')}</li><li><b>Total Amount Due:</b> $${totalDue}</li></ul><p>Please contact an administrator to complete your payment.</p><p>You can edit your household registration at any time using this link:</p><p><a href="${editUrl}">${editUrl}</a></p>`,
   });
 
   const previewUrl = nodemailer.getTestMessageUrl(info);
