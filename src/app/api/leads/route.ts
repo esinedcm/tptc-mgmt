@@ -33,10 +33,12 @@ export async function POST(request: Request) {
       }
     });
 
-    // Send confirmation email asynchronously (don't block the response if it fails)
-    sendInterestConfirmationEmail({ to: email, firstName }).catch(err => {
+    // Send confirmation email and await it so Vercel doesn't kill the function early
+    try {
+      await sendInterestConfirmationEmail({ to: email, firstName });
+    } catch (err) {
       console.error('Failed to send interest confirmation email:', err);
-    });
+    }
 
     return NextResponse.json({ success: true, lead }, { status: 201 });
   } catch (error) {
