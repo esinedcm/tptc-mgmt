@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sendInterestConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -30,6 +31,11 @@ export async function POST(request: Request) {
         gender: gender || null,
         status: 'Pending',
       }
+    });
+
+    // Send confirmation email asynchronously (don't block the response if it fails)
+    sendInterestConfirmationEmail({ to: email, firstName }).catch(err => {
+      console.error('Failed to send interest confirmation email:', err);
     });
 
     return NextResponse.json({ success: true, lead }, { status: 201 });

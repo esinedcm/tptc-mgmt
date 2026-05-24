@@ -9,7 +9,6 @@ export default function InterestPage() {
     lastName: '',
     email: '',
     phoneNumber: '',
-    gender: '',
   });
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -126,22 +125,6 @@ export default function InterestPage() {
                 value={form.phoneNumber}
                 onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
               />
-            </div>
-
-            <div>
-              <label htmlFor="gender" className="block text-sm font-medium text-gray-700">Gender (Optional)</label>
-              <select
-                id="gender"
-                name="gender"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white"
-                value={form.gender}
-                onChange={(e) => setForm({ ...form, gender: e.target.value })}
-              >
-                <option value="">Select gender...</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other / Prefer not to say</option>
-              </select>
             </div>
 
             <div>
