@@ -310,7 +310,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
         )}
 
         <p className="text-green-700 text-center mt-6 text-sm">
-          Please contact the club administrator to complete your payment and activate your accounts.
+          Please check your email for the payment process and next steps
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
