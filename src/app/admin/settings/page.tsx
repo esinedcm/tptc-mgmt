@@ -16,6 +16,8 @@ export default function AdminSettingsPage() {
   const [cutoffMinutes, setCutoffMinutes] = useState(90);
   const [maxHoursPerDay, setMaxHoursPerDay] = useState(2);
   const [maxDaysInAdvance, setMaxDaysInAdvance] = useState(3);
+  const [courtOpenTime, setCourtOpenTime] = useState(6);
+  const [courtCloseTime, setCourtCloseTime] = useState(23);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -39,6 +41,8 @@ export default function AdminSettingsPage() {
           setCutoffMinutes(data.settings.cancellationCutoffMinutes);
           setMaxHoursPerDay(data.settings.maxHoursPerDay ?? 2);
           setMaxDaysInAdvance(data.settings.maxDaysInAdvance ?? 3);
+          setCourtOpenTime(data.settings.courtOpenTime ?? 6);
+          setCourtCloseTime(data.settings.courtCloseTime ?? 23);
         }
         setLoading(false);
       })
@@ -69,7 +73,9 @@ export default function AdminSettingsPage() {
         body: JSON.stringify({ 
           cancellationCutoffMinutes: cutoffMinutes,
           maxHoursPerDay: maxHoursPerDay,
-          maxDaysInAdvance: maxDaysInAdvance
+          maxDaysInAdvance: maxDaysInAdvance,
+          courtOpenTime: courtOpenTime,
+          courtCloseTime: courtCloseTime
         })
       });
       if (res.ok) {
@@ -222,6 +228,48 @@ export default function AdminSettingsPage() {
                   className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
                 />
                 <span className="text-gray-600">days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-b pb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Court Operating Hours</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Open Time (0-23)</label>
+              <p className="text-sm text-gray-500 mb-2">
+                The hour (in 24h format) when the courts open.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="0"
+                  max="23"
+                  value={courtOpenTime}
+                  onChange={(e) => setCourtOpenTime(parseInt(e.target.value) || 0)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">:00</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Close Time (0-24)</label>
+              <p className="text-sm text-gray-500 mb-2">
+                The hour (in 24h format) when the courts close.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="24"
+                  value={courtCloseTime}
+                  onChange={(e) => setCourtCloseTime(parseInt(e.target.value) || 24)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">:00</span>
               </div>
             </div>
           </div>

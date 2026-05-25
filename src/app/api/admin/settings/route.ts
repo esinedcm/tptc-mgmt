@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
     if (!settings) {
       settings = await prisma.systemSetting.create({
-        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3 }
+        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3, courtOpenTime: 6, courtCloseTime: 23 }
       });
     }
 
@@ -40,12 +40,14 @@ export async function PUT(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
     if (typeof maxHoursPerDay === 'number') updateData.maxHoursPerDay = maxHoursPerDay;
     if (typeof maxDaysInAdvance === 'number') updateData.maxDaysInAdvance = maxDaysInAdvance;
+    if (typeof courtOpenTime === 'number') updateData.courtOpenTime = courtOpenTime;
+    if (typeof courtCloseTime === 'number') updateData.courtCloseTime = courtCloseTime;
 
     const settings = await prisma.systemSetting.upsert({
       where: { id: 'global' },
@@ -54,7 +56,9 @@ export async function PUT(req: Request) {
         id: 'global', 
         cancellationCutoffMinutes: typeof cancellationCutoffMinutes === 'number' ? cancellationCutoffMinutes : 90,
         maxHoursPerDay: typeof maxHoursPerDay === 'number' ? maxHoursPerDay : 2,
-        maxDaysInAdvance: typeof maxDaysInAdvance === 'number' ? maxDaysInAdvance : 3
+        maxDaysInAdvance: typeof maxDaysInAdvance === 'number' ? maxDaysInAdvance : 3,
+        courtOpenTime: typeof courtOpenTime === 'number' ? courtOpenTime : 6,
+        courtCloseTime: typeof courtCloseTime === 'number' ? courtCloseTime : 23
       }
     });
 

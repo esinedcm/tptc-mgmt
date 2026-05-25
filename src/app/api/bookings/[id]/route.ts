@@ -92,6 +92,14 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'End time must be after start time' }, { status: 400 });
     }
 
+    const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+    const openHour = settings?.courtOpenTime ?? 6;
+    const closeHour = settings?.courtCloseTime ?? 23;
+
+    if (start.getHours() < openHour || end.getHours() > closeHour || (end.getHours() === closeHour && end.getMinutes() > 0)) {
+      return NextResponse.json({ error: `Courts are only open from ${openHour}:00 to ${closeHour}:00.` }, { status: 400 });
+    }
+
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: { court: true, participants: true, organizer: true }

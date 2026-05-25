@@ -17,6 +17,8 @@ model SystemSetting {
   cancellationCutoffMinutes Int      @default(90)
   maxHoursPerDay            Int      @default(2)
   maxDaysInAdvance          Int      @default(3)
+  courtOpenTime             Int      @default(6)
+  courtCloseTime            Int      @default(23)
   updatedAt                 DateTime @updatedAt
 }
 

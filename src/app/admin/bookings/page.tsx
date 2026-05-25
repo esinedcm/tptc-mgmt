@@ -4,6 +4,7 @@ import { verifyJwt } from '@/lib/auth';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { prisma } from '@/lib/prisma';
 
 export default async function AdminBookingsPage() {
   const cookieStore = await cookies();
@@ -12,6 +13,10 @@ export default async function AdminBookingsPage() {
 
   const payload = await verifyJwt(token);
   if (!payload || payload.role !== 'ADMIN') redirect('/login');
+
+  const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+  const openTime = settings?.courtOpenTime ?? 6;
+  const closeTime = settings?.courtCloseTime ?? 23;
 
   return (
     <div>
@@ -33,7 +38,7 @@ export default async function AdminBookingsPage() {
         </Link>
       </div>
 
-      <BookingCalendar isAdmin={true} currentUserId={payload.userId as string} />
+      <BookingCalendar isAdmin={true} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} />
     </div>
   );
 }

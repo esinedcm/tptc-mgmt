@@ -16,7 +16,7 @@ type Booking = {
   organizer: { id: string; firstName: string; lastName: string };
 };
 
-export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: boolean; currentUserId: string }) {
+export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, closeTime = 23 }: { isAdmin: boolean; currentUserId: string; openTime?: number; closeTime?: number }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -54,7 +54,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
 
   const [error, setError] = useState('');
 
-  const hours = Array.from({ length: 18 }, (_, i) => i + 6); // 6 AM to 11 PM
+  const hours = Array.from({ length: closeTime - openTime }, (_, i) => i + openTime);
 
   useEffect(() => {
     fetchCourtsAndBookings();

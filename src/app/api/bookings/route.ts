@@ -64,6 +64,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'End time must be after start time' }, { status: 400 });
     }
 
+    const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+    const openHour = settings?.courtOpenTime ?? 6;
+    const closeHour = settings?.courtCloseTime ?? 23;
+
+    if (start.getHours() < openHour || end.getHours() > closeHour || (end.getHours() === closeHour && end.getMinutes() > 0)) {
+      return NextResponse.json({ error: `Courts are only open from ${openHour}:00 to ${closeHour}:00.` }, { status: 400 });
+    }
+
     // Role-based constraints
     const isAdmin = payload.role === 'ADMIN';
     const bookingType = isAdmin && type ? type : 'MEMBER';
@@ -93,7 +101,6 @@ export async function POST(req: Request) {
     }
 
     if (!isAdmin) {
-      const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
       const maxDays = settings?.maxDaysInAdvance ?? 3;
       const maxMinutes = (settings?.maxHoursPerDay ?? 2) * 60;
 

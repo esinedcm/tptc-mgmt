@@ -16,6 +16,8 @@ export default async function BookCourtPage() {
   const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
   const maxHours = settings?.maxHoursPerDay ?? 2;
   const maxDays = settings?.maxDaysInAdvance ?? 3;
+  const openTime = settings?.courtOpenTime ?? 6;
+  const closeTime = settings?.courtCloseTime ?? 23;
 
   return (
     <div>
@@ -26,7 +28,7 @@ export default async function BookCourtPage() {
         </p>
       </div>
 
-      <BookingCalendar isAdmin={false} currentUserId={payload.userId as string} />
+      <BookingCalendar isAdmin={false} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} />
     </div>
   );
 }
