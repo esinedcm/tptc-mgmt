@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendProfileUpdatedEmail } from '@/lib/email';
 import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -75,67 +74,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     });
 
-    const changes: { field: string, oldVal: string, newVal: string }[] = [];
-    if (membership.membershipType !== membershipType) {
-      changes.push({ field: 'Membership Type', oldVal: membership.membershipType, newVal: membershipType });
-    }
-    if (membership.user.firstName !== firstName) {
-      changes.push({ field: 'First Name', oldVal: membership.user.firstName, newVal: firstName });
-    }
-    if (membership.user.lastName !== lastName) {
-      changes.push({ field: 'Last Name', oldVal: membership.user.lastName, newVal: lastName });
-    }
-    if (membership.user.email !== email) {
-      changes.push({ field: 'Email Address', oldVal: membership.user.email, newVal: email });
-    }
-    if ((membership.user.phoneNumber || '') !== (phoneNumber || '')) {
-      changes.push({ field: 'Phone Number', oldVal: membership.user.phoneNumber || '', newVal: phoneNumber || '' });
-    }
-    if ((membership.user.gender || '') !== (gender || '')) {
-      changes.push({ field: 'Gender', oldVal: membership.user.gender || '', newVal: gender || '' });
-    }
-    const oldDobStr = membership.user.dateOfBirth ? membership.user.dateOfBirth.toISOString().split('T')[0] : '';
-    const newDobStr = dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : '';
-    if (oldDobStr !== newDobStr) {
-      changes.push({ field: 'Date of Birth', oldVal: oldDobStr || '', newVal: newDobStr || '' });
-    }
-    if (membership.user.wantsFreeLessons !== (wantsFreeLessons || false)) {
-      changes.push({ field: 'Wants Free Lessons', oldVal: membership.user.wantsFreeLessons ? 'Yes' : 'No', newVal: wantsFreeLessons ? 'Yes' : 'No' });
-    }
-    if ((membership.user.streetNumber || '') !== (streetNumber || '')) {
-      changes.push({ field: 'Street No.', oldVal: membership.user.streetNumber || '', newVal: streetNumber || '' });
-    }
-    if ((membership.user.streetName || '') !== (streetName || '')) {
-      changes.push({ field: 'Street Name', oldVal: membership.user.streetName || '', newVal: streetName || '' });
-    }
-    if ((membership.user.city || '') !== (city || '')) {
-      changes.push({ field: 'City', oldVal: membership.user.city || '', newVal: city || '' });
-    }
-    if ((membership.user.postalCode || '') !== (postalCode || '')) {
-      changes.push({ field: 'Postal Code', oldVal: membership.user.postalCode || '', newVal: postalCode || '' });
-    }
-    if ((membership.user.tagNumber || '') !== (tagNumber || '')) {
-      changes.push({ field: 'Tag Number', oldVal: membership.user.tagNumber || '', newVal: tagNumber || '' });
-    }
-    if (membership.amountPaid !== (amountPaid ? parseFloat(amountPaid) : null)) {
-      changes.push({ field: 'Amount Paid', oldVal: String(membership.amountPaid || '0'), newVal: String(amountPaid || '0') });
-    }
-    if ((membership.paymentNotes || '') !== (paymentNotes || '')) {
-      changes.push({ field: 'Payment Notes', oldVal: membership.paymentNotes || '', newVal: paymentNotes || '' });
-    }
-    const oldDateStr = membership.paymentRecordedAt ? membership.paymentRecordedAt.toISOString().split('T')[0] : '';
-    const newDateStr = paymentRecordedAt ? new Date(paymentRecordedAt).toISOString().split('T')[0] : '';
-    if (oldDateStr !== newDateStr) {
-      changes.push({ field: 'Payment Date', oldVal: oldDateStr || 'None', newVal: newDateStr || 'None' });
-    }
-
-    let emailPreviewUrl = null;
-    if (changes.length > 0) {
-      // Send the email to their new email (or old if they didn't change it)
-      emailPreviewUrl = await sendProfileUpdatedEmail(email || membership.user.email, changes);
-    }
-
-    return NextResponse.json({ success: true, emailPreviewUrl }, { status: 200 });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error('Update membership error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
