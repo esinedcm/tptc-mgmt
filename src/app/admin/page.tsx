@@ -347,12 +347,12 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
             <p className="mt-1 text-sm text-gray-500">Manage memberships and track prospects.</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-2 md:gap-4">
             <Link
               href="/admin/bookings"
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
