@@ -118,8 +118,9 @@ export async function sendEditLinkEmail(recipientEmail: string, editToken: strin
     from: `"TPTC Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Registration Details & Edit Link",
-    text: `Thank you for registering! Your household (${memberNames.join(', ')}) is now pending approval. Your total amount due is $${totalDue}. You can edit your household registration at any time using this link: ${editUrl}`,
-    html: `<b>Thank you for registering!</b><br><p>Your household is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> ${memberNames.join(', ')}</li><li><b>Total Amount Due:</b> $${totalDue}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>tptcmembership@gmail.com</strong>.<br/>
+    text: `Thank you for registering! Your registration (${memberNames.join(', ')}) is now pending approval. Your total amount due is $${totalDue}.  Send your membership payment (ensure you include your first and last name in the message) via Etransfer to tptcmembership@gmail.com.
+ Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements. You can edit your household registration at any time using this link: ${editUrl}`,
+    html: `<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> ${memberNames.join(', ')}</li><li><b>Total Amount Due:</b> $${totalDue}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>tptcmembership@gmail.com</strong>.<br/>
 <strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href="${editUrl}">${editUrl}</a></p>`,
   });
 
