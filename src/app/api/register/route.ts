@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/hash';
-import { sendEditLinkEmail } from '@/lib/email';
+import { sendEditLinkEmail, sendAdminNewRegistrationEmail } from '@/lib/email';
 import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 import crypto from 'crypto';
 
@@ -188,6 +188,24 @@ export async function POST(request: Request) {
     const memberOneEmail = members[0].email;
     const memberNames = members.map(m => `${m.firstName} ${m.lastName}`);
     const emailPreviewUrl = await sendEditLinkEmail(memberOneEmail, finalEditToken, memberNames, totalDue);
+
+    // Notify all admins of the new registration (only if this is a NEW registration, not an edit)
+    if (!editToken) {
+      const admins = await prisma.user.findMany({
+        where: { role: 'ADMIN' },
+        select: { email: true }
+      });
+      
+      for (const admin of admins) {
+        if (admin.email) {
+          await sendAdminNewRegistrationEmail({
+            to: admin.email,
+            memberNames,
+            totalDue
+          });
+        }
+      }
+    }
 
     return NextResponse.json({ success: true, editToken: finalEditToken, emailPreviewUrl }, { status: 201 });
   } catch (error) {

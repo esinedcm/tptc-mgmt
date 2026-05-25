@@ -258,3 +258,35 @@ export async function sendInterestConfirmationEmail({
     html
   });
 }
+
+export async function sendAdminNewRegistrationEmail({
+  to,
+  memberNames,
+  totalDue,
+}: {
+  to: string;
+  memberNames: string[];
+  totalDue: number;
+}) {
+  const baseUrl = await getBaseUrl();
+  const adminDashboardLink = `${baseUrl}/admin`;
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">New Club Registration!</h2>
+      <p>A new household has submitted a registration and is pending approval.</p>
+      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Registered Members:</strong> ${memberNames.join(', ')}</p>
+        <p style="margin: 5px 0;"><strong>Total Amount Due:</strong> $${totalDue}</p>
+      </div>
+      <p>Please review the registration and payment status in the Admin Dashboard:</p>
+      <a href="${adminDashboardLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Go to Admin Dashboard</a>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject: 'New Registration - Pending Approval',
+    html
+  });
+}
