@@ -10,6 +10,7 @@ type MembershipPlan = {
   name: string;
   description: string;
   cost: number;
+  isArchived: boolean;
 };
 
 export function RegistrationForm({ initialEditToken, initialLeadId }: { initialEditToken?: string; initialLeadId?: string }) {
@@ -411,7 +412,9 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
                   name="membershipType" 
                   value={member.membershipType} 
                   onChange={(e) => handleMemberChange(index, e)} 
-                  options={plans.map(p => ({ value: p.name, label: `${p.name} ($${p.cost}) - ${p.description}` }))} 
+                  options={plans
+                    .filter(p => !p.isArchived || p.name === member.membershipType)
+                    .map(p => ({ value: p.name, label: `${p.name} ($${p.cost}) - ${p.description || ''}${p.isArchived ? ' (Archived)' : ''}` }))} 
                   required 
                 />
               </div>

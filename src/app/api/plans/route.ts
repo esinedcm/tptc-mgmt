@@ -5,7 +5,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    let plans = await prisma.membershipPlan.findMany();
+    let plans = await prisma.membershipPlan.findMany({
+      orderBy: { createdAt: 'asc' }
+    });
 
     if (plans.length === 0) {
       // Seed default plans
