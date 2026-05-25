@@ -117,6 +117,29 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     // Always include organizer
     const finalParticipantIds = Array.from(new Set([...(participantIds || []), booking.organizerId]));
 
+    const isAdmin = payload.role === 'ADMIN';
+
+    // Check if all participants (except maybe admin) have an active membership
+    const activeMembers = await prisma.user.findMany({
+      where: {
+        id: { in: finalParticipantIds },
+        memberships: {
+          some: { status: 'Active' }
+        }
+      },
+      select: { id: true }
+    });
+
+    const activeMemberIds = activeMembers.map(m => m.id);
+    const nonActiveParticipants = finalParticipantIds.filter(id => !activeMemberIds.includes(id as string));
+
+    if (nonActiveParticipants.length > 0) {
+      // If it's just the admin who isn't active, that's fine.
+      if (!(isAdmin && nonActiveParticipants.length === 1 && nonActiveParticipants[0] === payload.userId)) {
+        return NextResponse.json({ error: 'Only Active members can book courts or be added as playing partners.' }, { status: 400 });
+      }
+    }
+
     const updatedBooking = await prisma.booking.update({
       where: { id },
       data: {

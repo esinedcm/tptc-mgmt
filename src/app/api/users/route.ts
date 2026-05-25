@@ -27,7 +27,12 @@ export async function GET(req: Request) {
           { firstName: { contains: search, mode: 'insensitive' } },
           { lastName: { contains: search, mode: 'insensitive' } },
           { email: { contains: search, mode: 'insensitive' } },
-        ]
+        ],
+        memberships: {
+          some: {
+            status: 'Active'
+          }
+        }
       },
       select: {
         id: true,
