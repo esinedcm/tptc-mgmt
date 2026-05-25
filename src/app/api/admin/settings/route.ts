@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
     if (!settings) {
       settings = await prisma.systemSetting.create({
-        data: { id: 'global', cancellationCutoffMinutes: 90 }
+        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3 }
       });
     }
 
@@ -40,16 +40,22 @@ export async function PUT(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { cancellationCutoffMinutes } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance } = await req.json();
 
-    if (typeof cancellationCutoffMinutes !== 'number') {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
+    const updateData: any = {};
+    if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
+    if (typeof maxHoursPerDay === 'number') updateData.maxHoursPerDay = maxHoursPerDay;
+    if (typeof maxDaysInAdvance === 'number') updateData.maxDaysInAdvance = maxDaysInAdvance;
 
     const settings = await prisma.systemSetting.upsert({
       where: { id: 'global' },
-      update: { cancellationCutoffMinutes },
-      create: { id: 'global', cancellationCutoffMinutes }
+      update: updateData,
+      create: { 
+        id: 'global', 
+        cancellationCutoffMinutes: typeof cancellationCutoffMinutes === 'number' ? cancellationCutoffMinutes : 90,
+        maxHoursPerDay: typeof maxHoursPerDay === 'number' ? maxHoursPerDay : 2,
+        maxDaysInAdvance: typeof maxDaysInAdvance === 'number' ? maxDaysInAdvance : 3
+      }
     });
 
     return NextResponse.json({ success: true, settings }, { status: 200 });

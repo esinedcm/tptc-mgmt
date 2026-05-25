@@ -15,6 +15,8 @@ datasource db {
 model SystemSetting {
   id                        String   @id @default("global")
   cancellationCutoffMinutes Int      @default(90)
+  maxHoursPerDay            Int      @default(2)
+  maxDaysInAdvance          Int      @default(3)
   updatedAt                 DateTime @updatedAt
 }
 

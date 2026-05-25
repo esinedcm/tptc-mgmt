@@ -14,6 +14,8 @@ type MembershipPlan = {
 
 export default function AdminSettingsPage() {
   const [cutoffMinutes, setCutoffMinutes] = useState(90);
+  const [maxHoursPerDay, setMaxHoursPerDay] = useState(2);
+  const [maxDaysInAdvance, setMaxDaysInAdvance] = useState(3);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -35,6 +37,8 @@ export default function AdminSettingsPage() {
       .then(data => {
         if (data.settings) {
           setCutoffMinutes(data.settings.cancellationCutoffMinutes);
+          setMaxHoursPerDay(data.settings.maxHoursPerDay ?? 2);
+          setMaxDaysInAdvance(data.settings.maxDaysInAdvance ?? 3);
         }
         setLoading(false);
       })
@@ -62,7 +66,11 @@ export default function AdminSettingsPage() {
       const res = await fetch('/api/admin/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cancellationCutoffMinutes: cutoffMinutes })
+        body: JSON.stringify({ 
+          cancellationCutoffMinutes: cutoffMinutes,
+          maxHoursPerDay: maxHoursPerDay,
+          maxDaysInAdvance: maxDaysInAdvance
+        })
       });
       if (res.ok) {
         setMessage('Settings saved successfully!');
@@ -161,21 +169,60 @@ export default function AdminSettingsPage() {
       
       <div className="space-y-6">
         <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Court Booking Rules</h3>
-          <div className="flex flex-col space-y-2 max-w-md">
-            <label className="text-sm font-medium text-gray-700">Cancellation Cutoff (Minutes)</label>
-            <p className="text-sm text-gray-500 mb-2">
-              Members cannot cancel a booking if the start time is less than this many minutes away.
-            </p>
-            <div className="flex items-center space-x-3">
-              <input
-                type="number"
-                min="0"
-                value={cutoffMinutes}
-                onChange={(e) => setCutoffMinutes(parseInt(e.target.value) || 0)}
-                className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-              />
-              <span className="text-gray-600">minutes</span>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Court Booking Rules</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Cancellation Cutoff (Minutes)</label>
+              <p className="text-sm text-gray-500 mb-2">
+                Members cannot cancel a booking if the start time is less than this many minutes away.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="0"
+                  value={cutoffMinutes}
+                  onChange={(e) => setCutoffMinutes(parseInt(e.target.value) || 0)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">minutes</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Max Hours Per Day</label>
+              <p className="text-sm text-gray-500 mb-2">
+                The maximum number of hours a member can book courts per day.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="24"
+                  value={maxHoursPerDay}
+                  onChange={(e) => setMaxHoursPerDay(parseInt(e.target.value) || 1)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">hours</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Max Days in Advance</label>
+              <p className="text-sm text-gray-500 mb-2">
+                How many days into the future a member is allowed to book a court.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={maxDaysInAdvance}
+                  onChange={(e) => setMaxDaysInAdvance(parseInt(e.target.value) || 1)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">days</span>
+              </div>
             </div>
           </div>
         </div>

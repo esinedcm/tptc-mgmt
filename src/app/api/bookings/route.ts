@@ -93,15 +93,19 @@ export async function POST(req: Request) {
     }
 
     if (!isAdmin) {
-      // 1. Max 3 days in advance
-      const threeDaysFromNow = new Date();
-      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-      threeDaysFromNow.setHours(23, 59, 59, 999);
-      if (start > threeDaysFromNow) {
-        return NextResponse.json({ error: 'Members can only book up to 3 days in advance.' }, { status: 400 });
+      const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+      const maxDays = settings?.maxDaysInAdvance ?? 3;
+      const maxMinutes = (settings?.maxHoursPerDay ?? 2) * 60;
+
+      // 1. Max X days in advance
+      const advanceLimit = new Date();
+      advanceLimit.setDate(advanceLimit.getDate() + maxDays);
+      advanceLimit.setHours(23, 59, 59, 999);
+      if (start > advanceLimit) {
+        return NextResponse.json({ error: `Members can only book up to ${maxDays} days in advance.` }, { status: 400 });
       }
 
-      // 2. Max 2 hours per day
+      // 2. Max X hours per day
       const startOfDay = new Date(start);
       startOfDay.setHours(0, 0, 0, 0);
       const endOfDay = new Date(start);
@@ -122,8 +126,8 @@ export async function POST(req: Request) {
       }
 
       const newBookingMinutes = (end.getTime() - start.getTime()) / 60000;
-      if (totalMinutesBooked + newBookingMinutes > 120) {
-        return NextResponse.json({ error: 'Members can only book a maximum of 2 hours per day.' }, { status: 400 });
+      if (totalMinutesBooked + newBookingMinutes > maxMinutes) {
+        return NextResponse.json({ error: `Members can only book a maximum of ${maxMinutes / 60} hours per day.` }, { status: 400 });
       }
     }
 
