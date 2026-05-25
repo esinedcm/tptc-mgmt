@@ -20,6 +20,7 @@ type Membership = {
     tagNumber?: string;
     email: string;
     phoneNumber?: string;
+    role?: string;
     gender?: string;
     dateOfBirth?: string | Date;
     wantsFreeLessons?: boolean;
@@ -66,6 +67,7 @@ export default function AdminDashboard() {
     lastName: '',
     email: '',
     phoneNumber: '',
+    role: '',
     gender: '',
     dateOfBirth: '',
     wantsFreeLessons: false,
@@ -112,6 +114,7 @@ export default function AdminDashboard() {
       lastName: a.lastName,
       email: a.email,
       phoneNumber: a.phoneNumber || undefined,
+      role: undefined,
       gender: a.gender || undefined,
       dateOfBirth: a.dateOfBirth || undefined,
       wantsFreeLessons: a.wantsFreeLessons || false,
@@ -222,6 +225,7 @@ export default function AdminDashboard() {
       lastName: m.user.lastName,
       email: m.user.email,
       phoneNumber: m.user.phoneNumber || '',
+      role: m.user.role || 'MEMBER',
       gender: m.user.gender || '',
       dateOfBirth: m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toISOString().split('T')[0] : '',
       wantsFreeLessons: m.user.wantsFreeLessons || false,
@@ -603,13 +607,30 @@ export default function AdminDashboard() {
                                 onChange={e => setEditForm({ ...editForm, email: e.target.value })}
                                 placeholder="Email"
                               />
-                              <input 
-                                className={`border rounded px-2 py-1 text-sm w-full ${editErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
-                                value={editForm.phoneNumber}
-                                onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })}
-                                onBlur={handleEditBlur}
-                                placeholder="Phone Number"
-                              />
+                              <div className="flex gap-4">
+                                <div className="flex-1">
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Phone</label>
+                                  <input 
+                                    type="text"
+                                    className={`w-full border rounded px-2 py-1 text-sm ${editErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+                                    value={editForm.phoneNumber}
+                                    onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })}
+                                    onBlur={handleEditBlur}
+                                  />
+                                  {editErrors.phoneNumber && <span className="text-red-500 text-xs">{editErrors.phoneNumber}</span>}
+                                </div>
+                                <div className="flex-1">
+                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Role</label>
+                                  <select 
+                                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
+                                    value={editForm.role}
+                                    onChange={e => setEditForm({ ...editForm, role: e.target.value })}
+                                  >
+                                    <option value="MEMBER">Member</option>
+                                    <option value="ADMIN">Admin</option>
+                                  </select>
+                                </div>
+                              </div>
                               <div className="mt-2 flex items-center gap-2">
                                 <input 
                                   type="checkbox" 

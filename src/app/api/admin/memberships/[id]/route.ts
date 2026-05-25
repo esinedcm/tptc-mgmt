@@ -6,7 +6,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { firstName, lastName, email, phoneNumber, gender, dateOfBirth, wantsFreeLessons, membershipType, streetNumber, streetName, city, postalCode, tagNumber, amountPaid, paymentNotes, paymentRecordedAt } = body;
+    const { firstName, lastName, email, phoneNumber, role, gender, dateOfBirth, wantsFreeLessons, membershipType, streetNumber, streetName, city, postalCode, tagNumber, amountPaid, paymentNotes, paymentRecordedAt } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Membership ID is required' }, { status: 400 });
@@ -49,6 +49,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           lastName,
           email,
           phoneNumber,
+          role: role || undefined,
           gender,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
           wantsFreeLessons: wantsFreeLessons || false,

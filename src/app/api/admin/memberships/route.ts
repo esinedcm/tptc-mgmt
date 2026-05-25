@@ -22,6 +22,7 @@ export async function GET() {
             tagNumber: true,
             email: true,
             phoneNumber: true,
+            role: true,
             gender: true,
             dateOfBirth: true,
             wantsFreeLessons: true,
