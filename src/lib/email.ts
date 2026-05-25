@@ -174,15 +174,18 @@ export async function sendBookingEmail({
     endTime: Date;
     type: string;
     participantNames: string[];
+    bookedBy: string;
+    bookedAt: Date;
   }
 }) {
   const baseUrl = getBaseUrl();
   const portalLink = `${baseUrl}/portal/book`;
 
-  const { action, courtName, startTime, endTime, type, participantNames } = bookingDetails;
+  const { action, courtName, startTime, endTime, type, participantNames, bookedBy, bookedAt } = bookingDetails;
   
   const formattedStart = startTime.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
   const formattedEnd = endTime.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const formattedBookedAt = bookedAt.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
   
   let actionText = '';
   if (action === 'created') actionText = 'A new court booking has been made.';
@@ -198,6 +201,7 @@ export async function sendBookingEmail({
         <p style="margin: 5px 0;"><strong>Time:</strong> ${formattedStart} to ${formattedEnd}</p>
         <p style="margin: 5px 0;"><strong>Type:</strong> ${type}</p>
         <p style="margin: 5px 0;"><strong>Players:</strong> ${participantNames.join(', ')}</p>
+        <p style="margin: 5px 0; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;"><strong>Booked By:</strong> ${bookedBy} on ${formattedBookedAt}</p>
       </div>
       ${action !== 'cancelled' ? `<p><a href="${portalLink}" style="color: #4f46e5;">Manage your bookings in the Member Portal</a></p>` : ''}
     </div>

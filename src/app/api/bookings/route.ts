@@ -183,7 +183,8 @@ export async function POST(req: Request) {
         },
         include: {
           court: true,
-          participants: true
+          participants: true,
+          organizer: true
         }
       }))
     );
@@ -205,7 +206,9 @@ export async function POST(req: Request) {
               startTime: firstBooking.startTime,
               endTime: firstBooking.endTime,
               type: firstBooking.type,
-              participantNames
+              participantNames,
+              bookedBy: firstBooking.organizer ? `${firstBooking.organizer.firstName} ${firstBooking.organizer.lastName}` : 'System',
+              bookedAt: firstBooking.createdAt
             }
           });
         }

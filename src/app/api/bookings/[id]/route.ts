@@ -17,7 +17,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: { court: true, participants: true }
+      include: { court: true, participants: true, organizer: true }
     });
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
@@ -57,7 +57,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
             startTime: booking.startTime,
             endTime: booking.endTime,
             type: booking.type,
-            participantNames
+            participantNames,
+            bookedBy: booking.organizer ? `${booking.organizer.firstName} ${booking.organizer.lastName}` : 'System',
+            bookedAt: booking.createdAt
           }
         });
       }
@@ -92,7 +94,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: { court: true, participants: true }
+      include: { court: true, participants: true, organizer: true }
     });
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
@@ -129,7 +131,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       },
       include: {
         court: true,
-        participants: true
+        participants: true,
+        organizer: true
       }
     });
 
@@ -146,7 +149,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             startTime: updatedBooking.startTime,
             endTime: updatedBooking.endTime,
             type: updatedBooking.type,
-            participantNames
+            participantNames,
+            bookedBy: updatedBooking.organizer ? `${updatedBooking.organizer.firstName} ${updatedBooking.organizer.lastName}` : 'System',
+            bookedAt: updatedBooking.createdAt
           }
         });
       }
