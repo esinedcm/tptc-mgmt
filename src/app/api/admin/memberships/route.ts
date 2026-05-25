@@ -23,6 +23,8 @@ export async function GET() {
             email: true,
             phoneNumber: true,
             gender: true,
+            dateOfBirth: true,
+            wantsFreeLessons: true,
             streetNumber: true,
             streetName: true,
             city: true,
