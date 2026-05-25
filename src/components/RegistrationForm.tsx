@@ -13,7 +13,7 @@ type MembershipPlan = {
   isArchived: boolean;
 };
 
-export function RegistrationForm({ initialEditToken, initialLeadId }: { initialEditToken?: string; initialLeadId?: string }) {
+export function RegistrationForm({ initialEditToken, initialLeadId, genderOptions = ['Male', 'Female', 'Prefer not to say'] }: { initialEditToken?: string; initialLeadId?: string; genderOptions?: string[] }) {
   const [address, setAddress] = useState({
     streetNumber: '',
     streetName: '',
@@ -401,7 +401,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
                   name="gender" 
                   value={member.gender} 
                   onChange={(e) => handleMemberChange(index, e)} 
-                  options={[{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }, { value: 'Other', label: 'Other/Prefer not to say' }]} 
+                  options={genderOptions.map(g => ({ value: g, label: g }))} 
                   required 
                 />
               </div>

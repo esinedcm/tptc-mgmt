@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
   const [maxDaysInAdvance, setMaxDaysInAdvance] = useState(3);
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
+  const [genderOptions, setGenderOptions] = useState('Male, Female, Prefer not to say');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -43,6 +44,9 @@ export default function AdminSettingsPage() {
           setMaxDaysInAdvance(data.settings.maxDaysInAdvance ?? 3);
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
+          if (data.settings.genderOptions && Array.isArray(data.settings.genderOptions)) {
+            setGenderOptions(data.settings.genderOptions.join(', '));
+          }
         }
         setLoading(false);
       })
@@ -75,7 +79,8 @@ export default function AdminSettingsPage() {
           maxHoursPerDay: maxHoursPerDay,
           maxDaysInAdvance: maxDaysInAdvance,
           courtOpenTime: courtOpenTime,
-          courtCloseTime: courtCloseTime
+          courtCloseTime: courtCloseTime,
+          genderOptions: genderOptions.split(',').map(g => g.trim()).filter(Boolean)
         })
       });
       if (res.ok) {
@@ -272,6 +277,24 @@ export default function AdminSettingsPage() {
                 <span className="text-gray-600">:00</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <div className="border-b pb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Registration Options</h3>
+          
+          <div className="flex flex-col space-y-2 max-w-lg">
+            <label className="text-sm font-medium text-gray-700">Gender Options</label>
+            <p className="text-sm text-gray-500 mb-2">
+              Comma-separated list of gender options available during registration.
+            </p>
+            <input
+              type="text"
+              value={genderOptions}
+              onChange={(e) => setGenderOptions(e.target.value)}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+              placeholder="e.g. Male, Female, Non-Binary"
+            />
           </div>
         </div>
 

@@ -19,6 +19,7 @@ model SystemSetting {
   maxDaysInAdvance          Int      @default(3)
   courtOpenTime             Int      @default(6)
   courtCloseTime            Int      @default(23)
+  genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   updatedAt                 DateTime @updatedAt
 }
 

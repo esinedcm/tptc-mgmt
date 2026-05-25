@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
     if (!settings) {
       settings = await prisma.systemSetting.create({
-        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3, courtOpenTime: 6, courtCloseTime: 23 }
+        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3, courtOpenTime: 6, courtCloseTime: 23, genderOptions: ['Male', 'Female', 'Prefer not to say'] }
       });
     }
 
@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, genderOptions } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -48,6 +48,7 @@ export async function PUT(req: Request) {
     if (typeof maxDaysInAdvance === 'number') updateData.maxDaysInAdvance = maxDaysInAdvance;
     if (typeof courtOpenTime === 'number') updateData.courtOpenTime = courtOpenTime;
     if (typeof courtCloseTime === 'number') updateData.courtCloseTime = courtCloseTime;
+    if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
 
     const settings = await prisma.systemSetting.upsert({
       where: { id: 'global' },
@@ -58,7 +59,8 @@ export async function PUT(req: Request) {
         maxHoursPerDay: typeof maxHoursPerDay === 'number' ? maxHoursPerDay : 2,
         maxDaysInAdvance: typeof maxDaysInAdvance === 'number' ? maxDaysInAdvance : 3,
         courtOpenTime: typeof courtOpenTime === 'number' ? courtOpenTime : 6,
-        courtCloseTime: typeof courtCloseTime === 'number' ? courtCloseTime : 23
+        courtCloseTime: typeof courtCloseTime === 'number' ? courtCloseTime : 23,
+        genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say']
       }
     });
 
