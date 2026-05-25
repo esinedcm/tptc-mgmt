@@ -2,10 +2,24 @@ import nodemailer from 'nodemailer';
 
 let transporter: nodemailer.Transporter | null = null;
 
-const getBaseUrl = () => {
+import { headers } from 'next/headers';
+
+const getBaseUrl = async () => {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL;
   }
+  
+  try {
+    const headersList = await headers();
+    const host = headersList.get('host');
+    const protocol = headersList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    if (host) {
+      return `${protocol}://${host}`;
+    }
+  } catch (e) {
+    // headers() might throw if called outside a request context
+  }
+
   if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
     return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
   }
@@ -84,7 +98,7 @@ export async function sendWelcomeEmail({
   firstName: string;
   memberNumber?: string | null;
 }) {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const loginLink = `${baseUrl}/login`;
 
   const memberNumberText = memberNumber ? `<p>Your official Member Number is: <strong>${memberNumber}</strong></p>` : '';
@@ -111,7 +125,7 @@ export async function sendWelcomeEmail({
 
 export async function sendEditLinkEmail(recipientEmail: string, editToken: string, memberNames: string[] = [], totalDue: number = 0) {
   const mailer = await getTransporter();
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const editUrl = `${baseUrl}/register?editToken=${editToken}`;
 
   const info = await mailer.sendMail({
@@ -178,7 +192,7 @@ export async function sendBookingEmail({
     bookedAt: Date;
   }
 }) {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const portalLink = `${baseUrl}/portal/book`;
 
   const { action, courtName, startTime, endTime, type, participantNames, bookedBy, bookedAt } = bookingDetails;
@@ -223,7 +237,7 @@ export async function sendInterestConfirmationEmail({
   firstName: string;
   leadId: string;
 }) {
-  const baseUrl = getBaseUrl();
+  const baseUrl = await getBaseUrl();
   const registerLink = `${baseUrl}/register?leadId=${leadId}`;
 
   const html = `
