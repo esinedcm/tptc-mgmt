@@ -109,7 +109,7 @@ export async function sendWelcomeEmail({
       <p>Hi ${firstName},</p>
       <p>Great news! Your club membership has been approved and activated.</p>
       ${memberNumberText}
-      <p>You can now log into the Member Portal to view your status, update your contact details, and (coming soon) book tennis courts!</p>
+      <p>You can now log into the Member Portal to view your status, update your contact details, and book tennis courts!</p>
       <a href="${loginLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Log In to Member Portal</a>
       <p>If you haven't set a password yet, simply click the "Forgot your password?" link on the login page.</p>
       <p>See you on the courts!</p>
@@ -244,8 +244,8 @@ export async function sendInterestConfirmationEmail({
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #4f46e5;">Thanks for your interest in Thomson Park Tennis Club!</h2>
       <p>Hi ${firstName},</p>
-      <p>We've received your information and are thrilled you're interested in joining our community.</p>
-      <p>A club administrator will review your details and reach out soon if they need any more information.</p>
+      <p>We've received your information and are thrilled you're interested in joining our Club.</p>
+      <p>We hope you make TPTC your home this season, and together we will continue to build upon a great tradition of excellence in Scarborough.</p>
       <p>If you're ready to take the next step and officially register your household, you can do so at any time using the link below:</p>
       <a href="${registerLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Register for the Club</a>
       <p>We look forward to seeing you on the courts!</p>
