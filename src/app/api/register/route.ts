@@ -22,6 +22,7 @@ export async function POST(request: Request) {
         password?: string;
         gender: string;
         dateOfBirth: string;
+        wantsFreeLessons?: boolean;
         membershipType: string;
       }[];
       editToken?: string;
@@ -126,6 +127,7 @@ export async function POST(request: Request) {
                phoneNumber: member.phoneNumber,
                gender: member.gender,
                dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
+               wantsFreeLessons: member.wantsFreeLessons || false,
                streetNumber: address.streetNumber,
                streetName: address.streetName,
                city: address.city,

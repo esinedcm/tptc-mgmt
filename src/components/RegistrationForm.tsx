@@ -28,6 +28,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
     phoneNumber: '',
     gender: '',
     dateOfBirth: '',
+    wantsFreeLessons: false,
     membershipType: '',
   }]);
 
@@ -66,7 +67,8 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
             // Format dates for input type="date"
             const formattedMembers = data.members.map((m: any) => ({
               ...m,
-              dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : ''
+              dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : '',
+              wantsFreeLessons: !!m.wantsFreeLessons
             }));
             setMembers(formattedMembers);
           }
@@ -85,6 +87,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
               phoneNumber: data.lead.phoneNumber || '',
               gender: data.lead.gender || '',
               dateOfBirth: '',
+              wantsFreeLessons: false,
               membershipType: '',
             }]);
           }
@@ -99,10 +102,14 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
   };
 
   const handleMemberChange = (index: number, e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    let finalValue: string | boolean = value;
+    if (type === 'checkbox') {
+      finalValue = (e.target as HTMLInputElement).checked;
+    }
     setMembers((prev) => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], [name]: value };
+      updated[index] = { ...updated[index], [name]: finalValue };
       return updated;
     });
   };
@@ -111,7 +118,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
     e.preventDefault();
     setMembers((prev) => [
       ...prev,
-      { firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', membershipType: '' }
+      { firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', wantsFreeLessons: false, membershipType: '' }
     ]);
   };
 
@@ -315,7 +322,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
           <button 
             onClick={() => {
               setAddress({ streetNumber: '', streetName: '', city: '', postalCode: '' });
-              setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', membershipType: '' }]);
+              setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', wantsFreeLessons: false, membershipType: '' }]);
               setSuccess(false);
             }}
             className="px-6 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition-colors"
@@ -407,6 +414,19 @@ export function RegistrationForm({ initialEditToken, initialLeadId }: { initialE
                   options={plans.map(p => ({ value: p.name, label: `${p.name} ($${p.cost}) - ${p.description}` }))} 
                   required 
                 />
+              </div>
+              <div className="mt-4 flex items-center gap-2">
+                <input 
+                  type="checkbox" 
+                  id={`free-lessons-${index}`}
+                  name="wantsFreeLessons"
+                  checked={member.wantsFreeLessons}
+                  onChange={(e) => handleMemberChange(index, e)}
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label htmlFor={`free-lessons-${index}`} className="text-sm font-medium text-gray-700">
+                  I am interested in free tennis lessons
+                </label>
               </div>
             </div>
           ))}

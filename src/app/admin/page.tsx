@@ -22,6 +22,7 @@ type Membership = {
     phoneNumber?: string;
     gender?: string;
     dateOfBirth?: string | Date;
+    wantsFreeLessons?: boolean;
     streetNumber?: string;
     streetName?: string;
     city?: string;
@@ -67,6 +68,7 @@ export default function AdminDashboard() {
     phoneNumber: '',
     gender: '',
     dateOfBirth: '',
+    wantsFreeLessons: false,
     membershipType: '',
     streetNumber: '',
     streetName: '',
@@ -112,6 +114,7 @@ export default function AdminDashboard() {
       phoneNumber: a.phoneNumber || undefined,
       gender: a.gender || undefined,
       dateOfBirth: a.dateOfBirth || undefined,
+      wantsFreeLessons: a.wantsFreeLessons || false,
       memberNumber: undefined,
       tagNumber: undefined,
       streetNumber: undefined,
@@ -221,6 +224,7 @@ export default function AdminDashboard() {
       phoneNumber: m.user.phoneNumber || '',
       gender: m.user.gender || '',
       dateOfBirth: m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toISOString().split('T')[0] : '',
+      wantsFreeLessons: m.user.wantsFreeLessons || false,
       membershipType: m.membershipType,
       streetNumber: m.user.streetNumber || '',
       streetName: m.user.streetName || '',
@@ -253,6 +257,24 @@ export default function AdminDashboard() {
       } else {
         setEditErrors(prev => ({ ...prev, phoneNumber: '' }));
       }
+    }
+  };
+
+  const handleExportLessons = async () => {
+    try {
+      const res = await fetch('/api/admin/export-lessons');
+      if (!res.ok) throw new Error('Failed to export');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `free-lessons-interest-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      alert('Failed to export lessons list');
     }
   };
 
@@ -427,26 +449,34 @@ export default function AdminDashboard() {
               </button>
             ))}
           </div>
-          <div className="w-full md:w-64 relative">
-            <input
-              type="text"
-              placeholder="Search by name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-                aria-label="Clear search"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            )}
+          <div className="flex gap-4 items-center">
+            <div className="w-full md:w-64 relative">
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  aria-label="Clear search"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              )}
+            </div>
+            <button
+              onClick={handleExportLessons}
+              className="px-4 py-2 bg-orange-100 text-orange-700 hover:bg-orange-200 font-medium rounded-md text-sm border border-orange-200 transition-colors flex items-center gap-2 whitespace-nowrap"
+            >
+              🎾 Export Lessons List
+            </button>
           </div>
         </div>
 
@@ -580,7 +610,16 @@ export default function AdminDashboard() {
                                 onBlur={handleEditBlur}
                                 placeholder="Phone Number"
                               />
-                              {editErrors.phoneNumber && <span className="text-xs text-red-500">{editErrors.phoneNumber}</span>}
+                              <div className="mt-2 flex items-center gap-2">
+                                <input 
+                                  type="checkbox" 
+                                  className="w-4 h-4 text-blue-600" 
+                                  checked={editForm.wantsFreeLessons} 
+                                  onChange={e => setEditForm({...editForm, wantsFreeLessons: e.target.checked})} 
+                                />
+                                <span className="text-xs text-gray-700">Wants Free Lessons</span>
+                              </div>
+                              {editErrors.phoneNumber && <div className="text-red-500 text-xs mt-1">{editErrors.phoneNumber}</div>}
                               <select
                                 className="border border-gray-300 rounded px-2 py-1 text-sm w-full bg-white"
                                 value={editForm.gender}
@@ -677,6 +716,11 @@ export default function AdminDashboard() {
                             {m.membershipType === 'Family' && m.user.householdId && (
                               <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200" title="Family Group Identifier">
                                 Group: {m.user.householdId.substring(0, 6).toUpperCase()}
+                              </span>
+                            )}
+                            {m.user.wantsFreeLessons && (
+                              <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200" title="Wants Free Lessons">
+                                🎾 Lessons
                               </span>
                             )}
                           </div>

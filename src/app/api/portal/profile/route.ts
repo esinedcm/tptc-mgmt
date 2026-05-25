@@ -19,7 +19,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { phoneNumber, streetNumber, streetName, city, postalCode } = body;
+    const { firstName, lastName, phoneNumber, gender, streetNumber, streetName, city, postalCode, wantsFreeLessons } = body;
 
     if (postalCode && !isValidPostalCode(postalCode)) {
       return NextResponse.json({ error: 'Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).' }, { status: 400 });
@@ -32,7 +32,11 @@ export async function PATCH(req: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: payload.userId as string },
       data: {
+        firstName,
+        lastName,
         phoneNumber,
+        gender,
+        wantsFreeLessons,
         streetNumber,
         streetName,
         city,

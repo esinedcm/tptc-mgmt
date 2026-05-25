@@ -31,6 +31,7 @@ model User {
   phoneNumber  String?
   gender       String?
   dateOfBirth  DateTime?
+  wantsFreeLessons Boolean @default(false)
   householdId  String?
   tagNumber    String?
   memberNumber String?      @unique
@@ -87,6 +88,7 @@ model ArchivedMembership {
   phoneNumber          String?
   gender               String?
   dateOfBirth          DateTime?
+  wantsFreeLessons     Boolean   @default(false)
   membershipType       String
   status               String
   amountPaid           Float?

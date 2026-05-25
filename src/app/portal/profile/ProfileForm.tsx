@@ -10,6 +10,7 @@ type ProfileData = {
   city: string;
   postalCode: string;
   dateOfBirth: string | null;
+  wantsFreeLessons: boolean;
 };
 
 export function ProfileForm({ initialData }: { initialData: ProfileData }) {
@@ -62,9 +63,9 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
 
     try {
       const res = await fetch('/api/portal/profile', {
-        method: 'PATCH',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (!res.ok) {
@@ -112,6 +113,22 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
           {formData.dateOfBirth || 'Not provided'}
         </div>
         <p className="mt-1 text-xs text-gray-500">Contact an administrator to change your date of birth.</p>
+      </div>
+
+      <div className="md:col-span-3">
+        <div className="flex items-center gap-2">
+          <input 
+            type="checkbox" 
+            id="wantsFreeLessons"
+            name="wantsFreeLessons"
+            checked={formData.wantsFreeLessons}
+            onChange={(e) => setFormData(prev => ({ ...prev, wantsFreeLessons: e.target.checked }))}
+            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          />
+          <label htmlFor="wantsFreeLessons" className="text-sm font-medium text-gray-700">
+            I am interested in free tennis lessons
+          </label>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

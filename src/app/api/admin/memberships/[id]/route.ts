@@ -7,7 +7,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { firstName, lastName, email, phoneNumber, gender, dateOfBirth, membershipType, streetNumber, streetName, city, postalCode, tagNumber, amountPaid, paymentNotes, paymentRecordedAt } = body;
+    const { firstName, lastName, email, phoneNumber, gender, dateOfBirth, wantsFreeLessons, membershipType, streetNumber, streetName, city, postalCode, tagNumber, amountPaid, paymentNotes, paymentRecordedAt } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Membership ID is required' }, { status: 400 });
@@ -52,6 +52,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           phoneNumber,
           gender,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          wantsFreeLessons: wantsFreeLessons || false,
           streetNumber,
           streetName,
           city,
@@ -97,6 +98,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const newDobStr = dateOfBirth ? new Date(dateOfBirth).toISOString().split('T')[0] : '';
     if (oldDobStr !== newDobStr) {
       changes.push({ field: 'Date of Birth', oldVal: oldDobStr || '', newVal: newDobStr || '' });
+    }
+    if (membership.user.wantsFreeLessons !== (wantsFreeLessons || false)) {
+      changes.push({ field: 'Wants Free Lessons', oldVal: membership.user.wantsFreeLessons ? 'Yes' : 'No', newVal: wantsFreeLessons ? 'Yes' : 'No' });
     }
     if ((membership.user.streetNumber || '') !== (streetNumber || '')) {
       changes.push({ field: 'Street No.', oldVal: membership.user.streetNumber || '', newVal: streetNumber || '' });
@@ -168,6 +172,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
           phoneNumber: membership.user.phoneNumber,
           gender: membership.user.gender,
           dateOfBirth: membership.user.dateOfBirth,
+          wantsFreeLessons: membership.user.wantsFreeLessons,
           membershipType: membership.membershipType,
           status: membership.status,
           amountPaid: membership.amountPaid,
