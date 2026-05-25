@@ -142,7 +142,7 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
       }
       
       // Update URL with the date and reload so they stay on the correct day
-      const dateString = currentDate.toISOString().split('T')[0];
+      const dateString = selectedStartTime.getFullYear() + '-' + String(selectedStartTime.getMonth() + 1).padStart(2, '0') + '-' + String(selectedStartTime.getDate()).padStart(2, '0');
       window.location.href = `${pathname}?date=${dateString}`;
     } catch (err: any) {
       setError(err.message);
@@ -292,6 +292,33 @@ export default function BookingCalendar({ isAdmin, currentUserId }: { isAdmin: b
             {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
             
             <form onSubmit={handleCreateBooking} className="space-y-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Date</label>
+                <input 
+                  type="date"
+                  required
+                  value={selectedStartTime ? selectedStartTime.getFullYear() + '-' + String(selectedStartTime.getMonth() + 1).padStart(2, '0') + '-' + String(selectedStartTime.getDate()).padStart(2, '0') : ''}
+                  onChange={(e) => {
+                    if (!selectedStartTime || !selectedEndTime) return;
+                    const dateParts = e.target.value.split('-');
+                    if (dateParts.length !== 3) return;
+                    
+                    const year = parseInt(dateParts[0]);
+                    const month = parseInt(dateParts[1]) - 1;
+                    const day = parseInt(dateParts[2]);
+
+                    const newStart = new Date(selectedStartTime);
+                    newStart.setFullYear(year, month, day);
+                    setSelectedStartTime(newStart);
+                    
+                    const newEnd = new Date(selectedEndTime);
+                    newEnd.setFullYear(year, month, day);
+                    setSelectedEndTime(newEnd);
+                  }}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
