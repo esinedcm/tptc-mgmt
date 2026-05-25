@@ -78,7 +78,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const token = cookieStore.get('auth_token')?.value;
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const payload = await verifyJwt(token);
-    if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const isAdmin = payload.role === 'ADMIN';
 
     const { id } = await params;
     if (!id) return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
@@ -107,6 +108,46 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
+    if (!isAdmin && booking.organizerId !== payload.userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    if (!isAdmin) {
+      const maxDays = settings?.maxDaysInAdvance ?? 3;
+      const maxMinutes = (settings?.maxHoursPerDay ?? 2) * 60;
+
+      // Check days in advance
+      const daysAhead = (start.getTime() - new Date().getTime()) / (1000 * 3600 * 24);
+      if (daysAhead > maxDays) {
+        return NextResponse.json({ error: `Members can only book up to ${maxDays} days in advance.` }, { status: 400 });
+      }
+
+      // Check daily limit (excluding this exact booking)
+      const startOfDay = new Date(start);
+      startOfDay.setHours(0,0,0,0);
+      const endOfDay = new Date(start);
+      endOfDay.setHours(23,59,59,999);
+
+      const existingBookings = await prisma.booking.findMany({
+        where: {
+          organizerId: payload.userId as string,
+          status: 'ACTIVE',
+          startTime: { gte: startOfDay },
+          endTime: { lte: endOfDay },
+          id: { not: id } // Exclude the current booking we are editing
+        }
+      });
+
+      let totalMinutes = (end.getTime() - start.getTime()) / 60000;
+      for (const b of existingBookings) {
+        totalMinutes += (new Date(b.endTime).getTime() - new Date(b.startTime).getTime()) / 60000;
+      }
+
+      if (totalMinutes > maxMinutes) {
+        return NextResponse.json({ error: `You cannot book more than ${maxMinutes / 60} hours per day.` }, { status: 400 });
+      }
+    }
+
     // Check overlaps excluding current booking
     const overlapping = await prisma.booking.findFirst({
       where: {
@@ -124,8 +165,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
     // Always include organizer
     const finalParticipantIds = Array.from(new Set([...(participantIds || []), booking.organizerId]));
-
-    const isAdmin = payload.role === 'ADMIN';
 
     // Check if all participants (except maybe admin) have an active membership
     const activeMembers = await prisma.user.findMany({

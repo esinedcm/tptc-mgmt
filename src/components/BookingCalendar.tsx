@@ -528,7 +528,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t">
-              {isAdmin && (
+              {(isAdmin || viewBooking.organizer.id === currentUserId) && (
                 <button 
                   type="button" 
                   onClick={() => {
