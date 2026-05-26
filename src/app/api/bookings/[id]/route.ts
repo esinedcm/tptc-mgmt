@@ -94,11 +94,19 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     }
 
     const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
-    const openHour = settings?.courtOpenTime ?? 6;
-    const closeHour = settings?.courtCloseTime ?? 23;
+    let openHour = settings?.courtOpenTime ?? 6;
+    let closeHour = settings?.courtCloseTime ?? 23;
+
+    if (courtId) {
+      const courtInfo = await prisma.court.findUnique({ where: { id: courtId } });
+      if (courtInfo) {
+        if (typeof courtInfo.openTime === 'number') openHour = courtInfo.openTime;
+        if (typeof courtInfo.closeTime === 'number') closeHour = courtInfo.closeTime;
+      }
+    }
 
     if (start.getHours() < openHour || end.getHours() > closeHour || (end.getHours() === closeHour && end.getMinutes() > 0)) {
-      return NextResponse.json({ error: `Courts are only open from ${openHour}:00 to ${closeHour}:00.` }, { status: 400 });
+      return NextResponse.json({ error: `This court is only open from ${openHour}:00 to ${closeHour}:00.` }, { status: 400 });
     }
 
     const booking = await prisma.booking.findUnique({

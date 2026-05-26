@@ -12,6 +12,13 @@ type MembershipPlan = {
   isArchived: boolean;
 };
 
+type Court = {
+  id: string;
+  name: string;
+  openTime: number | null;
+  closeTime: number | null;
+};
+
 export default function AdminSettingsPage() {
   const [cutoffMinutes, setCutoffMinutes] = useState(90);
   const [maxHoursPerDay, setMaxHoursPerDay] = useState(2);
@@ -33,6 +40,24 @@ export default function AdminSettingsPage() {
   // For editing an existing plan
   const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
   const [editPlanForm, setEditPlanForm] = useState<Partial<MembershipPlan>>({});
+
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [courtsLoading, setCourtsLoading] = useState(true);
+  const [newCourt, setNewCourt] = useState({ name: '', openTime: '', closeTime: '' });
+  const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
+  const [editCourtForm, setEditCourtForm] = useState<Partial<Court>>({});
+
+  const fetchCourts = async () => {
+    try {
+      const res = await fetch('/api/admin/courts');
+      const data = await res.json();
+      if (data.courts) setCourts(data.courts);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setCourtsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/admin/settings')
@@ -65,6 +90,8 @@ export default function AdminSettingsPage() {
         console.error(err);
         setPlansLoading(false);
       });
+
+    fetchCourts();
   }, []);
 
   const handleSave = async () => {
@@ -161,7 +188,82 @@ export default function AdminSettingsPage() {
     }
   };
 
-  if (loading || plansLoading) return <div className="p-8">Loading settings...</div>;
+  const handleSaveNewCourt = async () => {
+    if (!newCourt.name) return alert('Name is required');
+    try {
+      const res = await fetch('/api/admin/courts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newCourt.name,
+          openTime: newCourt.openTime ? parseInt(newCourt.openTime) : null,
+          closeTime: newCourt.closeTime ? parseInt(newCourt.closeTime) : null,
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCourts([...courts, data.court]);
+        setNewCourt({ name: '', openTime: '', closeTime: '' });
+      } else {
+        const data = await res.json();
+        alert(`Failed to save new court: ${data.error}`);
+      }
+    } catch (err) {
+      alert('Error saving court');
+    }
+  };
+
+  const handleStartEditCourt = (court: Court) => {
+    setEditingCourtId(court.id);
+    setEditCourtForm({
+      ...court,
+      openTime: court.openTime ?? undefined,
+      closeTime: court.closeTime ?? undefined,
+    });
+  };
+
+  const handleSaveEditCourt = async () => {
+    if (!editingCourtId || !editCourtForm.name) return;
+    try {
+      const res = await fetch(`/api/admin/courts/${editingCourtId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editCourtForm.name,
+          openTime: editCourtForm.openTime ? Number(editCourtForm.openTime) : null,
+          closeTime: editCourtForm.closeTime ? Number(editCourtForm.closeTime) : null,
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCourts(courts.map(c => c.id === editingCourtId ? data.court : c));
+        setEditingCourtId(null);
+      } else {
+        alert('Failed to update court');
+      }
+    } catch (err) {
+      alert('Error updating court');
+    }
+  };
+
+  const handleDeleteCourt = async (court: Court) => {
+    if (!confirm(`Are you sure you want to delete ${court.name}? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`/api/admin/courts/${court.id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setCourts(courts.filter(c => c.id !== court.id));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete court');
+      }
+    } catch (err) {
+      alert('Error deleting court');
+    }
+  };
+
+  if (loading || plansLoading || courtsLoading) return <div className="p-8">Loading settings...</div>;
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6 max-w-2xl mx-auto mt-8">
@@ -408,6 +510,102 @@ export default function AdminSettingsPage() {
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {savingPlan ? 'Adding...' : 'Add Plan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Courts Management</h3>
+          <div className="space-y-4 mb-6">
+            {courts.map(court => (
+              <div key={court.id} className="border border-gray-200 rounded-md p-4 flex justify-between items-start bg-gray-50">
+                {editingCourtId === court.id ? (
+                  <div className="w-full flex flex-col space-y-3">
+                    <input 
+                      className="border border-gray-300 rounded-md px-2 py-1 text-sm font-medium text-gray-900 w-full"
+                      value={editCourtForm.name}
+                      onChange={e => setEditCourtForm({...editCourtForm, name: e.target.value})}
+                      placeholder="Court Name"
+                    />
+                    <div className="flex items-center space-x-3 text-sm text-gray-600">
+                      <span>Open Time:</span>
+                      <input 
+                        type="number"
+                        min="0" max="23"
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                        value={editCourtForm.openTime ?? ''}
+                        onChange={e => setEditCourtForm({...editCourtForm, openTime: parseInt(e.target.value)})}
+                        placeholder="Global"
+                      />
+                      <span>Close Time:</span>
+                      <input 
+                        type="number"
+                        min="0" max="23"
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                        value={editCourtForm.closeTime ?? ''}
+                        onChange={e => setEditCourtForm({...editCourtForm, closeTime: parseInt(e.target.value)})}
+                        placeholder="Global"
+                      />
+                    </div>
+                    <div className="flex space-x-2 pt-2">
+                      <button onClick={handleSaveEditCourt} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Save</button>
+                      <button onClick={() => setEditingCourtId(null)} className="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <h4 className="text-base font-medium text-gray-900">{court.name}</h4>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Hours: {court.openTime ?? 'Global'} to {court.closeTime ?? 'Global'}
+                      </div>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button onClick={() => handleStartEditCourt(court)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Edit</button>
+                      <button onClick={() => handleDeleteCourt(court)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {courts.length === 0 && <p className="text-sm text-gray-500 italic">No courts found.</p>}
+          </div>
+
+          <div className="bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Add New Court</h4>
+            <div className="flex flex-col space-y-3">
+              <input 
+                className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
+                value={newCourt.name}
+                onChange={e => setNewCourt({...newCourt, name: e.target.value})}
+                placeholder="Court Name (e.g. Center Court)"
+              />
+              <div className="flex items-center space-x-3">
+                <input 
+                  type="number" min="0" max="23"
+                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
+                  value={newCourt.openTime}
+                  onChange={e => setNewCourt({...newCourt, openTime: e.target.value})}
+                  placeholder="Open Hour"
+                />
+                <input 
+                  type="number" min="0" max="23"
+                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
+                  value={newCourt.closeTime}
+                  onChange={e => setNewCourt({...newCourt, closeTime: e.target.value})}
+                  placeholder="Close Hour"
+                />
+              </div>
+              <p className="text-xs text-gray-500">Leave hours blank to use global settings.</p>
+              <div className="flex justify-end pt-1">
+                <button 
+                  onClick={handleSaveNewCourt}
+                  disabled={!newCourt.name}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Add Court
                 </button>
               </div>
             </div>

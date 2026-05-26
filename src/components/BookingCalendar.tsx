@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
-type Court = { id: string; name: string };
+type Court = { id: string; name: string; openTime: number | null; closeTime: number | null };
 type User = { id: string; firstName: string; lastName: string; email: string };
 type Booking = {
   id: string;
@@ -321,36 +321,64 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Start Time</label>
-                  <input 
-                    type="time" 
-                    required
-                    value={selectedStartTime ? selectedStartTime.toTimeString().slice(0,5) : ''}
-                    onChange={(e) => {
-                      if (!selectedStartTime) return;
-                      const [h, m] = e.target.value.split(':');
-                      const d = new Date(selectedStartTime);
-                      d.setHours(parseInt(h), parseInt(m));
-                      setSelectedStartTime(d);
-                    }}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-                  />
+                  {(() => {
+                    const selectedCourtInfo = courts.find(c => c.id === selectedCourtId);
+                    const dynamicOpenHour = selectedCourtInfo?.openTime ?? openTime;
+                    const dynamicCloseHour = selectedCourtInfo?.closeTime ?? closeTime;
+                    const minTime = `${String(dynamicOpenHour).padStart(2, '0')}:00`;
+                    const maxTime = `${String(dynamicCloseHour).padStart(2, '0')}:00`;
+                    
+                    return (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                        <input 
+                          type="time" 
+                          required
+                          min={minTime}
+                          max={maxTime}
+                          value={selectedStartTime ? selectedStartTime.toTimeString().slice(0,5) : ''}
+                          onChange={(e) => {
+                            if (!selectedStartTime) return;
+                            const [h, m] = e.target.value.split(':');
+                            const d = new Date(selectedStartTime);
+                            d.setHours(parseInt(h), parseInt(m));
+                            setSelectedStartTime(d);
+                          }}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                        />
+                      </>
+                    );
+                  })()}
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">End Time</label>
-                  <input 
-                    type="time" 
-                    required
-                    value={selectedEndTime ? selectedEndTime.toTimeString().slice(0,5) : ''}
-                    onChange={(e) => {
-                      if (!selectedEndTime) return;
-                      const [h, m] = e.target.value.split(':');
-                      const d = new Date(selectedEndTime);
-                      d.setHours(parseInt(h), parseInt(m));
-                      setSelectedEndTime(d);
-                    }}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
-                  />
+                  {(() => {
+                    const selectedCourtInfo = courts.find(c => c.id === selectedCourtId);
+                    const dynamicOpenHour = selectedCourtInfo?.openTime ?? openTime;
+                    const dynamicCloseHour = selectedCourtInfo?.closeTime ?? closeTime;
+                    const minTime = `${String(dynamicOpenHour).padStart(2, '0')}:00`;
+                    const maxTime = `${String(dynamicCloseHour).padStart(2, '0')}:00`;
+
+                    return (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700">End Time</label>
+                        <input 
+                          type="time" 
+                          required
+                          min={minTime}
+                          max={maxTime}
+                          value={selectedEndTime ? selectedEndTime.toTimeString().slice(0,5) : ''}
+                          onChange={(e) => {
+                            if (!selectedEndTime) return;
+                            const [h, m] = e.target.value.split(':');
+                            const d = new Date(selectedEndTime);
+                            d.setHours(parseInt(h), parseInt(m));
+                            setSelectedEndTime(d);
+                          }}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                        />
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
