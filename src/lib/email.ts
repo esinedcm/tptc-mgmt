@@ -69,7 +69,7 @@ export async function sendEmail({
   try {
     const mailer = await getTransporter();
     const info = await mailer.sendMail({
-      from: `"TPTC Admin" <${process.env.SMTP_USER || 'tptccourts@gmail.com'}>`,
+      from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
       to,
       subject,
       html,
@@ -105,7 +105,7 @@ export async function sendWelcomeEmail({
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #4f46e5;">Welcome to the Thomson Park Tennis Club!</h2>
+      <h2 style="color: #4f46e5;">Welcome to the ${process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club'}!</h2>
       <p>Hi ${firstName},</p>
       <p>Great news! Your club membership has been approved and activated.</p>
       ${memberNumberText}
@@ -118,7 +118,7 @@ export async function sendWelcomeEmail({
 
   return sendEmail({
     to,
-    subject: 'Welcome to the Thomson Park Tennis Club! Your account is active.',
+    subject: `Welcome to the ${process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club'}! Your account is active.`,
     html
   });
 }
@@ -128,13 +128,15 @@ export async function sendEditLinkEmail(recipientEmail: string, editToken: strin
   const baseUrl = await getBaseUrl();
   const editUrl = `${baseUrl}/register?editToken=${editToken}`;
 
+  const paymentEmail = process.env.NEXT_PUBLIC_PAYMENT_EMAIL || 'admin@tennisclub.local';
+  
   const info = await mailer.sendMail({
-    from: `"TPTC Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+    from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Registration Details & Edit Link",
-    text: `Thank you for registering! Your registration (${memberNames.join(', ')}) is now pending approval. Your total amount due is $${totalDue}.  Send your membership payment (ensure you include your first and last name in the message) via Etransfer to tptcmembership@gmail.com.
+    text: `Thank you for registering! Your registration (${memberNames.join(', ')}) is now pending approval. Your total amount due is $${totalDue}.  Send your membership payment (ensure you include your first and last name in the message) via Etransfer to ${paymentEmail}.
  Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements. You can edit your household registration at any time using this link: ${editUrl}`,
-    html: `<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> ${memberNames.join(', ')}</li><li><b>Total Amount Due:</b> $${totalDue}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>tptcmembership@gmail.com</strong>.<br/>
+    html: `<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> ${memberNames.join(', ')}</li><li><b>Total Amount Due:</b> $${totalDue}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>${paymentEmail}</strong>.<br/>
 <strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href="${editUrl}">${editUrl}</a></p>`,
   });
 
@@ -156,7 +158,7 @@ export async function sendProfileUpdatedEmail(recipientEmail: string, changes: {
   const changesText = changes.map(c => `- ${c.field}: ${c.oldVal || '(empty)'} -> ${c.newVal || '(empty)'}`).join('\n');
 
   const info = await mailer.sendMail({
-    from: `"TPTC Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+    from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
     subject: "Your Club Registration Details Were Updated",
     text: `Your registration details were recently updated by an administrator. Here are the changes:\n\n${changesText}`,
@@ -242,10 +244,10 @@ export async function sendInterestConfirmationEmail({
 
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #4f46e5;">Thanks for your interest in Thomson Park Tennis Club!</h2>
+      <h2 style="color: #4f46e5;">Thanks for your interest in ${process.env.NEXT_PUBLIC_CLUB_NAME || 'our Club'}!</h2>
       <p>Hi ${firstName},</p>
       <p>We've received your information and are thrilled you're interested in joining our Club.</p>
-      <p>We hope you make TPTC your home this season, and together we will continue to build upon a great tradition of excellence in Scarborough.</p>
+      <p>We hope you make ${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'our Club'} your home this season, and together we will continue to build upon a great tradition of excellence.</p>
       <p>If you're ready to take the next step and officially register your household, you can do so at any time using the link below:</p>
       <a href="${registerLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Register for the Club</a>
       <p>We look forward to seeing you on the courts!</p>
@@ -254,7 +256,7 @@ export async function sendInterestConfirmationEmail({
 
   return sendEmail({
     to,
-    subject: 'Thanks for your interest in Thomson Park Tennis Club!',
+    subject: `Thanks for your interest in ${process.env.NEXT_PUBLIC_CLUB_NAME || 'our Club'}!`,
     html
   });
 }
