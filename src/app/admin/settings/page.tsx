@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -17,6 +17,21 @@ type Court = {
   name: string;
   openTime: number | null;
   closeTime: number | null;
+};
+
+type EmailTemplate = {
+  id: string;
+  subject: string;
+  htmlBody: string;
+};
+
+const TEMPLATE_VARIABLES: Record<string, string[]> = {
+  'WELCOME_EMAIL': ['{{firstName}}', '{{memberNumber}}', '{{clubName}}', '{{loginLink}}'],
+  'REGISTRATION_PENDING': ['{{memberNames}}', '{{totalDue}}', '{{paymentEmail}}', '{{editUrl}}'],
+  'PROFILE_UPDATED': ['{{changesHtml}}'],
+  'BOOKING_CONFIRMATION': ['{{actionTitle}}', '{{actionText}}', '{{courtName}}', '{{formattedStart}}', '{{formattedEnd}}', '{{type}}', '{{participantNames}}', '{{bookedBy}}', '{{formattedBookedAt}}', '{{portalLink}}'],
+  'INTEREST_CONFIRMATION': ['{{firstName}}', '{{clubName}}', '{{clubShortName}}', '{{registerLink}}'],
+  'ADMIN_NEW_REGISTRATION': ['{{memberNames}}', '{{totalDue}}', '{{adminDashboardLink}}'],
 };
 
 export default function AdminSettingsPage() {
@@ -46,6 +61,13 @@ export default function AdminSettingsPage() {
   const [newCourt, setNewCourt] = useState({ name: '', openTime: '', closeTime: '' });
   const [editingCourtId, setEditingCourtId] = useState<string | null>(null);
   const [editCourtForm, setEditCourtForm] = useState<Partial<Court>>({});
+
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [editTemplateForm, setEditTemplateForm] = useState<Partial<EmailTemplate>>({});
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const fetchCourts = async () => {
     try {
@@ -92,6 +114,13 @@ export default function AdminSettingsPage() {
       });
 
     fetchCourts();
+
+    fetch('/api/admin/email-templates')
+      .then(res => res.json())
+      .then(data => {
+        if (data.templates) setEmailTemplates(data.templates);
+      })
+      .catch(console.error);
   }, []);
 
   const handleSave = async () => {
@@ -261,6 +290,65 @@ export default function AdminSettingsPage() {
     } catch (err) {
       alert('Error deleting court');
     }
+  };
+
+  const handleTemplateSelect = (id: string) => {
+    setSelectedTemplateId(id);
+    const existing = emailTemplates.find(t => t.id === id);
+    if (existing) {
+      setEditTemplateForm(existing);
+    } else {
+      setEditTemplateForm({ subject: '', htmlBody: '' });
+    }
+  };
+
+  const handleSaveTemplate = async () => {
+    if (!selectedTemplateId || !editTemplateForm.subject || !editTemplateForm.htmlBody) return alert('Subject and HTML Body are required');
+    setSavingTemplate(true);
+    try {
+      const res = await fetch('/api/admin/email-templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedTemplateId,
+          subject: editTemplateForm.subject,
+          htmlBody: editTemplateForm.htmlBody,
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEmailTemplates(prev => {
+          const exists = prev.find(t => t.id === selectedTemplateId);
+          if (exists) return prev.map(t => t.id === selectedTemplateId ? data.template : t);
+          return [...prev, data.template];
+        });
+        alert('Template saved successfully!');
+      } else {
+        alert('Failed to save template');
+      }
+    } catch (err) {
+      alert('Error saving template');
+    }
+    setSavingTemplate(false);
+  };
+
+  const insertVariable = (variable: string) => {
+    if (!variable) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const startPos = textarea.selectionStart;
+    const endPos = textarea.selectionEnd;
+    const currentBody = editTemplateForm.htmlBody || '';
+
+    const newBody = currentBody.substring(0, startPos) + variable + currentBody.substring(endPos);
+    setEditTemplateForm({ ...editTemplateForm, htmlBody: newBody });
+
+    // Move cursor after the inserted variable
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(startPos + variable.length, startPos + variable.length);
+    }, 0);
   };
 
   if (loading || plansLoading || courtsLoading) return <div className="p-8">Loading settings...</div>;
@@ -611,6 +699,81 @@ export default function AdminSettingsPage() {
             </div>
           </div>
         </div>
+
+        <div className="pt-6 border-t mt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Email Templates</h3>
+          <p className="text-sm text-gray-500 mb-6">Customize the automated emails sent to your members. Use HTML formatting.</p>
+          
+          <div className="bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Select Email to Edit</label>
+              <select 
+                className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full bg-white"
+                value={selectedTemplateId}
+                onChange={e => handleTemplateSelect(e.target.value)}
+              >
+                <option value="">-- Select a template --</option>
+                <option value="WELCOME_EMAIL">Welcome Email</option>
+                <option value="REGISTRATION_PENDING">Registration Pending</option>
+                <option value="PROFILE_UPDATED">Profile Updated</option>
+                <option value="BOOKING_CONFIRMATION">Booking Confirmation</option>
+                <option value="INTEREST_CONFIRMATION">Interest Confirmation</option>
+                <option value="ADMIN_NEW_REGISTRATION">Admin Alert: New Registration</option>
+              </select>
+            </div>
+
+            {selectedTemplateId && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Subject</label>
+                  <input 
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                    value={editTemplateForm.subject || ''}
+                    onChange={e => setEditTemplateForm({...editTemplateForm, subject: e.target.value})}
+                    placeholder="Enter email subject..."
+                  />
+                </div>
+                <div>
+                  <div className="flex justify-between items-end mb-1">
+                    <label className="block text-sm font-medium text-gray-700">HTML Body</label>
+                    <div className="flex items-center gap-2">
+                      <select 
+                        className="text-xs border border-indigo-200 rounded px-2 py-1 bg-indigo-50 text-indigo-700 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer font-medium"
+                        onChange={(e) => {
+                          insertVariable(e.target.value);
+                          e.target.value = ''; // reset dropdown
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>+ Insert variable...</option>
+                        {TEMPLATE_VARIABLES[selectedTemplateId]?.map(v => (
+                          <option key={v} value={v}>{v}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <textarea 
+                    ref={textareaRef}
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-indigo-500 focus:border-indigo-500"
+                    value={editTemplateForm.htmlBody || ''}
+                    onChange={e => setEditTemplateForm({...editTemplateForm, htmlBody: e.target.value})}
+                    placeholder="<p>Write your custom HTML email here...</p>"
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <button 
+                    onClick={handleSaveTemplate}
+                    disabled={savingTemplate || !editTemplateForm.subject || !editTemplateForm.htmlBody}
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    {savingTemplate ? 'Saving...' : 'Save Template'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

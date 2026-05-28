@@ -352,9 +352,14 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
-            <p className="mt-1 text-sm text-gray-500">Manage memberships and track prospects.</p>
+          <div className="flex items-center gap-4">
+            {process.env.NEXT_PUBLIC_CLUB_LOGO_URL && (
+              <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Club Logo" className="h-10 w-auto" />
+            )}
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
+              <p className="mt-1 text-sm text-gray-500">Manage memberships and track prospects.</p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-4">
             <Link

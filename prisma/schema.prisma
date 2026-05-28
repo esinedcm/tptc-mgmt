@@ -130,3 +130,10 @@ model Booking {
   
   participants User[]  @relation("BookingParticipants")
 }
+
+model EmailTemplate {
+  id        String   @id // e.g., 'WELCOME_EMAIL', 'NEW_REGISTRATION'
+  subject   String
+  htmlBody  String
+  updatedAt DateTime @updatedAt
+}

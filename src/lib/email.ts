@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
+import { prisma } from '@/lib/prisma';
+import { headers } from 'next/headers';
 
 let transporter: nodemailer.Transporter | null = null;
-
-import { headers } from 'next/headers';
 
 const getBaseUrl = async () => {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -89,6 +89,29 @@ export async function sendEmail({
   }
 }
 
+async function fetchTemplate(id: string, defaultSubject: string, defaultHtml: string, variables: Record<string, string>) {
+  let subject = defaultSubject;
+  let html = defaultHtml;
+  try {
+    const template = await prisma.emailTemplate.findUnique({ where: { id } });
+    if (template) {
+      subject = template.subject;
+      html = template.htmlBody;
+    }
+  } catch (err) {
+    console.error(`Error fetching email template ${id}:`, err);
+  }
+
+  for (const [key, value] of Object.entries(variables)) {
+    // Replace all occurrences of {{key}}
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    subject = subject.replace(regex, value);
+    html = html.replace(regex, value);
+  }
+
+  return { subject, html };
+}
+
 export async function sendWelcomeEmail({
   to,
   firstName,
@@ -103,22 +126,31 @@ export async function sendWelcomeEmail({
 
   const memberNumberText = memberNumber ? `<p>Your official Member Number is: <strong>${memberNumber}</strong></p>` : '';
 
-  const html = `
+  const defaultHtml = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #4f46e5;">Welcome to the ${process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club'}!</h2>
-      <p>Hi ${firstName},</p>
+      <h2 style="color: #4f46e5;">Welcome to the {{clubName}}!</h2>
+      <p>Hi {{firstName}},</p>
       <p>Great news! Your club membership has been approved and activated.</p>
       ${memberNumberText}
       <p>You can now log into the Member Portal to view your status, update your contact details, and book tennis courts!</p>
-      <a href="${loginLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Log In to Member Portal</a>
+      <a href="{{loginLink}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Log In to Member Portal</a>
       <p>If you haven't set a password yet, simply click the "Forgot your password?" link on the login page.</p>
       <p>See you on the courts!</p>
     </div>
   `;
 
+  const defaultSubject = `Welcome to the {{clubName}}! Your account is active.`;
+
+  const { subject, html } = await fetchTemplate('WELCOME_EMAIL', defaultSubject, defaultHtml, {
+    firstName,
+    memberNumber: memberNumber || '',
+    clubName: process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club',
+    loginLink,
+  });
+
   return sendEmail({
     to,
-    subject: `Welcome to the ${process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club'}! Your account is active.`,
+    subject,
     html
   });
 }
@@ -130,14 +162,33 @@ export async function sendEditLinkEmail(recipientEmail: string, editToken: strin
 
   const paymentEmail = process.env.NEXT_PUBLIC_PAYMENT_EMAIL || 'admin@tennisclub.local';
   
+  const defaultHtml = `<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> {{memberNames}}</li><li><b>Total Amount Due:</b> $\{{totalDue}}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>{{paymentEmail}}</strong>.<br/>
+<strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href="{{editUrl}}">{{editUrl}}</a></p>`;
+
+  const defaultSubject = "Your Registration Details & Edit Link";
+  const defaultText = `Thank you for registering! Your registration ({{memberNames}}) is now pending approval. Your total amount due is $\{{totalDue}}.  Send your membership payment (ensure you include your first and last name in the message) via Etransfer to {{paymentEmail}}.
+ Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements. You can edit your household registration at any time using this link: {{editUrl}}`;
+
+  const { subject, html } = await fetchTemplate('REGISTRATION_PENDING', defaultSubject, defaultHtml, {
+    memberNames: memberNames.join(', '),
+    totalDue: totalDue.toString(),
+    paymentEmail,
+    editUrl,
+  });
+
+  // Also replace variables in plain text for fallback
+  let text = defaultText;
+  for (const [key, value] of Object.entries({ memberNames: memberNames.join(', '), totalDue: totalDue.toString(), paymentEmail, editUrl })) {
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    text = text.replace(regex, value);
+  }
+
   const info = await mailer.sendMail({
     from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
-    subject: "Your Registration Details & Edit Link",
-    text: `Thank you for registering! Your registration (${memberNames.join(', ')}) is now pending approval. Your total amount due is $${totalDue}.  Send your membership payment (ensure you include your first and last name in the message) via Etransfer to ${paymentEmail}.
- Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements. You can edit your household registration at any time using this link: ${editUrl}`,
-    html: `<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> ${memberNames.join(', ')}</li><li><b>Total Amount Due:</b> $${totalDue}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>${paymentEmail}</strong>.<br/>
-<strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href="${editUrl}">${editUrl}</a></p>`,
+    subject,
+    text,
+    html,
   });
 
   const previewUrl = nodemailer.getTestMessageUrl(info);
@@ -157,12 +208,22 @@ export async function sendProfileUpdatedEmail(recipientEmail: string, changes: {
   const changesHtml = changes.map(c => `<li><b>${c.field}</b>: ${c.oldVal || '(empty)'} &rarr; ${c.newVal || '(empty)'}</li>`).join('');
   const changesText = changes.map(c => `- ${c.field}: ${c.oldVal || '(empty)'} -> ${c.newVal || '(empty)'}`).join('\n');
 
+  const defaultHtml = `<b>Your registration details were recently updated by an administrator.</b><br><br><p>Here are the changes:</p><ul>{{changesHtml}}</ul>`;
+  const defaultSubject = "Your Club Registration Details Were Updated";
+  const defaultText = `Your registration details were recently updated by an administrator. Here are the changes:\n\n{{changesText}}`;
+
+  const { subject, html } = await fetchTemplate('PROFILE_UPDATED', defaultSubject, defaultHtml, {
+    changesHtml
+  });
+  
+  const text = defaultText.replace(/{{changesText}}/g, changesText);
+
   const info = await mailer.sendMail({
     from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
     to: recipientEmail,
-    subject: "Your Club Registration Details Were Updated",
-    text: `Your registration details were recently updated by an administrator. Here are the changes:\n\n${changesText}`,
-    html: `<b>Your registration details were recently updated by an administrator.</b><br><br><p>Here are the changes:</p><ul>${changesHtml}</ul>`,
+    subject,
+    text,
+    html,
   });
 
   const previewUrl = nodemailer.getTestMessageUrl(info);
@@ -208,25 +269,40 @@ export async function sendBookingEmail({
   if (action === 'updated') actionText = 'An existing court booking has been updated.';
   if (action === 'cancelled') actionText = 'A court booking has been CANCELLED.';
 
-  const html = `
+  const defaultHtml = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #4f46e5;">Court Booking ${action === 'cancelled' ? 'Cancelled' : (action === 'created' ? 'Confirmed' : 'Updated')}</h2>
-      <p>${actionText}</p>
+      <h2 style="color: #4f46e5;">Court Booking {{actionTitle}}</h2>
+      <p>{{actionText}}</p>
       <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
-        <p style="margin: 5px 0;"><strong>Court:</strong> ${courtName}</p>
-        <p style="margin: 5px 0;"><strong>Time:</strong> ${formattedStart} to ${formattedEnd}</p>
-        <p style="margin: 5px 0;"><strong>Type:</strong> ${type}</p>
-        <p style="margin: 5px 0;"><strong>Players:</strong> ${participantNames.join(', ')}</p>
-        <p style="margin: 5px 0; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;"><strong>Booked By:</strong> ${bookedBy} on ${formattedBookedAt}</p>
+        <p style="margin: 5px 0;"><strong>Court:</strong> {{courtName}}</p>
+        <p style="margin: 5px 0;"><strong>Time:</strong> {{formattedStart}} to {{formattedEnd}}</p>
+        <p style="margin: 5px 0;"><strong>Type:</strong> {{type}}</p>
+        <p style="margin: 5px 0;"><strong>Players:</strong> {{participantNames}}</p>
+        <p style="margin: 5px 0; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;"><strong>Booked By:</strong> {{bookedBy}} on {{formattedBookedAt}}</p>
       </div>
-      ${action !== 'cancelled' ? `<p><a href="${portalLink}" style="color: #4f46e5;">Manage your bookings in the Member Portal</a></p>` : ''}
+      ${action !== 'cancelled' ? `<p><a href="{{portalLink}}" style="color: #4f46e5;">Manage your bookings in the Member Portal</a></p>` : ''}
     </div>
   `;
 
+  const defaultSubject = subject;
+
+  const resolved = await fetchTemplate('BOOKING_CONFIRMATION', defaultSubject, defaultHtml, {
+    actionTitle: action === 'cancelled' ? 'Cancelled' : (action === 'created' ? 'Confirmed' : 'Updated'),
+    actionText,
+    courtName,
+    formattedStart,
+    formattedEnd,
+    type,
+    participantNames: participantNames.join(', '),
+    bookedBy,
+    formattedBookedAt,
+    portalLink,
+  });
+
   return sendEmail({
     to,
-    subject,
-    html
+    subject: resolved.subject,
+    html: resolved.html
   });
 }
 
@@ -242,21 +318,30 @@ export async function sendInterestConfirmationEmail({
   const baseUrl = await getBaseUrl();
   const registerLink = `${baseUrl}/register?leadId=${leadId}`;
 
-  const html = `
+  const defaultHtml = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #4f46e5;">Thanks for your interest in ${process.env.NEXT_PUBLIC_CLUB_NAME || 'our Club'}!</h2>
-      <p>Hi ${firstName},</p>
+      <h2 style="color: #4f46e5;">Thanks for your interest in {{clubName}}!</h2>
+      <p>Hi {{firstName}},</p>
       <p>We've received your information and are thrilled you're interested in joining our Club.</p>
-      <p>We hope you make ${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'our Club'} your home this season, and together we will continue to build upon a great tradition of excellence.</p>
+      <p>We hope you make {{clubShortName}} your home this season, and together we will continue to build upon a great tradition of excellence.</p>
       <p>If you're ready to take the next step and officially register your household, you can do so at any time using the link below:</p>
-      <a href="${registerLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Register for the Club</a>
+      <a href="{{registerLink}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Register for the Club</a>
       <p>We look forward to seeing you on the courts!</p>
     </div>
   `;
 
+  const defaultSubject = `Thanks for your interest in {{clubName}}!`;
+
+  const { subject, html } = await fetchTemplate('INTEREST_CONFIRMATION', defaultSubject, defaultHtml, {
+    firstName,
+    clubName: process.env.NEXT_PUBLIC_CLUB_NAME || 'our Club',
+    clubShortName: process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'our Club',
+    registerLink,
+  });
+
   return sendEmail({
     to,
-    subject: `Thanks for your interest in ${process.env.NEXT_PUBLIC_CLUB_NAME || 'our Club'}!`,
+    subject,
     html
   });
 }
@@ -273,22 +358,30 @@ export async function sendAdminNewRegistrationEmail({
   const baseUrl = await getBaseUrl();
   const adminDashboardLink = `${baseUrl}/admin`;
 
-  const html = `
+  const defaultHtml = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #4f46e5;">New Club Registration!</h2>
       <p>A new household has submitted a registration and is pending approval.</p>
       <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
-        <p style="margin: 5px 0;"><strong>Registered Members:</strong> ${memberNames.join(', ')}</p>
-        <p style="margin: 5px 0;"><strong>Total Amount Due:</strong> $${totalDue}</p>
+        <p style="margin: 5px 0;"><strong>Registered Members:</strong> {{memberNames}}</p>
+        <p style="margin: 5px 0;"><strong>Total Amount Due:</strong> $\{{totalDue}}</p>
       </div>
       <p>Please review the registration and payment status in the Admin Dashboard:</p>
-      <a href="${adminDashboardLink}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Go to Admin Dashboard</a>
+      <a href="{{adminDashboardLink}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Go to Admin Dashboard</a>
     </div>
   `;
 
+  const defaultSubject = 'New Registration - Pending Approval';
+
+  const { subject, html } = await fetchTemplate('ADMIN_NEW_REGISTRATION', defaultSubject, defaultHtml, {
+    memberNames: memberNames.join(', '),
+    totalDue: totalDue.toString(),
+    adminDashboardLink,
+  });
+
   return sendEmail({
     to,
-    subject: 'New Registration - Pending Approval',
+    subject,
     html
   });
 }
