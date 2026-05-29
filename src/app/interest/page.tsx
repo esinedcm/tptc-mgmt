@@ -51,7 +51,7 @@ export default function InterestPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Thank You!</h2>
             <p className="text-gray-600">We have received your information and will be in touch soon with more details about the club.</p>
             <div className="mt-6">
-              <Link href="/" className="text-indigo-600 hover:text-indigo-500 font-medium">Return to Homepage</Link>
+              <Link href="/" className="text-primary-600 hover:text-primary-500 font-medium">Return to Homepage</Link>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function InterestPage() {
                   id="firstName"
                   type="text"
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   value={form.firstName}
                   onChange={(e) => setForm({ ...form, firstName: e.target.value })}
                 />
@@ -97,7 +97,7 @@ export default function InterestPage() {
                   id="lastName"
                   type="text"
                   required
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                   value={form.lastName}
                   onChange={(e) => setForm({ ...form, lastName: e.target.value })}
                 />
@@ -110,7 +110,7 @@ export default function InterestPage() {
                 id="email"
                 type="email"
                 required
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
@@ -121,7 +121,7 @@ export default function InterestPage() {
               <input
                 id="phoneNumber"
                 type="tel"
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 value={form.phoneNumber}
                 onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })}
               />
@@ -131,7 +131,7 @@ export default function InterestPage() {
               <button
                 type="submit"
                 disabled={status === 'submitting'}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
               >
                 {status === 'submitting' ? 'Submitting...' : 'Request Information'}
               </button>
@@ -140,7 +140,7 @@ export default function InterestPage() {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
-              Ready to register now? <Link href="/register" className="text-indigo-600 hover:text-indigo-500 font-medium">Click here</Link>
+              Ready to register now? <Link href="/register" className="text-primary-600 hover:text-primary-500 font-medium">Click here</Link>
             </p>
           </div>
         </div>

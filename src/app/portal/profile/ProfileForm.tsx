@@ -102,7 +102,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
           value={formData.phoneNumber}
           onChange={handleChange}
           onBlur={handleBlur}
-          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black ${fieldErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
+          className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-black ${fieldErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
         />
         {fieldErrors.phoneNumber && <span className="text-xs text-red-500 mt-1 block">{fieldErrors.phoneNumber}</span>}
       </div>
@@ -139,7 +139,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
             name="streetNumber"
             value={formData.streetNumber}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-black"
           />
         </div>
         <div className="md:col-span-2">
@@ -149,7 +149,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
             name="streetName"
             value={formData.streetName}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-black"
           />
         </div>
       </div>
@@ -162,7 +162,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
             name="city"
             value={formData.city}
             onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-black"
           />
         </div>
         <div>
@@ -173,7 +173,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
             value={formData.postalCode}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black ${fieldErrors.postalCode ? 'border-red-500' : 'border-gray-300'}`}
+            className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm text-black ${fieldErrors.postalCode ? 'border-red-500' : 'border-gray-300'}`}
           />
           {fieldErrors.postalCode && <span className="text-xs text-red-500 mt-1 block">{fieldErrors.postalCode}</span>}
         </div>
@@ -183,7 +183,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 transition-colors"
+          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:bg-primary-400 transition-colors"
         >
           {loading ? 'Saving...' : 'Save Changes'}
         </button>

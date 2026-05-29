@@ -364,7 +364,7 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap gap-2 md:gap-4">
             <Link
               href="/admin/bookings"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
             >
               <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -373,7 +373,7 @@ export default function AdminDashboard() {
             </Link>
             <Link
               href="/admin/settings"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-indigo-600 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
             >
               <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -383,7 +383,7 @@ export default function AdminDashboard() {
             </Link>
             <button
               onClick={() => window.open('/api/admin/export-emails', '_blank')}
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
             >
               <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -395,7 +395,7 @@ export default function AdminDashboard() {
                 await fetch('/api/auth/logout', { method: 'POST' });
                 window.location.href = '/';
               }}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
             >
               Sign Out
             </button>
@@ -426,7 +426,7 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <p className="text-sm text-gray-500 font-medium">Total Memberships</p>
-            <p className="text-2xl font-bold text-indigo-600">{totalMemberships}</p>
+            <p className="text-2xl font-bold text-primary-600">{totalMemberships}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 md:col-span-2">
             <p className="text-sm text-gray-500 font-medium">Member Types</p>
@@ -450,7 +450,7 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   activeTab === tab 
-                    ? 'bg-indigo-100 text-indigo-700' 
+                    ? 'bg-primary-100 text-primary-700' 
                     : 'text-gray-500 hover:bg-gray-100'
                 }`}
               >
@@ -465,7 +465,7 @@ export default function AdminDashboard() {
                 placeholder="Search by name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full border border-gray-300 rounded-md pl-3 pr-8 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
               />
               {searchQuery && (
                 <button
@@ -492,7 +492,7 @@ export default function AdminDashboard() {
         <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200 mb-12">
           <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Memberships ({activeTab})</h3>
-            <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+            <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
               {filteredMemberships.length} Results
             </span>
           </div>
@@ -857,7 +857,7 @@ export default function AdminDashboard() {
                         {lead.status !== 'Converted' && (
                           <Link
                             href={`/register?leadId=${lead.id}`}
-                            className="text-white bg-indigo-600 hover:bg-indigo-700 font-medium rounded-md text-sm px-4 py-2 shadow-sm transition-colors mr-2"
+                            className="text-white bg-primary-600 hover:bg-primary-700 font-medium rounded-md text-sm px-4 py-2 shadow-sm transition-colors mr-2"
                           >
                             Register
                           </Link>

@@ -40,6 +40,7 @@ export default function AdminSettingsPage() {
   const [maxDaysInAdvance, setMaxDaysInAdvance] = useState(3);
   const [calendarDaysToShow, setCalendarDaysToShow] = useState(3);
   const [calendarSkipDays, setCalendarSkipDays] = useState(1);
+  const [primaryColor, setPrimaryColor] = useState('#4f46e5');
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
   const [genderOptions, setGenderOptions] = useState('Male, Female, Prefer not to say');
@@ -93,6 +94,7 @@ export default function AdminSettingsPage() {
           setMaxDaysInAdvance(data.settings.maxDaysInAdvance ?? 3);
           setCalendarDaysToShow(data.settings.calendarDaysToShow ?? 3);
           setCalendarSkipDays(data.settings.calendarSkipDays ?? 1);
+          setPrimaryColor(data.settings.primaryColor ?? '#4f46e5');
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
           if (data.settings.genderOptions && Array.isArray(data.settings.genderOptions)) {
@@ -140,6 +142,7 @@ export default function AdminSettingsPage() {
           maxDaysInAdvance: maxDaysInAdvance,
           calendarDaysToShow: calendarDaysToShow,
           calendarSkipDays: calendarSkipDays,
+          primaryColor: primaryColor,
           courtOpenTime: courtOpenTime,
           courtCloseTime: courtCloseTime,
           genderOptions: genderOptions.split(',').map(g => g.trim()).filter(Boolean)
@@ -365,7 +368,7 @@ export default function AdminSettingsPage() {
         <h2 className="text-2xl font-bold text-gray-800">System Settings</h2>
         <Link 
           href="/admin" 
-          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
         >
           <svg className="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -390,7 +393,7 @@ export default function AdminSettingsPage() {
                   min="0"
                   value={cutoffMinutes}
                   onChange={(e) => setCutoffMinutes(parseInt(e.target.value) || 0)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">minutes</span>
               </div>
@@ -408,7 +411,7 @@ export default function AdminSettingsPage() {
                   max="24"
                   value={maxHoursPerDay}
                   onChange={(e) => setMaxHoursPerDay(parseInt(e.target.value) || 1)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">hours</span>
               </div>
@@ -426,7 +429,7 @@ export default function AdminSettingsPage() {
                   max="365"
                   value={maxDaysInAdvance}
                   onChange={(e) => setMaxDaysInAdvance(parseInt(e.target.value) || 1)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">days</span>
               </div>
@@ -444,7 +447,7 @@ export default function AdminSettingsPage() {
                   max="7"
                   value={calendarDaysToShow}
                   onChange={(e) => setCalendarDaysToShow(parseInt(e.target.value) || 3)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">days</span>
               </div>
@@ -462,9 +465,25 @@ export default function AdminSettingsPage() {
                   max="30"
                   value={calendarSkipDays}
                   onChange={(e) => setCalendarSkipDays(parseInt(e.target.value) || 1)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">days</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Primary Brand Color</label>
+              <p className="text-sm text-gray-500 mb-2">
+                The main color used for buttons, links, and highlights across the entire app.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+                />
+                <span className="text-gray-600 font-mono text-sm">{primaryColor.toUpperCase()}</span>
               </div>
             </div>
           </div>
@@ -486,7 +505,7 @@ export default function AdminSettingsPage() {
                   max="23"
                   value={courtOpenTime}
                   onChange={(e) => setCourtOpenTime(parseInt(e.target.value) || 0)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">:00</span>
               </div>
@@ -504,7 +523,7 @@ export default function AdminSettingsPage() {
                   max="24"
                   value={courtCloseTime}
                   onChange={(e) => setCourtCloseTime(parseInt(e.target.value) || 24)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
                 <span className="text-gray-600">:00</span>
               </div>
@@ -524,7 +543,7 @@ export default function AdminSettingsPage() {
               type="text"
               value={genderOptions}
               onChange={(e) => setGenderOptions(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
               placeholder="e.g. Male, Female, Non-Binary"
             />
           </div>
@@ -534,7 +553,7 @@ export default function AdminSettingsPage() {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save Settings'}
           </button>
@@ -637,7 +656,7 @@ export default function AdminSettingsPage() {
                 <button 
                   onClick={handleSaveNewPlan}
                   disabled={savingPlan || !newPlan.name}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {savingPlan ? 'Adding...' : 'Add Plan'}
                 </button>
@@ -680,7 +699,7 @@ export default function AdminSettingsPage() {
                       />
                     </div>
                     <div className="flex space-x-2 pt-2">
-                      <button onClick={handleSaveEditCourt} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Save</button>
+                      <button onClick={handleSaveEditCourt} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Save</button>
                       <button onClick={() => setEditingCourtId(null)} className="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel</button>
                     </div>
                   </div>
@@ -693,7 +712,7 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
                     <div className="flex space-x-3">
-                      <button onClick={() => handleStartEditCourt(court)} className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">Edit</button>
+                      <button onClick={() => handleStartEditCourt(court)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
                       <button onClick={() => handleDeleteCourt(court)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
                     </div>
                   </>
@@ -733,7 +752,7 @@ export default function AdminSettingsPage() {
                 <button 
                   onClick={handleSaveNewCourt}
                   disabled={!newCourt.name}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Add Court
                 </button>
@@ -780,7 +799,7 @@ export default function AdminSettingsPage() {
                     <label className="block text-sm font-medium text-gray-700">HTML Body</label>
                     <div className="flex items-center gap-2">
                       <select 
-                        className="text-xs border border-indigo-200 rounded px-2 py-1 bg-indigo-50 text-indigo-700 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer font-medium"
+                        className="text-xs border border-primary-200 rounded px-2 py-1 bg-primary-50 text-primary-700 focus:ring-primary-500 focus:border-primary-500 cursor-pointer font-medium"
                         onChange={(e) => {
                           insertVariable(e.target.value);
                           e.target.value = ''; // reset dropdown
@@ -796,7 +815,7 @@ export default function AdminSettingsPage() {
                   </div>
                   <textarea 
                     ref={textareaRef}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-primary-500 focus:border-primary-500"
                     value={editTemplateForm.htmlBody || ''}
                     onChange={e => setEditTemplateForm({...editTemplateForm, htmlBody: e.target.value})}
                     placeholder="<p>Write your custom HTML email here...</p>"
@@ -806,7 +825,7 @@ export default function AdminSettingsPage() {
                   <button 
                     onClick={handleSaveTemplate}
                     disabled={savingTemplate || !editTemplateForm.subject || !editTemplateForm.htmlBody}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
                   >
                     {savingTemplate ? 'Saving...' : 'Save Template'}
                   </button>

@@ -21,6 +21,7 @@ model SystemSetting {
   courtCloseTime            Int      @default(23)
   calendarDaysToShow        Int      @default(3)
   calendarSkipDays          Int      @default(1)
+  primaryColor              String   @default("#4f46e5")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   updatedAt                 DateTime @updatedAt
 }

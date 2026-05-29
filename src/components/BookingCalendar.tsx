@@ -218,7 +218,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left border-collapse min-w-[800px]">
+        <table className="w-full text-sm text-left border-collapse min-w-[800px] table-fixed">
           <thead className="bg-gray-50 border-b">
             <tr>
               <th className="p-3 w-20 border-r" rowSpan={2}>Time</th>
@@ -347,7 +347,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     newEnd.setFullYear(year, month, day);
                     setSelectedEndTime(newEnd);
                   }}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                 />
               </div>
 
@@ -376,7 +376,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                             d.setHours(parseInt(h), parseInt(m));
                             setSelectedStartTime(d);
                           }}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                         />
                       </>
                     );
@@ -406,7 +406,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                             d.setHours(parseInt(h), parseInt(m));
                             setSelectedEndTime(d);
                           }}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
                         />
                       </>
                     );
@@ -415,13 +415,13 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
               </div>
 
               {isAdmin && (
-                <div className="space-y-4 border border-indigo-100 bg-indigo-50 p-4 rounded-md">
+                <div className="space-y-4 border border-primary-100 bg-primary-50 p-4 rounded-md">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Booking Type</label>
                     <select 
                       value={bookingType} 
                       onChange={(e) => setBookingType(e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-white"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
                     >
                       <option value="MEMBER">Member Play</option>
                       <option value="LESSON">Lesson</option>
@@ -438,7 +438,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                           type="checkbox"
                           checked={bookAllCourts}
                           onChange={(e) => setBookAllCourts(e.target.checked)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                         />
                         <label htmlFor="bookAllCourts" className="ml-2 block text-sm font-medium text-gray-900">
                           Book all courts
@@ -451,7 +451,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                           type="checkbox"
                           checked={isRecurring}
                           onChange={(e) => setIsRecurring(e.target.checked)}
-                          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                          className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                         />
                         <label htmlFor="isRecurring" className="ml-2 block text-sm font-medium text-gray-900">
                           Make this a recurring block booking
@@ -474,7 +474,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                                       setRecurrenceDays([...recurrenceDays, idx]);
                                     }
                                   }}
-                                  className={`px-3 py-1 text-xs font-medium rounded-full border ${recurrenceDays.includes(idx) ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                                  className={`px-3 py-1 text-xs font-medium rounded-full border ${recurrenceDays.includes(idx) ? 'bg-primary-600 text-white border-primary-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
                                 >
                                   {day}
                                 </button>
@@ -489,7 +489,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                               max="52"
                               value={recurrenceWeeks}
                               onChange={(e) => setRecurrenceWeeks(parseInt(e.target.value) || 1)}
-                              className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-1.5 border sm:text-sm bg-white"
+                              className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-1.5 border sm:text-sm bg-white"
                             />
                           </div>
                         </div>
@@ -508,7 +508,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                       placeholder="Search by name or email..."
                       value={searchTerm}
                       onChange={(e) => handleSearch(e.target.value)}
-                      className="flex-1 rounded-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                      className="flex-1 rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border"
                     />
                   </div>
                   {searchResults.length > 0 && (
@@ -534,12 +534,12 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                   {selectedParticipants.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {selectedParticipants.map(p => (
-                        <span key={p.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                        <span key={p.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                           {p.firstName} {p.lastName}
                           <button 
                             type="button" 
                             onClick={() => setSelectedParticipants(selectedParticipants.filter(sp => sp.id !== p.id))}
-                            className="ml-1 text-indigo-500 hover:text-indigo-700 focus:outline-none"
+                            className="ml-1 text-primary-500 hover:text-primary-700 focus:outline-none"
                           >
                             &times;
                           </button>
@@ -564,7 +564,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                  className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isSubmitting ? 'bg-primary-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'}`}
                 >
                   {isSubmitting ? 'Saving...' : (editingBookingId ? 'Save Changes' : 'Confirm Booking')}
                 </button>
@@ -601,7 +601,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     setViewBooking(null);
                     setShowModal(true);
                   }}
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
                 >
                   Edit Booking
                 </button>
