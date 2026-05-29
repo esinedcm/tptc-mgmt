@@ -472,9 +472,9 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Primary Brand Color</label>
+              <label className="text-sm font-medium text-gray-700">Primary Brand Colour</label>
               <p className="text-sm text-gray-500 mb-2">
-                The main color used for buttons, links, and highlights across the entire app.
+                The main colour used for buttons, links, and highlights across the entire app.
               </p>
               <div className="flex items-center space-x-3">
                 <input
@@ -729,7 +729,7 @@ export default function AdminSettingsPage() {
                 className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
                 value={newCourt.name}
                 onChange={e => setNewCourt({...newCourt, name: e.target.value})}
-                placeholder="Court Name (e.g. Center Court)"
+                placeholder="Court Name (e.g. Centre Court)"
               />
               <div className="flex items-center space-x-3">
                 <input 
