@@ -18,6 +18,8 @@ export default async function BookCourtPage() {
   const maxDays = settings?.maxDaysInAdvance ?? 3;
   const openTime = settings?.courtOpenTime ?? 6;
   const closeTime = settings?.courtCloseTime ?? 23;
+  const daysToShow = settings?.calendarDaysToShow ?? 3;
+  const skipDays = settings?.calendarSkipDays ?? 1;
 
   return (
     <div>
@@ -28,7 +30,7 @@ export default async function BookCourtPage() {
         </p>
       </div>
 
-      <BookingCalendar isAdmin={false} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} />
+      <BookingCalendar isAdmin={false} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} daysToShow={daysToShow} skipDays={skipDays} />
     </div>
   );
 }

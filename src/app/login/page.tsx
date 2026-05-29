@@ -36,7 +36,6 @@ export default function Login() {
       }
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };

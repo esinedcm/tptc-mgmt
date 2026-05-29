@@ -38,6 +38,8 @@ export default function AdminSettingsPage() {
   const [cutoffMinutes, setCutoffMinutes] = useState(90);
   const [maxHoursPerDay, setMaxHoursPerDay] = useState(2);
   const [maxDaysInAdvance, setMaxDaysInAdvance] = useState(3);
+  const [calendarDaysToShow, setCalendarDaysToShow] = useState(3);
+  const [calendarSkipDays, setCalendarSkipDays] = useState(1);
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
   const [genderOptions, setGenderOptions] = useState('Male, Female, Prefer not to say');
@@ -89,6 +91,8 @@ export default function AdminSettingsPage() {
           setCutoffMinutes(data.settings.cancellationCutoffMinutes);
           setMaxHoursPerDay(data.settings.maxHoursPerDay ?? 2);
           setMaxDaysInAdvance(data.settings.maxDaysInAdvance ?? 3);
+          setCalendarDaysToShow(data.settings.calendarDaysToShow ?? 3);
+          setCalendarSkipDays(data.settings.calendarSkipDays ?? 1);
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
           if (data.settings.genderOptions && Array.isArray(data.settings.genderOptions)) {
@@ -134,6 +138,8 @@ export default function AdminSettingsPage() {
           cancellationCutoffMinutes: cutoffMinutes,
           maxHoursPerDay: maxHoursPerDay,
           maxDaysInAdvance: maxDaysInAdvance,
+          calendarDaysToShow: calendarDaysToShow,
+          calendarSkipDays: calendarSkipDays,
           courtOpenTime: courtOpenTime,
           courtCloseTime: courtCloseTime,
           genderOptions: genderOptions.split(',').map(g => g.trim()).filter(Boolean)
@@ -420,6 +426,42 @@ export default function AdminSettingsPage() {
                   max="365"
                   value={maxDaysInAdvance}
                   onChange={(e) => setMaxDaysInAdvance(parseInt(e.target.value) || 1)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">days</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Calendar View Span</label>
+              <p className="text-sm text-gray-500 mb-2">
+                How many days to show side-by-side on the booking calendar.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="7"
+                  value={calendarDaysToShow}
+                  onChange={(e) => setCalendarDaysToShow(parseInt(e.target.value) || 3)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
+                />
+                <span className="text-gray-600">days</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Calendar Skip Amount</label>
+              <p className="text-sm text-gray-500 mb-2">
+                How many days the calendar jumps forward/backward when clicking Prev/Next.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="number"
+                  min="1"
+                  max="30"
+                  value={calendarSkipDays}
+                  onChange={(e) => setCalendarSkipDays(parseInt(e.target.value) || 1)}
                   className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border"
                 />
                 <span className="text-gray-600">days</span>

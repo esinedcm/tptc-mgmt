@@ -17,6 +17,8 @@ export default async function AdminBookingsPage() {
   const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
   const openTime = settings?.courtOpenTime ?? 6;
   const closeTime = settings?.courtCloseTime ?? 23;
+  const daysToShow = settings?.calendarDaysToShow ?? 3;
+  const skipDays = settings?.calendarSkipDays ?? 1;
 
   return (
     <div>
@@ -38,7 +40,7 @@ export default async function AdminBookingsPage() {
         </Link>
       </div>
 
-      <BookingCalendar isAdmin={true} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} />
+      <BookingCalendar isAdmin={true} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} daysToShow={daysToShow} skipDays={skipDays} />
     </div>
   );
 }

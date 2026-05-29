@@ -16,7 +16,7 @@ type Booking = {
   organizer: { id: string; firstName: string; lastName: string };
 };
 
-export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, closeTime = 23 }: { isAdmin: boolean; currentUserId: string; openTime?: number; closeTime?: number }) {
+export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, closeTime = 23, daysToShow = 3, skipDays = 1 }: { isAdmin: boolean; currentUserId: string; openTime?: number; closeTime?: number; daysToShow?: number; skipDays?: number }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -73,6 +73,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       const start = new Date(currentDate);
       start.setHours(0, 0, 0, 0);
       const end = new Date(currentDate);
+      end.setDate(end.getDate() + daysToShow - 1);
       end.setHours(23, 59, 59, 999);
 
       const res = await fetch(`/api/bookings?start=${start.toISOString()}&end=${end.toISOString()}`);
@@ -162,12 +163,18 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
     }
   };
 
-  // Helper to get bookings for a specific court and hour
-  const getBookingForSlot = (courtId: string, hour: number) => {
+  // Helper to get bookings for a specific court, date, and hour
+  const getBookingForSlot = (courtId: string, cellDate: Date, hour: number) => {
     return bookings.find(b => {
       const bStart = new Date(b.startTime);
       const bEnd = new Date(b.endTime);
-      return b.courtId === courtId && bStart.getHours() <= hour && bEnd.getHours() > hour;
+      
+      // Check if booking is on this exact date and covers this hour
+      const isSameDate = bStart.getFullYear() === cellDate.getFullYear() && 
+                         bStart.getMonth() === cellDate.getMonth() && 
+                         bStart.getDate() === cellDate.getDate();
+                         
+      return isSameDate && b.courtId === courtId && bStart.getHours() <= hour && bEnd.getHours() > hour;
     });
   };
 
@@ -180,7 +187,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
           <button 
             onClick={() => { 
               const d = new Date(currentDate); 
-              d.setDate(d.getDate() - 1); 
+              d.setDate(d.getDate() - skipDays); 
               setCurrentDate(d); 
               router.replace(`${pathname}?date=${d.toISOString().split('T')[0]}`, { scroll: false });
             }}
@@ -188,13 +195,18 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
           >
             &larr; Prev
           </button>
-          <span className="font-medium text-lg">
-            {currentDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          <span className="font-medium text-lg hidden sm:inline-block">
+            {currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} 
+            {daysToShow > 1 && ` - ${(() => {
+              const d = new Date(currentDate);
+              d.setDate(d.getDate() + daysToShow - 1);
+              return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            })()}`}
           </span>
           <button 
             onClick={() => { 
               const d = new Date(currentDate); 
-              d.setDate(d.getDate() + 1); 
+              d.setDate(d.getDate() + skipDays); 
               setCurrentDate(d); 
               router.replace(`${pathname}?date=${d.toISOString().split('T')[0]}`, { scroll: false });
             }}
@@ -206,77 +218,97 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left border-collapse">
+        <table className="w-full text-sm text-left border-collapse min-w-[800px]">
           <thead className="bg-gray-50 border-b">
             <tr>
-              <th className="p-3 w-24 border-r">Time</th>
-              {courts.map(court => (
-                <th key={court.id} className="p-3 text-center border-r font-semibold">{court.name}</th>
+              <th className="p-3 w-20 border-r" rowSpan={2}>Time</th>
+              {Array.from({ length: daysToShow }).map((_, dayOffset) => {
+                const d = new Date(currentDate);
+                d.setDate(d.getDate() + dayOffset);
+                return (
+                  <th key={dayOffset} colSpan={courts.length} className="p-2 text-center border-r border-b font-semibold bg-gray-100">
+                    {d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                  </th>
+                );
+              })}
+            </tr>
+            <tr>
+              {Array.from({ length: daysToShow }).map((_, dayOffset) => (
+                courts.map(court => (
+                  <th key={`${dayOffset}-${court.id}`} className="p-1 text-center border-r font-medium text-xs text-gray-600 bg-gray-50">
+                    {court.name}
+                  </th>
+                ))
               ))}
             </tr>
           </thead>
           <tbody>
             {hours.map(hour => (
               <tr key={hour} className="border-b h-16">
-                <td className="p-3 border-r bg-gray-50 font-medium text-gray-500">
+                <td className="p-2 border-r bg-gray-50 font-medium text-gray-500 text-xs">
                   {hour === 12 ? '12:00 PM' : hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
                 </td>
-                {courts.map(court => {
-                  const booking = getBookingForSlot(court.id, hour);
+                {Array.from({ length: daysToShow }).map((_, dayOffset) => {
+                  const cellDate = new Date(currentDate);
+                  cellDate.setDate(cellDate.getDate() + dayOffset);
                   
-                  if (booking) {
-                    // Is this the first hour of the booking?
-                    const isStart = new Date(booking.startTime).getHours() === hour;
-                    if (!isStart) return null; // We'll rowspan the starting cell
+                  return courts.map(court => {
+                    const booking = getBookingForSlot(court.id, cellDate, hour);
+                    
+                    if (booking) {
+                      // Is this the first hour of the booking?
+                      const isStart = new Date(booking.startTime).getHours() === hour;
+                      if (!isStart) return null; // We'll rowspan the starting cell
 
-                    const durationHours = (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60);
-                    
-                    const isMyBooking = booking.participants.some(p => p.id === currentUserId) || booking.organizer.id === currentUserId;
-                    const bgClass = booking.type === 'LESSON' ? 'bg-purple-100 border-purple-300' :
-                                    booking.type === 'LEAGUE' ? 'bg-orange-100 border-orange-300' :
-                                    isMyBooking ? 'bg-blue-100 border-blue-300' : 'bg-gray-200 border-gray-300';
-                    
+                      const durationHours = (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60);
+                      
+                      const isMyBooking = booking.participants.some(p => p.id === currentUserId) || booking.organizer?.id === currentUserId;
+                      const bgClass = booking.type === 'LESSON' ? 'bg-purple-100 border-purple-300' :
+                                      booking.type === 'LEAGUE' ? 'bg-orange-100 border-orange-300' :
+                                      isMyBooking ? 'bg-blue-100 border-blue-300' : 'bg-gray-200 border-gray-300';
+                      
+                      return (
+                        <td key={`${dayOffset}-${court.id}`} rowSpan={durationHours} className={`border-r p-1 align-top`}>
+                          <div 
+                            onClick={() => setViewBooking(booking)}
+                            className={`h-full w-full rounded p-1 border cursor-pointer hover:shadow-md transition-shadow overflow-hidden ${bgClass}`}
+                          >
+                            <div className="font-semibold text-gray-800 text-xs truncate">{booking.type}</div>
+                            <div className="text-[10px] text-gray-600 leading-tight truncate">{booking.organizer?.firstName} {booking.organizer?.lastName}</div>
+                          </div>
+                        </td>
+                      );
+                    }
+
                     return (
-                      <td key={court.id} rowSpan={durationHours} className={`border-r p-1 align-top`}>
-                        <div 
-                          onClick={() => setViewBooking(booking)}
-                          className={`h-full w-full rounded p-2 border cursor-pointer hover:shadow-md transition-shadow ${bgClass}`}
-                        >
-                          <div className="font-semibold text-gray-800">{booking.type}</div>
-                          <div className="text-xs text-gray-600 truncate">{booking.organizer.firstName} {booking.organizer.lastName}</div>
+                      <td 
+                        key={`${dayOffset}-${court.id}`} 
+                        className="border-r p-1 hover:bg-green-50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          setSelectedCourtId(court.id);
+                          const start = new Date(cellDate);
+                          start.setHours(hour, 0, 0, 0);
+                          setSelectedStartTime(start);
+                          
+                          const end = new Date(cellDate);
+                          end.setHours(hour + 1, 0, 0, 0);
+                          setSelectedEndTime(end);
+                          
+                          setBookingType('MEMBER');
+                          setSelectedParticipants([]);
+                          setEditingBookingId(null);
+                          setBookAllCourts(false);
+                          setIsRecurring(false);
+                          setRecurrenceDays([cellDate.getDay()]);
+                          setShowModal(true);
+                        }}
+                      >
+                        <div className="h-full w-full flex items-center justify-center opacity-0 hover:opacity-100 text-green-600 font-medium text-xs">
+                          + Book
                         </div>
                       </td>
                     );
-                  }
-
-                  return (
-                    <td 
-                      key={court.id} 
-                      className="border-r p-2 hover:bg-green-50 cursor-pointer transition-colors"
-                      onClick={() => {
-                        setSelectedCourtId(court.id);
-                        const start = new Date(currentDate);
-                        start.setHours(hour, 0, 0, 0);
-                        setSelectedStartTime(start);
-                        
-                        const end = new Date(currentDate);
-                        end.setHours(hour + 1, 0, 0, 0);
-                        setSelectedEndTime(end);
-                        
-                        setBookingType('MEMBER');
-                        setSelectedParticipants([]);
-                        setEditingBookingId(null);
-                        setBookAllCourts(false);
-                        setIsRecurring(false);
-                        setRecurrenceDays([currentDate.getDay()]);
-                        setShowModal(true);
-                      }}
-                    >
-                      <div className="h-full w-full flex items-center justify-center opacity-0 hover:opacity-100 text-green-600 font-medium">
-                        + Book
-                      </div>
-                    </td>
-                  );
+                  });
                 })}
               </tr>
             ))}
