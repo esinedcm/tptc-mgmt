@@ -75,6 +75,7 @@ export default function AdminDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
   const [payForm, setPayForm] = useState({
@@ -912,9 +913,13 @@ export default function AdminDashboard() {
                               </span>
                             )}
                             {m.user.householdId && (
-                              <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200" title="Family Group Identifier">
+                              <button 
+                                onClick={() => setSelectedHouseholdId(m.user.householdId!)}
+                                className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors" 
+                                title="Click to view household members"
+                              >
                                 Group: {m.user.householdId.substring(0, 6).toUpperCase()}
-                              </span>
+                              </button>
                             )}
                             {m.user.wantsFreeLessons && (
                               <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200" title="Wants Free Lessons">
