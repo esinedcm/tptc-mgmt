@@ -79,6 +79,14 @@ export async function POST(request: Request) {
         const existingUser = await tx.user.findUnique({ where: { email } });
         
         if (existingUser) {
+          // If CSV assigns a household, ensure the existing user gets it
+          if (householdId && existingUser.householdId !== householdId) {
+            await tx.user.update({
+              where: { id: existingUser.id },
+              data: { householdId }
+            });
+          }
+
           // Check if they already have a membership for the active season
           const existingMembership = await tx.membership.findFirst({
             where: { userId: existingUser.id, season: activeSeason }

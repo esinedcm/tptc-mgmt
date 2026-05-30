@@ -911,7 +911,7 @@ export default function AdminDashboard() {
                                 Tag: {m.user.tagNumber}
                               </span>
                             )}
-                            {m.membershipType === 'Family' && m.user.householdId && (
+                            {m.user.householdId && (
                               <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200" title="Family Group Identifier">
                                 Group: {m.user.householdId.substring(0, 6).toUpperCase()}
                               </span>
