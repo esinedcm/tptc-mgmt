@@ -21,18 +21,22 @@ export async function POST(request: Request) {
     // We get the max member number to keep it sequential
     const currentYear = new Date().getFullYear().toString().slice(-2);
     const yearPrefix = currentYear + '-';
-    const lastUser = await prisma.user.findFirst({
+    
+    // Fetch all current year member numbers to find the true mathematical maximum
+    const existingUsers = await prisma.user.findMany({
       where: { memberNumber: { startsWith: yearPrefix } },
-      orderBy: { memberNumber: 'desc' }
+      select: { memberNumber: true }
     });
 
     let nextSequence = 1;
-    if (lastUser && lastUser.memberNumber) {
-      const parts = lastUser.memberNumber.split('-');
-      if (parts.length === 2) {
-        const parsedSeq = parseInt(parts[1], 10);
-        if (!isNaN(parsedSeq)) {
-          nextSequence = parsedSeq + 1;
+    for (const u of existingUsers) {
+      if (u.memberNumber) {
+        const parts = u.memberNumber.split('-');
+        if (parts.length === 2) {
+          const parsedSeq = parseInt(parts[1], 10);
+          if (!isNaN(parsedSeq) && parsedSeq >= nextSequence) {
+            nextSequence = parsedSeq + 1;
+          }
         }
       }
     }

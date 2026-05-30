@@ -99,16 +99,18 @@ export async function POST(request: Request) {
     const currentYear = new Date().getFullYear();
     const yearPrefix = currentYear.toString().slice(-2) + '-';
     
-    const lastUser = await prisma.user.findFirst({
+    const existingUsers = await prisma.user.findMany({
       where: { memberNumber: { startsWith: yearPrefix } },
-      orderBy: { memberNumber: 'desc' }
+      select: { memberNumber: true }
     });
     
     let nextSequence = 1;
-    if (lastUser && lastUser.memberNumber) {
-      const lastSeq = parseInt(lastUser.memberNumber.split('-')[1], 10);
-      if (!isNaN(lastSeq)) {
-        nextSequence = lastSeq + 1;
+    for (const u of existingUsers) {
+      if (u.memberNumber) {
+        const lastSeq = parseInt(u.memberNumber.split('-')[1], 10);
+        if (!isNaN(lastSeq) && lastSeq >= nextSequence) {
+          nextSequence = lastSeq + 1;
+        }
       }
     }
 
