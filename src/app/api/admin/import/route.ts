@@ -42,8 +42,13 @@ export async function POST(request: Request) {
         const firstName = (record['First Name'] || record.firstName || '').toString().trim();
         const lastName = (record['Last Name'] || record.lastName || '').toString().trim();
         const phoneNumber = (record.Phone || record.phoneNumber || record['Phone Number'] || '').toString().trim();
-        const membershipType = (record.Type || record.membershipType || record['Membership Type'] || 'Adult').toString().trim();
+        const membershipType = (record.Type || record.type || record.membershipType || record['Membership Type'] || record.Plan || record.plan || 'Adult').toString().trim();
         const gender = (record.Gender || record.gender || '').toString().trim();
+        
+        const isPaidStr = (record.Paid || record.paid || record['Amount Paid'] || record.amountPaid || record['Payment Status'] || record.Status || record.status || '').toString().toLowerCase().trim();
+        const hasPaid = isPaidStr === 'yes' || isPaidStr === 'true' || isPaidStr === 'y' || parseFloat(isPaidStr) > 0 || isPaidStr === 'active' || isPaidStr === 'paid';
+        const finalStatus = hasPaid ? 'Active' : 'Pending';
+        const amountPaid = hasPaid && !isNaN(parseFloat(isPaidStr)) ? parseFloat(isPaidStr) : null;
         
         if (!email || !firstName || !lastName) {
           skippedCount++;
@@ -65,7 +70,8 @@ export async function POST(request: Request) {
                 userId: existingUser.id,
                 membershipType,
                 season: activeSeason,
-                status: 'Active', // Auto-active for imported members
+                status: finalStatus,
+                amountPaid: amountPaid,
               }
             });
             importedCount++;
@@ -96,7 +102,8 @@ export async function POST(request: Request) {
                 create: {
                   membershipType,
                   season: activeSeason,
-                  status: 'Active',
+                  status: finalStatus,
+                  amountPaid: amountPaid,
                 }
               }
             }
