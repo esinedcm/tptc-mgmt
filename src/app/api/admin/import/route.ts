@@ -36,6 +36,8 @@ export async function POST(request: Request) {
     // Default password to hash
     const defaultPasswordHash = await hashPassword(crypto.randomBytes(16).toString('hex'));
 
+    const householdMap = new Map<string, string>();
+
     await prisma.$transaction(async (tx) => {
       for (const record of records) {
         const email = (record.Email || record.email || '').toString().toLowerCase().trim();
@@ -50,6 +52,15 @@ export async function POST(request: Request) {
         const finalStatus = hasPaid ? 'Active' : 'Pending';
         const amountPaid = hasPaid && !isNaN(parseFloat(isPaidStr)) ? parseFloat(isPaidStr) : null;
         
+        const householdRef = (record.Household || record['Household ID'] || record.household || record.Family || record.family || '').toString().trim();
+        let householdId = null;
+        if (householdRef) {
+          if (!householdMap.has(householdRef)) {
+            householdMap.set(householdRef, crypto.randomUUID());
+          }
+          householdId = householdMap.get(householdRef);
+        }
+
         if (!email || !firstName || !lastName) {
           skippedCount++;
           continue; // Skip invalid records
@@ -95,6 +106,7 @@ export async function POST(request: Request) {
               gender,
               passwordHash: defaultPasswordHash,
               memberNumber,
+              householdId,
               resetToken,
               resetTokenExpiry,
               welcomeEmailSent: false,
