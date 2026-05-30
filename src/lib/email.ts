@@ -385,3 +385,105 @@ export async function sendAdminNewRegistrationEmail({
     html
   });
 }
+
+export async function sendRenewalLinkEmail(recipientEmail: string, resetToken: string) {
+  const mailer = await getTransporter();
+  const baseUrl = await getBaseUrl();
+  const renewalUrl = `${baseUrl}/renew?token=${resetToken}`;
+
+  const defaultHtml = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">Welcome Back to the Club!</h2>
+      <p>It's time to renew your membership for the upcoming season!</p>
+      <p>Click the secure link below to securely renew your membership without having to re-enter all your household details:</p>
+      <a href="${renewalUrl}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Renew Membership</a>
+      <p>If you didn't request this link, you can safely ignore this email.</p>
+    </div>
+  `;
+
+  const defaultSubject = "Renew your Club Membership";
+  const defaultText = `Welcome Back to the Club! It's time to renew your membership for the upcoming season! Click this link to securely renew your membership: ${renewalUrl}`;
+
+  // Since we don't have a template set up for this yet in the DB, we just use the default.
+  // We can add it to fetchTemplate if we want it customizable later.
+  
+  const info = await mailer.sendMail({
+    from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+    to: recipientEmail,
+    subject: defaultSubject,
+    text: defaultText,
+    html: defaultHtml,
+  });
+
+  const previewUrl = nodemailer.getTestMessageUrl(info);
+  console.log("==========================================");
+  console.log("Renewal Link sent: %s", info.messageId);
+  if (!process.env.SMTP_USER && previewUrl) {
+    console.log("Preview URL: %s", previewUrl);
+  }
+  console.log("==========================================");
+  
+  return previewUrl;
+}
+
+export async function sendImportWelcomeEmail({
+  to,
+  firstName,
+  resetToken,
+}: {
+  to: string;
+  firstName: string;
+  resetToken: string;
+}) {
+  const mailer = await getTransporter();
+  const baseUrl = await getBaseUrl();
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+
+  const defaultHtml = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">Welcome to the new {{clubName}} Portal!</h2>
+      <p>Hi {{firstName}},</p>
+      <p>We've recently upgraded our club management system! Your membership information has been successfully migrated to the new platform.</p>
+      <p>To access your account, view your membership status, and book tennis courts, please click the link below to set up your new password:</p>
+      <a href="{{resetUrl}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Set Up Your Password</a>
+      <p>If you have any questions, please contact the club administrator.</p>
+      <p>See you on the courts!</p>
+    </div>
+  `;
+
+  const defaultSubject = `Welcome to the new {{clubName}} Portal!`;
+  const defaultText = `Welcome to the new {{clubName}} Portal!\n\nHi {{firstName}},\n\nWe've recently upgraded our club management system! Your membership information has been successfully migrated to the new platform.\n\nTo access your account, view your membership status, and book tennis courts, please click the link below to set up your new password:\n\n{{resetUrl}}\n\nIf you have any questions, please contact the club administrator.\n\nSee you on the courts!`;
+
+  const clubName = process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club';
+
+  const { subject, html } = await fetchTemplate('IMPORT_WELCOME_EMAIL', defaultSubject, defaultHtml, {
+    firstName,
+    clubName,
+    resetUrl,
+  });
+
+  // Handle default text replacements
+  let text = defaultText;
+  for (const [key, value] of Object.entries({ firstName, clubName, resetUrl })) {
+    const regex = new RegExp(`{{${key}}}`, 'g');
+    text = text.replace(regex, value);
+  }
+
+  const info = await mailer.sendMail({
+    from: `"${process.env.NEXT_PUBLIC_CLUB_SHORT_NAME || 'Club'} Admin" <${process.env.SMTP_USER || 'admin@tennisclub.local'}>`,
+    to,
+    subject,
+    text,
+    html,
+  });
+
+  const previewUrl = nodemailer.getTestMessageUrl(info);
+  console.log("==========================================");
+  console.log("Import Welcome sent: %s", info.messageId);
+  if (!process.env.SMTP_USER && previewUrl) {
+    console.log("Preview URL: %s", previewUrl);
+  }
+  console.log("==========================================");
+  
+  return previewUrl;
+}

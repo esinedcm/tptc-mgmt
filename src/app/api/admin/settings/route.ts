@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 
     if (!settings) {
       settings = await prisma.systemSetting.create({
-        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3, courtOpenTime: 6, courtCloseTime: 23, calendarDaysToShow: 3, calendarSkipDays: 1, primaryColor: '#4f46e5', genderOptions: ['Male', 'Female', 'Prefer not to say'] }
+        data: { id: 'global', cancellationCutoffMinutes: 90, maxHoursPerDay: 2, maxDaysInAdvance: 3, courtOpenTime: 6, courtCloseTime: 23, calendarDaysToShow: 3, calendarSkipDays: 1, primaryColor: '#4f46e5', activeSeason: '2026', genderOptions: ['Male', 'Female', 'Prefer not to say'] }
       });
     }
 
@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, genderOptions } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -51,6 +51,7 @@ export async function PUT(req: Request) {
     if (typeof calendarDaysToShow === 'number') updateData.calendarDaysToShow = calendarDaysToShow;
     if (typeof calendarSkipDays === 'number') updateData.calendarSkipDays = calendarSkipDays;
     if (typeof primaryColor === 'string') updateData.primaryColor = primaryColor;
+    if (typeof activeSeason === 'string') updateData.activeSeason = activeSeason;
     if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
 
     const settings = await prisma.systemSetting.upsert({
@@ -66,6 +67,7 @@ export async function PUT(req: Request) {
         calendarDaysToShow: typeof calendarDaysToShow === 'number' ? calendarDaysToShow : 3,
         calendarSkipDays: typeof calendarSkipDays === 'number' ? calendarSkipDays : 1,
         primaryColor: typeof primaryColor === 'string' ? primaryColor : '#4f46e5',
+        activeSeason: typeof activeSeason === 'string' ? activeSeason : '2026',
         genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say']
       }
     });

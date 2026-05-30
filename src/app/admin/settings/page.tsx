@@ -32,6 +32,7 @@ const TEMPLATE_VARIABLES: Record<string, string[]> = {
   'BOOKING_CONFIRMATION': ['{{actionTitle}}', '{{actionText}}', '{{courtName}}', '{{formattedStart}}', '{{formattedEnd}}', '{{type}}', '{{participantNames}}', '{{bookedBy}}', '{{formattedBookedAt}}', '{{portalLink}}'],
   'INTEREST_CONFIRMATION': ['{{firstName}}', '{{clubName}}', '{{clubShortName}}', '{{registerLink}}'],
   'ADMIN_NEW_REGISTRATION': ['{{memberNames}}', '{{totalDue}}', '{{adminDashboardLink}}'],
+  'IMPORT_WELCOME_EMAIL': ['{{firstName}}', '{{clubName}}', '{{resetUrl}}'],
 };
 
 export default function AdminSettingsPage() {
@@ -43,6 +44,7 @@ export default function AdminSettingsPage() {
   const [primaryColor, setPrimaryColor] = useState('#4f46e5');
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
+  const [activeSeason, setActiveSeason] = useState('2026');
   const [genderOptions, setGenderOptions] = useState('Male, Female, Prefer not to say');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -97,6 +99,7 @@ export default function AdminSettingsPage() {
           setPrimaryColor(data.settings.primaryColor ?? '#4f46e5');
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
+          setActiveSeason(data.settings.activeSeason ?? '2026');
           if (data.settings.genderOptions && Array.isArray(data.settings.genderOptions)) {
             setGenderOptions(data.settings.genderOptions.join(', '));
           }
@@ -143,9 +146,10 @@ export default function AdminSettingsPage() {
           calendarDaysToShow: calendarDaysToShow,
           calendarSkipDays: calendarSkipDays,
           primaryColor: primaryColor,
-          courtOpenTime: courtOpenTime,
-          courtCloseTime: courtCloseTime,
-          genderOptions: genderOptions.split(',').map(g => g.trim()).filter(Boolean)
+          activeSeason,
+          courtOpenTime,
+          courtCloseTime,
+          genderOptions: genderOptions.split(',').map(s => s.trim()).filter(Boolean)
         })
       });
       if (res.ok) {
@@ -484,6 +488,22 @@ export default function AdminSettingsPage() {
                   className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
                 />
                 <span className="text-gray-600 font-mono text-sm">{primaryColor.toUpperCase()}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Active Season</label>
+              <p className="text-sm text-gray-500 mb-2">
+                The current active membership year. Change this to rollover to the next year.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="text"
+                  value={activeSeason}
+                  onChange={(e) => setActiveSeason(e.target.value)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                  placeholder="e.g. 2026"
+                />
               </div>
             </div>
           </div>

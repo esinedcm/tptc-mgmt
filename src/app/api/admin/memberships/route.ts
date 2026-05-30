@@ -5,7 +5,15 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const settings = await prisma.systemSetting.findUnique({
+      where: { id: 'global' }
+    });
+    const activeSeason = settings?.activeSeason || '2026';
+
     const memberships = await prisma.membership.findMany({
+      where: {
+        season: activeSeason
+      },
       select: {
         id: true,
         status: true,
@@ -14,6 +22,7 @@ export async function GET() {
         paymentNotes: true,
         paymentRecordedAt: true,
         createdAt: true,
+        season: true,
         user: {
           select: {
             firstName: true,
@@ -31,6 +40,11 @@ export async function GET() {
             city: true,
             postalCode: true,
             householdId: true,
+            memberships: {
+              select: {
+                season: true
+              }
+            }
           },
         },
       },
@@ -39,7 +53,7 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ memberships }, { status: 200 });
+    return NextResponse.json({ memberships, activeSeason }, { status: 200 });
   } catch (error) {
     console.error('Fetch memberships error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

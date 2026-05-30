@@ -27,18 +27,25 @@ export async function POST(request: Request) {
       }[];
       editToken?: string;
       leadId?: string;
+      renewalToken?: string;
     } = await request.json();
-    const { address, members, editToken, leadId } = body;
+    const { address, members, editToken, leadId, renewalToken } = body;
 
     if (!address || !members || members.length === 0) {
       return NextResponse.json({ error: 'Missing household address or members' }, { status: 400 });
     }
+
+    const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+    const activeSeason = settings?.activeSeason || '2026';
 
     if (address.postalCode && !isValidPostalCode(address.postalCode)) {
       return NextResponse.json({ error: 'Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).' }, { status: 400 });
     }
 
     for (let i = 0; i < members.length; i++) {
+      if (!members[i].dateOfBirth) {
+        return NextResponse.json({ error: `Date of Birth is required for Member ${i + 1}.` }, { status: 400 });
+      }
       if (members[i].phoneNumber && !isValidPhoneNumber(members[i].phoneNumber)) {
         return NextResponse.json({ error: `Invalid phone number format for Member ${i + 1}. Please use a standard 10-digit number.` }, { status: 400 });
       }
@@ -57,15 +64,23 @@ export async function POST(request: Request) {
       excludeEmailsCheck = { editToken: { not: editToken } };
     }
 
-    const existingUsers = await prisma.user.findMany({ 
-      where: { 
-        email: { in: emails },
-        ...excludeEmailsCheck
-      } 
+    const primaryMember = members[0];
+    const existingUser = await prisma.user.findUnique({
+      where: { email: primaryMember.email.toLowerCase().trim() }
     });
 
-    if (existingUsers.length > 0) {
-      return NextResponse.json({ error: `Emails already registered: ${existingUsers.map(u => u.email).join(', ')}` }, { status: 400 });
+    if (existingUser && (!editToken || existingUser.editToken !== editToken) && !renewalToken) {
+      return NextResponse.json({ 
+        error: 'EMAIL_EXISTS',
+        message: 'This email is already registered.' 
+      }, { status: 400 });
+    }
+
+    if (renewalToken) {
+      const tokenUser = await prisma.user.findUnique({ where: { resetToken: renewalToken } });
+      if (!tokenUser || !tokenUser.resetTokenExpiry || tokenUser.resetTokenExpiry < new Date()) {
+        return NextResponse.json({ error: 'Invalid or expired renewal link' }, { status: 400 });
+      }
     }
 
     const finalEditToken = editToken || crypto.randomUUID();
@@ -100,7 +115,7 @@ export async function POST(request: Request) {
     // Create users within a transaction to ensure all or nothing
     await prisma.$transaction(
       async (tx) => {
-        if (editToken) {
+        if (editToken && !renewalToken) {
           // Delete memberships then users for this token
           await tx.membership.deleteMany({
             where: { user: { editToken } }
@@ -117,16 +132,12 @@ export async function POST(request: Request) {
              nextSequence++;
            }
 
-           const passwordHash = await hashPassword(member.password || '');
-           await tx.user.create({
-             data: {
+           if (renewalToken) {
+             const updateData: any = {
                firstName: member.firstName,
                lastName: member.lastName,
-               email: member.email,
-               passwordHash,
                phoneNumber: member.phoneNumber,
                gender: member.gender,
-               dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
                wantsFreeLessons: member.wantsFreeLessons || false,
                streetNumber: address.streetNumber,
                streetName: address.streetName,
@@ -135,14 +146,83 @@ export async function POST(request: Request) {
                householdId,
                editToken: finalEditToken,
                memberNumber,
-               memberships: {
-                 create: {
+             };
+             if (member.dateOfBirth) updateData.dateOfBirth = new Date(member.dateOfBirth);
+             if (member.password) {
+               updateData.passwordHash = await hashPassword(member.password);
+             }
+
+             await tx.user.upsert({
+               where: { email: member.email },
+               update: updateData,
+               create: {
+                 firstName: member.firstName,
+                 lastName: member.lastName,
+                 email: member.email,
+                 passwordHash: member.password ? await hashPassword(member.password) : await hashPassword('pending'),
+                 phoneNumber: member.phoneNumber,
+                 gender: member.gender,
+                 dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
+                 wantsFreeLessons: member.wantsFreeLessons || false,
+                 streetNumber: address.streetNumber,
+                 streetName: address.streetName,
+                 city: address.city,
+                 postalCode: address.postalCode,
+                 householdId,
+                 editToken: finalEditToken,
+                 memberNumber,
+               }
+             });
+
+             // Create a new membership for this season
+             const userForMembership = await tx.user.findUnique({ where: { email: member.email } });
+             if (userForMembership) {
+               await tx.membership.create({
+                 data: {
+                   userId: userForMembership.id,
                    membershipType: member.membershipType,
+                   season: activeSeason,
                    status: 'Pending',
                  }
-               }
+               });
              }
-           });
+           } else {
+             const passwordHash = await hashPassword(member.password || '');
+             await tx.user.create({
+               data: {
+                 firstName: member.firstName,
+                 lastName: member.lastName,
+                 email: member.email,
+                 passwordHash,
+                 phoneNumber: member.phoneNumber,
+                 gender: member.gender,
+                 dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
+                 wantsFreeLessons: member.wantsFreeLessons || false,
+                 streetNumber: address.streetNumber,
+                 streetName: address.streetName,
+                 city: address.city,
+                 postalCode: address.postalCode,
+                 householdId,
+                 editToken: finalEditToken,
+                 memberNumber,
+                 memberships: {
+                   create: {
+                     membershipType: member.membershipType,
+                     season: activeSeason,
+                     status: 'Pending',
+                   }
+                 }
+               }
+             });
+           }
+        }
+
+        if (renewalToken) {
+          // Invalidate the reset token
+          await tx.user.updateMany({
+            where: { resetToken: renewalToken },
+            data: { resetToken: null, resetTokenExpiry: null }
+          });
         }
 
         // If a leadId was provided, mark the lead as converted

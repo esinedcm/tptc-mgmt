@@ -13,7 +13,7 @@ type MembershipPlan = {
   isArchived: boolean;
 };
 
-export function RegistrationForm({ initialEditToken, initialLeadId, genderOptions = ['Male', 'Female', 'Prefer not to say'] }: { initialEditToken?: string; initialLeadId?: string; genderOptions?: string[] }) {
+export function RegistrationForm({ initialEditToken, initialLeadId, initialRenewalToken, genderOptions = ['Male', 'Female', 'Prefer not to say'] }: { initialEditToken?: string; initialLeadId?: string; initialRenewalToken?: string; genderOptions?: string[] }) {
   const [address, setAddress] = useState({
     streetNumber: '',
     streetName: '',
@@ -41,7 +41,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
   const [success, setSuccess] = useState(false);
   const [editToken, setEditToken] = useState<string | undefined>(initialEditToken);
   const [emailPreviewUrl, setEmailPreviewUrl] = useState('');
-  const [loadingHousehold, setLoadingHousehold] = useState(!!initialEditToken || !!initialLeadId);
+  const [loadingHousehold, setLoadingHousehold] = useState(!!initialEditToken || !!initialLeadId || !!initialRenewalToken);
   
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
 
@@ -93,9 +93,24 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
             }]);
           }
         })
+    } else if (initialRenewalToken) {
+      fetch(`/api/renew/${initialRenewalToken}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Invalid renewal link');
+          return res.json();
+        })
+        .then(data => {
+          if (data.address) setAddress(data.address);
+          if (data.members) {
+            setMembers(data.members);
+          }
+        })
+        .catch(err => {
+          setError(err.message);
+        })
         .finally(() => setLoadingHousehold(false));
     }
-  }, [initialEditToken, initialLeadId]);
+  }, [initialEditToken, initialLeadId, initialRenewalToken]);
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -176,12 +191,15 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ address, members, editToken, leadId: initialLeadId }),
+        body: JSON.stringify({ address, members, editToken, leadId: initialLeadId, renewalToken: initialRenewalToken }),
       });
       
       const data = await res.json();
       
       if (!res.ok) {
+        if (data.error === 'EMAIL_EXISTS') {
+          throw new Error('EMAIL_EXISTS');
+        }
         throw new Error(data.error || 'Registration failed');
       }
       
@@ -189,6 +207,28 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
       if (data.emailPreviewUrl) setEmailPreviewUrl(data.emailPreviewUrl);
       
       setSuccess(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendRenewalLink = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/register/renewal-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: members[0].email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send renewal link');
+      
+      setSuccess(true);
+      if (data.emailPreviewUrl) setEmailPreviewUrl(data.emailPreviewUrl);
+      setError('RENEWAL_SENT');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -235,10 +275,16 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
 
     return (
       <div className="p-8 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto shadow-sm">
-        <h3 className="text-2xl font-bold text-green-800 mb-4 text-center">Registration Successful!</h3>
+        <h3 className="text-2xl font-bold text-green-800 mb-4 text-center">
+          {error === 'RENEWAL_SENT' ? 'Renewal Link Sent!' : 'Registration Successful!'}
+        </h3>
         <p className="text-green-700 text-center mb-8 text-lg">
-          Your household has been registered and is pending payment.
+          {error === 'RENEWAL_SENT' 
+            ? 'Please check your email for a magic link to securely renew your membership.' 
+            : 'Your household has been registered and is pending payment.'}
         </p>
+
+        {error !== 'RENEWAL_SENT' && (
 
         <div className="bg-white p-6 rounded-md shadow-sm mb-6 border border-green-100">
           <h4 className="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Registration Details</h4>
@@ -284,6 +330,9 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
             </div>
           </div>
         </div>
+        )}
+
+        {error !== 'RENEWAL_SENT' && (
 
         <div className="bg-green-100 p-6 rounded-md flex justify-between items-center">
           <div className="text-green-800 font-medium">
@@ -292,6 +341,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
           </div>
           <div className="text-3xl font-bold text-green-900">${totalDue}</div>
         </div>
+        )}
 
         {emailPreviewUrl && (
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
@@ -345,9 +395,25 @@ export function RegistrationForm({ initialEditToken, initialLeadId, genderOption
         {editToken ? 'Edit Club Registration' : 'Club Registration'}
       </h2>
       
-      {error && (
+      {error && error !== 'EMAIL_EXISTS' && error !== 'RENEWAL_SENT' && (
         <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
           {error}
+        </div>
+      )}
+
+      {error === 'EMAIL_EXISTS' && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+          <p className="text-blue-800 mb-4 font-medium">
+            This email is already registered from a previous season. Would you like to renew your membership instead?
+          </p>
+          <button
+            type="button"
+            onClick={handleSendRenewalLink}
+            disabled={loading}
+            className="px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Sending...' : 'Send Renewal Link'}
+          </button>
         </div>
       )}
 

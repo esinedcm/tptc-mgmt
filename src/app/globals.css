@@ -36,3 +36,56 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@media print {
+  /* Hide elements we don't want to print */
+  .print-hide {
+    display: none !important;
+  }
+  
+  /* Reset backgrounds and colors for better printing */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  /* Condense layout to save space/pages */
+  .min-h-screen {
+    min-height: auto !important;
+  }
+  .py-8 {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  .mb-8 {
+    margin-bottom: 1rem !important;
+  }
+  .shadow {
+    box-shadow: none !important;
+  }
+  
+  /* Condense tables */
+  table {
+    font-size: 10pt !important;
+  }
+  th, td {
+    padding: 0.25rem 0.5rem !important;
+  }
+  
+  /* Remove borders that waste space, or make them thin */
+  .border, .border-b, .border-t {
+    border-color: #e5e7eb !important;
+  }
+  
+  /* Ensure each main report block breaks cleanly if necessary, but tries to keep tables together */
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  thead {
+    display: table-header-group;
+  }
+}

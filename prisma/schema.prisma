@@ -22,6 +22,7 @@ model SystemSetting {
   calendarDaysToShow        Int      @default(3)
   calendarSkipDays          Int      @default(1)
   primaryColor              String   @default("#4f46e5")
+  activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   updatedAt                 DateTime @updatedAt
 }
@@ -47,6 +48,7 @@ model User {
   editToken        String?
   resetToken       String?      @unique
   resetTokenExpiry DateTime?
+  welcomeEmailSent Boolean      @default(true)
   createdAt             DateTime     @default(now())
   updatedAt             DateTime     @updatedAt
   memberships           Membership[]
@@ -59,6 +61,7 @@ model Membership {
   userId            String
   user              User      @relation(fields: [userId], references: [id])
   membershipType    String
+  season            String    @default("2026")
   status            String
   amountPaid        Float?
   paymentNotes      String?

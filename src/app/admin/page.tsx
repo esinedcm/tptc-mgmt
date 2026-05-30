@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import Papa from 'papaparse';
 import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
 
 type Membership = {
@@ -12,6 +13,7 @@ type Membership = {
   paymentNotes: string | null;
   paymentRecordedAt: string | null;
   createdAt: string;
+  season?: string;
   archivedAt?: string;
   user: {
     firstName: string;
@@ -29,7 +31,18 @@ type Membership = {
     city?: string;
     postalCode?: string;
     householdId?: string;
+    memberships?: { season: string }[];
   };
+};
+
+type PastMember = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber?: string;
+  memberNumber?: string;
+  memberships: { season: string; membershipType: string; status: string; createdAt: string }[];
 };
 
 type Lead = {
@@ -52,8 +65,13 @@ export default function AdminDashboard() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [archived, setArchived] = useState<any[]>([]);
+  const [pastMembers, setPastMembers] = useState<PastMember[]>([]);
+  const [activeSeason, setActiveSeason] = useState<string>('');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
+  const [pendingWelcomeCount, setPendingWelcomeCount] = useState(0);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,7 +102,7 @@ export default function AdminDashboard() {
   const [editErrors, setEditErrors] = useState({ phoneNumber: '', postalCode: '' });
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived'>('Pending');
+  const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('Pending');
 
   // Stats calculation
   const totalMemberships = memberships.length;
@@ -127,7 +145,7 @@ export default function AdminDashboard() {
       householdId: undefined,
     }
   }) as Membership) : memberships).filter(m => {
-    if (activeTab !== 'All' && activeTab !== 'Archived' && m.status !== activeTab) return false;
+    if (activeTab !== 'All' && activeTab !== 'Archived' && activeTab !== 'Past Members' && m.status !== activeTab) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = m.user.firstName.toLowerCase();
@@ -149,29 +167,37 @@ export default function AdminDashboard() {
     return true;
   });
 
-  const fetchMemberships = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const [membershipsRes, archivedRes, leadsRes, plansRes] = await Promise.all([
+      const [memRes, archRes, leadsRes, plansRes, pastRes, welcomeRes] = await Promise.all([
         fetch('/api/admin/memberships'),
         fetch('/api/admin/archived-memberships'),
         fetch('/api/admin/leads'),
         fetch('/api/plans'),
+        fetch('/api/admin/memberships/past'),
+        fetch('/api/admin/send-welcome')
       ]);
-      const membershipsData = await membershipsRes.json();
-      const archivedData = await archivedRes.json();
+
+      const memData = await memRes.json();
+      const archData = await archRes.json();
       const leadsData = await leadsRes.json();
       const plansData = await plansRes.json();
+      const pastData = await pastRes.json();
+      const welcomeData = await welcomeRes.json();
+
+      if (memData.memberships) setMemberships(memData.memberships);
+      if (memData.activeSeason) setActiveSeason(memData.activeSeason);
+      if (archData.archived) setArchived(archData.archived);
+      if (leadsData.leads) setLeads(leadsData.leads);
+      if (plansData.plans) setPlans(plansData.plans);
+      if (pastData.pastMembers) setPastMembers(pastData.pastMembers);
+      if (typeof welcomeData.count === 'number') setPendingWelcomeCount(welcomeData.count);
       
-      if (!membershipsRes.ok) throw new Error(membershipsData.error);
-      if (!archivedRes.ok) throw new Error(archivedData.error);
+      if (!memRes.ok) throw new Error(memData.error);
+      if (!archRes.ok) throw new Error(archData.error);
       if (!leadsRes.ok) throw new Error(leadsData.error);
       if (!plansRes.ok) throw new Error(plansData.error);
-      
-      setMemberships(membershipsData.memberships);
-      setArchived(archivedData.archived || []);
-      setLeads(leadsData.leads);
-      setPlans(plansData.plans);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -180,8 +206,7 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchMemberships();
+    fetchData();
   }, []);
 
   const handlePayClick = (m: Membership) => {
@@ -212,7 +237,7 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error(data.error);
       
       setPayingId(null);
-      fetchMemberships();
+      fetchData();
     } catch (err: unknown) {
       alert('Failed to mark as paid: ' + (err instanceof Error ? err.message : String(err)));
     }
@@ -249,7 +274,7 @@ export default function AdminDashboard() {
 
   const handleEditBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     const { placeholder, value } = e.target;
-    if (placeholder === 'Zip') { // Using placeholder since it's an inline form without a name attribute
+    if (placeholder === 'Zip') {
       if (value && !isValidPostalCode(value)) {
         setEditErrors(prev => ({ ...prev, postalCode: 'Invalid format' }));
       } else {
@@ -282,6 +307,63 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        if (results.errors.length > 0) {
+          alert('Error parsing CSV: ' + results.errors[0].message);
+          return;
+        }
+        
+        if (!window.confirm(`Ready to import ${results.data.length} records. Continue?`)) {
+          if (fileInputRef.current) fileInputRef.current.value = '';
+          return;
+        }
+
+        setImporting(true);
+        try {
+          const res = await fetch('/api/admin/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(results.data),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error);
+          
+          alert(`Successfully imported ${data.importedCount} members. Skipped ${data.skippedCount} existing/invalid records.`);
+          fetchData();
+        } catch (err: any) {
+          alert('Import failed: ' + err.message);
+        } finally {
+          setImporting(false);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+      }
+    });
+  };
+
+  const handleSendWelcomeEmails = async () => {
+    if (!window.confirm(`Are you sure you want to send welcome emails to ${pendingWelcomeCount} members?`)) return;
+    
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/send-welcome', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert(`Sent ${data.sentCount} welcome emails successfully!`);
+      fetchData();
+    } catch (err: any) {
+      alert('Failed to send welcome emails: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSaveEdit = async (id: string) => {
     if (editForm.postalCode && !isValidPostalCode(editForm.postalCode)) {
       alert('Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).');
@@ -302,12 +384,10 @@ export default function AdminDashboard() {
       if (!res.ok) throw new Error(data.error);
       
       setEditingId(null);
-      fetchMemberships();
+      fetchData();
       
       if (data.emailPreviewUrl) {
-        // In dev mode, we log this and maybe open it so the admin can see the simulated email
         console.log('Update email sent! Preview:', data.emailPreviewUrl);
-        // Optional: window.open(data.emailPreviewUrl, '_blank');
       }
     } catch (err: unknown) {
       alert('Failed to update membership: ' + (err instanceof Error ? err.message : String(err)));
@@ -324,7 +404,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      fetchMemberships();
+      fetchData();
     } catch (err: unknown) {
       alert('Failed to delete membership: ' + (err instanceof Error ? err.message : String(err)));
     }
@@ -340,7 +420,7 @@ export default function AdminDashboard() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      fetchMemberships();
+      fetchData();
     } catch (err: unknown) {
       alert('Failed to delete prospect: ' + (err instanceof Error ? err.message : String(err)));
     }
@@ -356,9 +436,9 @@ export default function AdminDashboard() {
             {process.env.NEXT_PUBLIC_CLUB_LOGO_URL && (
               <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Club Logo" className="h-10 w-auto" />
             )}
-            <div>
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard</h1>
-              <p className="mt-1 text-sm text-gray-500">Manage memberships and track prospects.</p>
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard<br /> {activeSeason && `${activeSeason} Season`}</h1>
+              
             </div>
           </div>
           <div className="flex flex-wrap gap-2 md:gap-4">
@@ -372,6 +452,15 @@ export default function AdminDashboard() {
               Manage Bookings
             </Link>
             <Link
+              href="/admin/reports"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+            >
+              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Reports
+            </Link>
+            <Link
               href="/admin/settings"
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
             >
@@ -381,6 +470,35 @@ export default function AdminDashboard() {
               </svg>
               Settings
             </Link>
+            <input 
+              type="file" 
+              accept=".csv" 
+              ref={fileInputRef} 
+              style={{ display: 'none' }} 
+              onChange={handleImportCSV} 
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              title="Required columns: Email, First Name, Last Name. Optional: Phone, Gender, Type"
+              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50"
+            >
+              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              {importing ? 'Importing...' : 'Import CSV'}
+            </button>
+            {pendingWelcomeCount > 0 && (
+              <button
+                onClick={handleSendWelcomeEmails}
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Send Welcome Emails ({pendingWelcomeCount})
+              </button>
+            )}
             <button
               onClick={() => window.open('/api/admin/export-emails', '_blank')}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
@@ -404,7 +522,6 @@ export default function AdminDashboard() {
         
         {error && <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>}
 
-        {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <p className="text-sm text-gray-500 font-medium">Total Active Members</p>
@@ -441,23 +558,26 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Search & Filters */}
         <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex gap-2">
-            {(['Pending', 'Active', 'All', 'Archived'] as const).map(tab => (
+          <nav className="flex space-x-4 border-b border-gray-200">
+            {['Pending', 'Active', 'All', 'Archived', 'Past Members'].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                  activeTab === tab 
-                    ? 'bg-primary-100 text-primary-700' 
-                    : 'text-gray-500 hover:bg-gray-100'
-                }`}
+                onClick={() => setActiveTab(tab as any)}
+                className={`${
+                  activeTab === tab
+                    ? 'border-primary-500 text-primary-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
               >
-                {tab}
+                {tab} {tab === 'Pending' && pendingMembershipsCount > 0 && `(${pendingMembershipsCount})`}
+                {tab === 'Active' && `(${activeMembershipsCount})`}
+                {tab === 'All' && `(${totalMemberships})`}
+                {tab === 'Archived' && `(${archived.length})`}
+                {tab === 'Past Members' && `(${pastMembers.length})`}
               </button>
             ))}
-          </div>
+          </nav>
           <div className="flex gap-4 items-center">
             <div className="w-full md:w-64 relative">
               <input
@@ -498,9 +618,11 @@ export default function AdminDashboard() {
           </div>
           
           <div className="overflow-x-auto">
-            {filteredMemberships.length === 0 ? (
-              <div className="p-6 text-center text-gray-500">No memberships found.</div>
-            ) : (
+            {activeTab !== 'Past Members' && filteredMemberships.length === 0 ? (
+              <div className="p-8 text-center text-gray-500 bg-gray-50">
+                No memberships found matching your criteria.
+              </div>
+            ) : activeTab !== 'Past Members' && (
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -621,6 +743,7 @@ export default function AdminDashboard() {
                                     value={editForm.phoneNumber}
                                     onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })}
                                     onBlur={handleEditBlur}
+                                    placeholder="Phone Number"
                                   />
                                   {editErrors.phoneNumber && <span className="text-red-500 text-xs">{editErrors.phoneNumber}</span>}
                                 </div>
@@ -759,6 +882,9 @@ export default function AdminDashboard() {
                               </span>
                             </div>
                           )}
+                          <div className="text-xs text-indigo-600 font-semibold mt-1">
+                            Tenure: {m.user.memberships ? new Set(m.user.memberships.map((x: any) => x.season)).size : 1} Year(s)
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           <div>{m.user.email}</div>
@@ -812,6 +938,61 @@ export default function AdminDashboard() {
                       </tr>
                     );
                   })}
+                </tbody>
+              </table>
+            )}
+
+            {activeTab === 'Past Members' && filteredPastMembers.length === 0 && (
+              <div className="p-8 text-center text-gray-500 bg-gray-50">
+                No past members found matching your criteria.
+              </div>
+            )}
+            {activeTab === 'Past Members' && filteredPastMembers.length > 0 && (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / ID</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Past Memberships</th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tenure</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredPastMembers.map(m => (
+                    <tr key={m.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1">
+                          <div className="text-sm font-medium text-gray-900">{m.firstName} {m.lastName}</div>
+                          {m.memberNumber && (
+                            <span className="w-max bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-200">
+                              #{m.memberNumber}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <div>{m.email}</div>
+                        {m.phoneNumber && <div className="text-gray-400 mt-1">{m.phoneNumber}</div>}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <ul className="list-disc pl-4 space-y-1">
+                          {m.memberships.slice(0, 3).map((mem, i) => (
+                            <li key={i} className="text-xs">
+                              <span className="font-semibold">{mem.season}</span> - {mem.membershipType} <span className="text-gray-400">({mem.status})</span>
+                            </li>
+                          ))}
+                          {m.memberships.length > 3 && (
+                            <li className="text-xs text-gray-400 italic">+{m.memberships.length - 3} more...</li>
+                          )}
+                        </ul>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="text-sm text-indigo-600 font-semibold">
+                          {new Set(m.memberships.map((x: any) => x.season)).size} Year(s)
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             )}
