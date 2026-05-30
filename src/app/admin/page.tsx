@@ -534,29 +534,29 @@ export default function AdminDashboard() {
         {error && <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
             <p className="text-sm text-gray-500 font-medium">Total Active Members</p>
             <p className="text-2xl font-bold text-green-600">{activeMembershipsCount}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
             <p className="text-sm text-gray-500 font-medium">Pending Payments</p>
             <p className="text-2xl font-bold text-yellow-600">{pendingMembershipsCount}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
             <p className="text-sm text-gray-500 font-medium">Prospects</p>
             <p className="text-2xl font-bold text-blue-600">{prospectsCount}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
             <p className="text-sm text-gray-500 font-medium">Gender Split</p>
             <p className="text-xl font-bold text-gray-700">
               <span className="text-pink-600">{femaleCount}F</span> / <span className="text-blue-600">{maleCount}M</span>
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
             <p className="text-sm text-gray-500 font-medium">Total Memberships</p>
             <p className="text-2xl font-bold text-primary-600">{totalMemberships}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 md:col-span-2">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 md:col-span-2">
             <p className="text-sm text-gray-500 font-medium">Member Types</p>
             <div className="mt-1 flex flex-wrap gap-2">
               {Object.entries(membershipTypesCount).map(([type, count]) => (
@@ -569,8 +569,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-          <nav className="flex space-x-4 border-b border-gray-200">
+        <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-400">
+          <nav className="flex space-x-4 border-b border-gray-400">
             {['Pending', 'Active', 'All', 'Archived', 'Past Members'].map((tab) => (
               <button
                 key={tab}
@@ -620,8 +620,8 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200 mb-12">
-          <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-200">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-400 mb-12">
+          <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-400">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Memberships ({activeTab})</h3>
             <span className="bg-primary-100 text-primary-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
               {filteredMemberships.length} Results
@@ -634,7 +634,7 @@ export default function AdminDashboard() {
                 No memberships found matching your criteria.
               </div>
             ) : activeTab !== 'Past Members' && (
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-400">
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
@@ -643,7 +643,7 @@ export default function AdminDashboard() {
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-400">
                   {filteredMemberships.map((m) => {
                     const isEditing = editingId === m.id;
                     const isPaying = payingId === m.id;
@@ -825,7 +825,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4">
                             {m.membershipType === 'Family' ? (
-                              <div className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-200" title="Family memberships cannot be changed individually">
+                              <div className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-400" title="Family memberships cannot be changed individually">
                                 Family (Locked)
                               </div>
                             ) : (
@@ -864,7 +864,7 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-2 mb-1">
                             <div className="text-sm font-medium text-gray-900">{m.user.firstName} {m.user.lastName}</div>
                             {m.user.memberNumber && (
-                              <span className="bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-200">
+                              <span className="bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-400">
                                 #{m.user.memberNumber}
                               </span>
                             )}
@@ -959,7 +959,7 @@ export default function AdminDashboard() {
               </div>
             )}
             {activeTab === 'Past Members' && filteredPastMembers.length > 0 && (
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-400">
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / ID</th>
@@ -968,14 +968,14 @@ export default function AdminDashboard() {
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tenure</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-400">
                   {filteredPastMembers.map(m => (
                     <tr key={m.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col gap-1">
                           <div className="text-sm font-medium text-gray-900">{m.firstName} {m.lastName}</div>
                           {m.memberNumber && (
-                            <span className="w-max bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-200">
+                            <span className="w-max bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-400">
                               #{m.memberNumber}
                             </span>
                           )}
@@ -1011,8 +1011,8 @@ export default function AdminDashboard() {
         </div>
 
         {!(searchQuery && filteredLeads.length === 0) && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200 mt-8">
-            <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-200">
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-400 mt-8">
+            <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-400">
               <h3 className="text-lg leading-6 font-medium text-gray-900">Prospects (Leads)</h3>
               <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                 {filteredLeads.length} Pending
@@ -1023,7 +1023,7 @@ export default function AdminDashboard() {
               {filteredLeads.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">No prospects found.</div>
               ) : (
-                <table className="min-w-full divide-y divide-gray-200">
+                <table className="min-w-full divide-y divide-gray-400">
                   <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prospect Name</th>
@@ -1032,7 +1032,7 @@ export default function AdminDashboard() {
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-400">
                   {filteredLeads.map((lead) => (
                     <tr key={lead.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">

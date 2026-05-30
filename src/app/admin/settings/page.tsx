@@ -586,7 +586,7 @@ export default function AdminSettingsPage() {
           
           <div className="space-y-4 mb-8">
             {plans.map(plan => (
-              <div key={plan.id} className={`p-4 border rounded-md shadow-sm ${plan.isArchived ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-300'}`}>
+              <div key={plan.id} className={`p-4 border rounded-md shadow-sm ${plan.isArchived ? 'bg-gray-50 border-gray-400' : 'bg-white border-gray-300'}`}>
                 {editingPlanId === plan.id ? (
                   <div className="flex flex-col space-y-3">
                     <div className="flex items-center space-x-3">
@@ -647,7 +647,7 @@ export default function AdminSettingsPage() {
             {plans.length === 0 && <p className="text-sm text-gray-500 italic">No membership plans found.</p>}
           </div>
 
-          <div className="bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Add New Membership Plan</h4>
             <div className="flex flex-col space-y-3">
               <div className="flex items-center space-x-3">
@@ -689,7 +689,7 @@ export default function AdminSettingsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Courts Management</h3>
           <div className="space-y-4 mb-6">
             {courts.map(court => (
-              <div key={court.id} className="border border-gray-200 rounded-md p-4 flex justify-between items-start bg-gray-50">
+              <div key={court.id} className="border border-gray-400 rounded-md p-4 flex justify-between items-start bg-gray-50">
                 {editingCourtId === court.id ? (
                   <div className="w-full flex flex-col space-y-3">
                     <input 
@@ -742,7 +742,7 @@ export default function AdminSettingsPage() {
             {courts.length === 0 && <p className="text-sm text-gray-500 italic">No courts found.</p>}
           </div>
 
-          <div className="bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Add New Court</h4>
             <div className="flex flex-col space-y-3">
               <input 
@@ -785,7 +785,7 @@ export default function AdminSettingsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">Email Templates</h3>
           <p className="text-sm text-gray-500 mb-6">Customize the automated emails sent to your members. Use HTML formatting.</p>
           
-          <div className="bg-gray-50 p-4 border border-gray-200 rounded-md shadow-sm">
+          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Select Email to Edit</label>
               <select 

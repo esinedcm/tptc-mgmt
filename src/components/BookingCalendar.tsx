@@ -512,7 +512,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     />
                   </div>
                   {searchResults.length > 0 && (
-                    <ul className="mt-1 border border-gray-200 rounded-md max-h-40 overflow-y-auto bg-white absolute w-full max-w-sm z-10 shadow-lg">
+                    <ul className="mt-1 border border-gray-400 rounded-md max-h-40 overflow-y-auto bg-white absolute w-full max-w-sm z-10 shadow-lg">
                       {searchResults.map(user => (
                         <li 
                           key={user.id} 

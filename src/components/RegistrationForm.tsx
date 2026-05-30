@@ -301,7 +301,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
             <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Registered Members</h5>
             <div className="space-y-3">
               {members.map((member, index) => (
-                <div key={index} className="flex justify-between items-start border border-gray-100 p-3 rounded-lg bg-gray-50">
+                <div key={index} className="flex justify-between items-start border border-gray-300 p-3 rounded-lg bg-gray-50">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-gray-800">{member.firstName} {member.lastName}</span>
@@ -390,7 +390,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg border border-gray-100">
+    <form onSubmit={handleSubmit} className="space-y-8 max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg border border-gray-300">
       <h2 className="text-2xl font-bold text-gray-800 text-center">
         {editToken ? 'Edit Club Registration' : 'Club Registration'}
       </h2>
@@ -418,7 +418,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
       )}
 
       {/* Address Section */}
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-400">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Household Address</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <Input label="Street Number" name="streetNumber" value={address.streetNumber} onChange={handleAddressChange} required />
@@ -438,7 +438,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
         
         <div className="space-y-6">
           {members.map((member, index) => (
-            <div key={index} className="relative bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+            <div key={index} className="relative bg-white p-4 rounded-lg border border-gray-400 shadow-sm">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-medium text-gray-700">Member {index + 1}</h4>
                 {members.length > 1 && (

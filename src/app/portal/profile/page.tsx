@@ -34,7 +34,7 @@ export default async function ProfilePage() {
         <p className="mt-1 text-gray-500">Update your contact information and address details.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-400">
         <ProfileForm initialData={{
           phoneNumber: user.phoneNumber || '',
           streetNumber: user.streetNumber || '',

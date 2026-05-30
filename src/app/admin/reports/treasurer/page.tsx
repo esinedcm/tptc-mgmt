@@ -110,19 +110,19 @@ export default async function TreasurerReport() {
 
         {/* Financial Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-400">
             <div className="px-4 py-5 sm:p-6 text-center">
               <dt className="text-sm font-medium text-gray-500 truncate">Total Collected</dt>
               <dd className="mt-1 text-3xl font-bold text-green-600">${amountCollected.toFixed(2)}</dd>
             </div>
           </div>
-          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-400">
             <div className="px-4 py-5 sm:p-6 text-center">
               <dt className="text-sm font-medium text-gray-500 truncate">Amount Outstanding</dt>
               <dd className="mt-1 text-3xl font-bold text-red-600">${totalOutstanding.toFixed(2)}</dd>
             </div>
           </div>
-          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-200">
+          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-400">
             <div className="px-4 py-5 sm:p-6 text-center">
               <dt className="text-sm font-medium text-gray-500 truncate">Projected Total</dt>
               <dd className="mt-1 text-3xl font-bold text-blue-600">${(amountCollected + totalOutstanding).toFixed(2)}</dd>
@@ -131,8 +131,8 @@ export default async function TreasurerReport() {
         </div>
 
         {/* Outstanding Balances Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+        <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-400">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-400 bg-gray-50 flex justify-between items-center">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Outstanding Household Balances</h3>
             <span className="bg-red-100 text-red-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
               {householdBalances.length} Pending
@@ -143,7 +143,7 @@ export default async function TreasurerReport() {
             {householdBalances.length === 0 ? (
               <div className="p-6 text-center text-gray-500">No outstanding balances found. All members are paid!</div>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="min-w-full divide-y divide-gray-400">
                 <thead className="bg-white">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary Member / Household</th>
@@ -152,7 +152,7 @@ export default async function TreasurerReport() {
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Outstanding Balance</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-100">
+                <tbody className="bg-white divide-y divide-gray-300">
                   {householdBalances.map((hh) => (
                     <tr key={hh.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap print:whitespace-normal text-sm font-medium text-gray-900">

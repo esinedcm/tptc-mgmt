@@ -21,7 +21,7 @@ export default function ReportsHubPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link href="/admin/reports/paid-members" className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow group">
+          <Link href="/admin/reports/paid-members" className="bg-white overflow-hidden shadow rounded-lg border border-gray-400 hover:shadow-md transition-shadow group">
             <div className="px-4 py-5 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
@@ -41,7 +41,7 @@ export default function ReportsHubPage() {
             </div>
           </Link>
 
-          <Link href="/admin/reports/free-lessons" className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow group">
+          <Link href="/admin/reports/free-lessons" className="bg-white overflow-hidden shadow rounded-lg border border-gray-400 hover:shadow-md transition-shadow group">
             <div className="px-4 py-5 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-orange-100 rounded-md p-3">
@@ -61,7 +61,7 @@ export default function ReportsHubPage() {
             </div>
           </Link>
 
-          <Link href="/admin/reports/treasurer" className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 hover:shadow-md transition-shadow group">
+          <Link href="/admin/reports/treasurer" className="bg-white overflow-hidden shadow rounded-lg border border-gray-400 hover:shadow-md transition-shadow group">
             <div className="px-4 py-5 sm:p-6">
               <div className="flex items-center">
                 <div className="flex-shrink-0 bg-blue-100 rounded-md p-3">

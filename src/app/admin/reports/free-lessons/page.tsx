@@ -76,21 +76,21 @@ export default async function FreeLessonsReport() {
             if (!hasAnyMembers) return null;
 
             return (
-              <div key={ageCategory} className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-200">
-                <div className="px-4 py-5 sm:px-6 border-b border-gray-200 bg-orange-50">
+              <div key={ageCategory} className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-400">
+                <div className="px-4 py-5 sm:px-6 border-b border-gray-400 bg-orange-50">
                   <h3 className="text-lg leading-6 font-bold text-orange-900">{ageCategory}</h3>
                 </div>
                 
                 <div className="p-4 space-y-6">
                   {Object.entries(genderGroups).map(([gender, users]) => (
-                    <div key={gender} className="border border-gray-100 rounded-md">
-                      <div className="bg-gray-50 px-4 py-2 border-b border-gray-100 flex justify-between items-center">
+                    <div key={gender} className="border border-gray-300 rounded-md">
+                      <div className="bg-gray-50 px-4 py-2 border-b border-gray-300 flex justify-between items-center">
                         <h4 className="text-md font-semibold text-gray-700">{gender}</h4>
                         <span className="text-xs font-medium text-gray-500 bg-gray-200 px-2 rounded-full">{users.length} members</span>
                       </div>
                       
                       <div className="overflow-x-auto print:overflow-visible">
-                        <table className="min-w-full divide-y divide-gray-200">
+                        <table className="min-w-full divide-y divide-gray-400">
                           <thead className="bg-white">
                             <tr>
                               <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
@@ -98,7 +98,7 @@ export default async function FreeLessonsReport() {
                               <th scope="col" className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                             </tr>
                           </thead>
-                          <tbody className="bg-white divide-y divide-gray-100">
+                          <tbody className="bg-white divide-y divide-gray-300">
                             {users.map((user) => (
                               <tr key={user.id} className="hover:bg-gray-50">
                                 <td className="px-6 py-3 whitespace-nowrap print:whitespace-normal text-sm font-medium text-gray-900">

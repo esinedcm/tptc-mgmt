@@ -67,7 +67,7 @@ export default function MyBookingsList({
               className={`px-3 py-1 text-sm font-medium rounded border ${
                 canCancel 
                   ? 'border-red-300 text-red-600 hover:bg-red-50' 
-                  : 'border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50'
+                  : 'border-gray-400 text-gray-400 cursor-not-allowed bg-gray-50'
               }`}
             >
               {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
