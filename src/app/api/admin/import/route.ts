@@ -20,17 +20,20 @@ export async function POST(request: Request) {
 
     // We get the max member number to keep it sequential
     const currentYear = new Date().getFullYear().toString().slice(-2);
+    const yearPrefix = currentYear + '-';
     const lastUser = await prisma.user.findFirst({
-      where: { memberNumber: { startsWith: currentYear } },
+      where: { memberNumber: { startsWith: yearPrefix } },
       orderBy: { memberNumber: 'desc' }
     });
 
     let nextSequence = 1;
     if (lastUser && lastUser.memberNumber) {
-      const seqStr = lastUser.memberNumber.slice(2);
-      const parsedSeq = parseInt(seqStr, 10);
-      if (!isNaN(parsedSeq)) {
-        nextSequence = parsedSeq + 1;
+      const parts = lastUser.memberNumber.split('-');
+      if (parts.length === 2) {
+        const parsedSeq = parseInt(parts[1], 10);
+        if (!isNaN(parsedSeq)) {
+          nextSequence = parsedSeq + 1;
+        }
       }
     }
 
@@ -94,7 +97,7 @@ export async function POST(request: Request) {
           }
         } else {
           // Create new user
-          const memberNumber = `${currentYear}${String(nextSequence).padStart(3, '0')}`;
+          const memberNumber = `${yearPrefix}${String(nextSequence).padStart(3, '0')}`;
           nextSequence++;
           
           const resetToken = crypto.randomUUID();
