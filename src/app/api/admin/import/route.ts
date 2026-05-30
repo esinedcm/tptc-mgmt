@@ -16,6 +16,7 @@ export async function POST(request: Request) {
 
     let importedCount = 0;
     let skippedCount = 0;
+    const skippedRecords: Array<{ email: string; name: string; reason: string }> = [];
 
     // We get the max member number to keep it sequential
     const currentYear = new Date().getFullYear().toString().slice(-2);
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
 
         if (!email || !firstName || !lastName) {
           skippedCount++;
+          skippedRecords.push({ email: email || 'Unknown', name: `${firstName} ${lastName}`.trim() || 'Unknown', reason: 'Missing required fields (Email, First Name, or Last Name)' });
           continue; // Skip invalid records
         }
 
@@ -88,6 +90,7 @@ export async function POST(request: Request) {
             importedCount++;
           } else {
             skippedCount++;
+            skippedRecords.push({ email, name: `${firstName} ${lastName}`, reason: `Already has an active membership for ${activeSeason}` });
           }
         } else {
           // Create new user
@@ -127,7 +130,7 @@ export async function POST(request: Request) {
       timeout: 30000, // Increase timeout for large imports
     });
 
-    return NextResponse.json({ success: true, importedCount, skippedCount });
+    return NextResponse.json({ success: true, importedCount, skippedCount, skippedRecords });
   } catch (error: any) {
     console.error('Import error:', error);
     return NextResponse.json({ error: error.message || 'Internal server error during import' }, { status: 500 });

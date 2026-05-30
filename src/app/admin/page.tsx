@@ -71,6 +71,7 @@ export default function AdminDashboard() {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [pendingWelcomeCount, setPendingWelcomeCount] = useState(0);
   const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<{ imported: number, skipped: number, skippedRecords: { email: string, name: string, reason: string }[] } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -346,7 +347,7 @@ export default function AdminDashboard() {
           const data = await res.json();
           if (!res.ok) throw new Error(data.error);
           
-          alert(`Successfully imported ${data.importedCount} members. Skipped ${data.skippedCount} existing/invalid records.`);
+          setImportResult({ imported: data.importedCount, skipped: data.skippedCount, skippedRecords: data.skippedRecords || [] });
           fetchData();
         } catch (err: any) {
           alert('Import failed: ' + err.message);
@@ -532,6 +533,43 @@ export default function AdminDashboard() {
         </div>
         
         {error && <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>}
+
+        {importResult && (
+          <div className="mb-8 p-4 bg-blue-50 text-blue-900 rounded-md border border-blue-200">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-semibold text-lg">Import Complete</h3>
+              <button onClick={() => setImportResult(null)} className="text-blue-500 hover:text-blue-700 text-2xl leading-none">&times;</button>
+            </div>
+            <p className="mb-2">Successfully imported <strong>{importResult.imported}</strong> members.</p>
+            {importResult.skipped > 0 && (
+              <>
+                <p className="mb-2 text-orange-800">Skipped <strong>{importResult.skipped}</strong> records that were duplicates or invalid.</p>
+                {importResult.skippedRecords.length > 0 && (
+                  <div className="mt-4 max-h-64 overflow-y-auto bg-white rounded border border-blue-100 p-2">
+                    <table className="min-w-full text-sm text-left border-collapse">
+                      <thead className="bg-gray-50 text-gray-700 sticky top-0 z-10">
+                        <tr>
+                          <th className="px-3 py-2 border-b border-gray-200">Name</th>
+                          <th className="px-3 py-2 border-b border-gray-200">Email</th>
+                          <th className="px-3 py-2 border-b border-gray-200">Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {importResult.skippedRecords.map((rec, i) => (
+                          <tr key={i} className="border-b border-gray-100 last:border-0 hover:bg-gray-50">
+                            <td className="px-3 py-2">{rec.name}</td>
+                            <td className="px-3 py-2">{rec.email}</td>
+                            <td className="px-3 py-2 text-orange-600">{rec.reason}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
