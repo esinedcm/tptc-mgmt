@@ -167,6 +167,17 @@ export default function AdminDashboard() {
     return true;
   });
 
+  const filteredPastMembers = pastMembers.filter(m => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const fn = m.firstName.toLowerCase();
+      const ln = m.lastName.toLowerCase();
+      const em = m.email.toLowerCase();
+      if (!fn.includes(q) && !ln.includes(q) && !em.includes(q)) return false;
+    }
+    return true;
+  });
+
   const fetchData = async () => {
     try {
       setLoading(true);
