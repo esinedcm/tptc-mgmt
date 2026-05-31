@@ -48,19 +48,35 @@ export async function POST(request: Request) {
 
     await prisma.$transaction(async (tx) => {
       for (const record of records) {
-        const email = (record.Email || record.email || '').toString().toLowerCase().trim();
-        const firstName = (record['First Name'] || record.firstName || '').toString().trim();
-        const lastName = (record['Last Name'] || record.lastName || '').toString().trim();
-        const phoneNumber = (record.Phone || record.phoneNumber || record['Phone Number'] || '').toString().trim();
-        const membershipType = (record.Type || record.type || record.membershipType || record['Membership Type'] || record.Plan || record.plan || 'Adult').toString().trim();
-        const gender = (record.Gender || record.gender || '').toString().trim();
+        const email = (record.email || '').toString().toLowerCase().trim();
+        const firstName = (record.firstName || '').toString().trim();
+        const lastName = (record.lastName || '').toString().trim();
         
-        const isPaidStr = (record.Paid || record.paid || record['Amount Paid'] || record.amountPaid || record['Payment Status'] || record.Status || record.status || '').toString().toLowerCase().trim();
-        const hasPaid = isPaidStr === 'yes' || isPaidStr === 'true' || isPaidStr === 'y' || parseFloat(isPaidStr) > 0 || isPaidStr === 'active' || isPaidStr === 'paid';
-        const finalStatus = hasPaid ? 'Active' : 'Pending';
-        const amountPaid = hasPaid && !isNaN(parseFloat(isPaidStr)) ? parseFloat(isPaidStr) : null;
+        // Optional Fields
+        const phoneNumber = (record.phoneNumber || '').toString().trim();
+        const gender = (record.gender || '').toString().trim();
+        const streetNumber = (record.streetNumber || '').toString().trim();
+        const streetName = (record.streetName || '').toString().trim();
+        const city = (record.city || '').toString().trim();
+        const postalCode = (record.postalCode || '').toString().trim();
+        const tagNumber = (record.tagNumber || '').toString().trim();
         
-        const householdRef = (record.Household || record['Household ID'] || record.household || record.Family || record.family || '').toString().trim();
+        const membershipType = (record.membershipType || 'Adult').toString().trim();
+        
+        // Payment fields
+        const finalStatus = (record.status || 'Pending').toString().trim();
+        const amountPaid = record.amountPaid !== undefined && record.amountPaid !== null && record.amountPaid !== '' ? parseFloat(record.amountPaid) : null;
+        const paymentNotes = (record.paymentNotes || '').toString().trim();
+        
+        let paymentRecordedAt = null;
+        if (record.paymentRecordedAt) {
+          const parsedDate = new Date(record.paymentRecordedAt);
+          if (!isNaN(parsedDate.getTime())) {
+            paymentRecordedAt = parsedDate;
+          }
+        }
+        
+        const householdRef = (record.householdId || '').toString().trim();
         let householdId = null;
         if (householdRef) {
           if (!householdMap.has(householdRef)) {
@@ -79,11 +95,20 @@ export async function POST(request: Request) {
         const existingUser = await tx.user.findUnique({ where: { email } });
         
         if (existingUser) {
-          // If CSV assigns a household, ensure the existing user gets it
-          if (householdId && existingUser.householdId !== householdId) {
+          // Update user if they exist with any new optional fields they might not have had
+          const updateData: any = {};
+          if (householdId && existingUser.householdId !== householdId) updateData.householdId = householdId;
+          if (phoneNumber && !existingUser.phoneNumber) updateData.phoneNumber = phoneNumber;
+          if (streetNumber && !existingUser.streetNumber) updateData.streetNumber = streetNumber;
+          if (streetName && !existingUser.streetName) updateData.streetName = streetName;
+          if (city && !existingUser.city) updateData.city = city;
+          if (postalCode && !existingUser.postalCode) updateData.postalCode = postalCode;
+          if (tagNumber && !existingUser.tagNumber) updateData.tagNumber = tagNumber;
+
+          if (Object.keys(updateData).length > 0) {
             await tx.user.update({
               where: { id: existingUser.id },
-              data: { householdId }
+              data: updateData
             });
           }
 
@@ -100,6 +125,8 @@ export async function POST(request: Request) {
                 season: activeSeason,
                 status: finalStatus,
                 amountPaid: amountPaid,
+                paymentNotes: paymentNotes || null,
+                paymentRecordedAt: paymentRecordedAt,
               }
             });
             importedCount++;
@@ -122,6 +149,11 @@ export async function POST(request: Request) {
               lastName,
               phoneNumber,
               gender,
+              streetNumber,
+              streetName,
+              city,
+              postalCode,
+              tagNumber,
               passwordHash: defaultPasswordHash,
               memberNumber,
               householdId,
@@ -134,6 +166,8 @@ export async function POST(request: Request) {
                   season: activeSeason,
                   status: finalStatus,
                   amountPaid: amountPaid,
+                  paymentNotes: paymentNotes || null,
+                  paymentRecordedAt: paymentRecordedAt,
                 }
               }
             }

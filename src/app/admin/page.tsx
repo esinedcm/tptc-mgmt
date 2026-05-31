@@ -73,6 +73,10 @@ export default function AdminDashboard() {
   const [pendingWelcomeCount, setPendingWelcomeCount] = useState(0);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number, skipped: number, skippedRecords: { email: string, name: string, reason: string }[] } | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [csvData, setCsvData] = useState<any[]>([]);
+  const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
+  const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -343,6 +347,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const TARGET_FIELDS = [
+    { key: 'firstName', label: 'First Name', required: true },
+    { key: 'lastName', label: 'Last Name', required: true },
+    { key: 'email', label: 'Email Address', required: true },
+    { key: 'phoneNumber', label: 'Phone Number' },
+    { key: 'gender', label: 'Gender' },
+    { key: 'streetNumber', label: 'Street Number' },
+    { key: 'streetName', label: 'Street Name' },
+    { key: 'city', label: 'City' },
+    { key: 'postalCode', label: 'Postal Code' },
+    { key: 'tagNumber', label: 'Shoe Tag Number' },
+    { key: 'membershipType', label: 'Membership Type (Plan)' },
+    { key: 'status', label: 'Membership Status (Active/Pending)' },
+    { key: 'amountPaid', label: 'Amount Paid' },
+    { key: 'paymentNotes', label: 'Payment Notes' },
+    { key: 'paymentRecordedAt', label: 'Payment Date (YYYY-MM-DD)' },
+    { key: 'householdId', label: 'Household Group ID' },
+  ];
+
   const handleImportCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -356,31 +379,90 @@ export default function AdminDashboard() {
           return;
         }
         
-        if (!window.confirm(`Ready to import ${results.data.length} records. Continue?`)) {
+        if (!results.data || results.data.length === 0) {
+          alert('CSV file is empty or invalid.');
           if (fileInputRef.current) fileInputRef.current.value = '';
           return;
         }
 
-        setImporting(true);
-        try {
-          const res = await fetch('/api/admin/import', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(results.data),
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error);
-          
-          setImportResult({ imported: data.importedCount, skipped: data.skippedCount, skippedRecords: data.skippedRecords || [] });
-          fetchData();
-        } catch (err: any) {
-          alert('Import failed: ' + err.message);
-        } finally {
-          setImporting(false);
-          if (fileInputRef.current) fileInputRef.current.value = '';
+        const headers = results.meta.fields || [];
+        setCsvHeaders(headers);
+        setCsvData(results.data);
+        
+        // Auto-map based on similar names
+        const initialMapping: Record<string, string> = {};
+        TARGET_FIELDS.forEach(field => {
+          const matchedHeader = headers.find(h => 
+            h.toLowerCase().replace(/[^a-z0-9]/g, '') === field.label.toLowerCase().replace(/[^a-z0-9]/g, '') ||
+            h.toLowerCase().replace(/[^a-z0-9]/g, '') === field.key.toLowerCase().replace(/[^a-z0-9]/g, '')
+          );
+          if (matchedHeader) {
+            initialMapping[field.key] = matchedHeader;
+          }
+        });
+        
+        // Custom fuzzy matching for common variants
+        if (!initialMapping['firstName']) {
+          const match = headers.find(h => h.toLowerCase().includes('first'));
+          if (match) initialMapping['firstName'] = match;
         }
+        if (!initialMapping['lastName']) {
+          const match = headers.find(h => h.toLowerCase().includes('last'));
+          if (match) initialMapping['lastName'] = match;
+        }
+        if (!initialMapping['phoneNumber']) {
+          const match = headers.find(h => h.toLowerCase().includes('phone'));
+          if (match) initialMapping['phoneNumber'] = match;
+        }
+        if (!initialMapping['email']) {
+          const match = headers.find(h => h.toLowerCase().includes('email'));
+          if (match) initialMapping['email'] = match;
+        }
+        
+        setFieldMapping(initialMapping);
+        setShowImportModal(true);
+        if (fileInputRef.current) fileInputRef.current.value = '';
       }
     });
+  };
+
+  const executeImport = async () => {
+    const missingRequired = TARGET_FIELDS.filter(f => f.required && !fieldMapping[f.key]);
+    if (missingRequired.length > 0) {
+      alert(`Please map the following required fields: ${missingRequired.map(f => f.label).join(', ')}`);
+      return;
+    }
+
+    setImporting(true);
+    setShowImportModal(false);
+
+    const standardizedData = csvData.map(row => {
+      const standardObj: any = {};
+      TARGET_FIELDS.forEach(field => {
+        const csvHeader = fieldMapping[field.key];
+        if (csvHeader && row[csvHeader] !== undefined) {
+          standardObj[field.key] = row[csvHeader];
+        }
+      });
+      return standardObj;
+    });
+
+    try {
+      const res = await fetch('/api/admin/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(standardizedData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      
+      setImportResult({ imported: data.importedCount, skipped: data.skippedCount, skippedRecords: data.skippedRecords || [] });
+      fetchData();
+    } catch (err: any) {
+      alert('Import failed: ' + err.message);
+    } finally {
+      setImporting(false);
+    }
   };
 
   const handleSendWelcomeEmails = async () => {
@@ -1319,6 +1401,58 @@ export default function AdminDashboard() {
         </div>
         )}
       </div>
+
+      {showImportModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Map CSV Columns</h3>
+              <p className="text-sm text-gray-500 mt-1">We found {csvHeaders.length} columns in your CSV. Map them to the correct fields in our database.</p>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
+              <div className="space-y-4">
+                {TARGET_FIELDS.map(field => (
+                  <div key={field.key} className="flex flex-col sm:flex-row sm:items-center bg-white p-3 rounded border border-gray-200 shadow-sm">
+                    <div className="w-full sm:w-1/2 mb-2 sm:mb-0">
+                      <span className="text-sm font-medium text-gray-900">{field.label}</span>
+                      {field.required && <span className="text-red-500 ml-1">*</span>}
+                    </div>
+                    <div className="w-full sm:w-1/2">
+                      <select
+                        className="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        value={fieldMapping[field.key] || ''}
+                        onChange={(e) => setFieldMapping({...fieldMapping, [field.key]: e.target.value})}
+                      >
+                        <option value="">-- Ignore this field --</option>
+                        {csvHeaders.map(header => (
+                          <option key={header} value={header}>{header}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 rounded-b-lg">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeImport}
+                className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+              >
+                Confirm & Import {csvData.length} Records
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
