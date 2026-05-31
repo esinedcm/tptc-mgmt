@@ -599,14 +599,14 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab('Active')}
             className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-green-50 hover:border-green-400 transition-colors"
           >
-            <p className="text-sm text-gray-500 font-medium">Total Active Members</p>
+            <p className="text-sm text-black-500 font-bold">Total Active Members</p>
             <p className="text-2xl font-bold text-green-600">{activeMembershipsCount}</p>
           </div>
           <div 
             onClick={() => setActiveTab('Pending')}
             className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-yellow-50 hover:border-yellow-400 transition-colors"
           >
-            <p className="text-sm text-gray-500 font-medium">Pending Payments</p>
+            <p className="text-sm text-black-500 font-semibold">Pending Payments</p>
             <p className="text-2xl font-bold text-yellow-600">{pendingMembershipsCount}</p>
           </div>
           <div 
@@ -616,12 +616,12 @@ export default function AdminDashboard() {
             }}
             className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors"
           >
-            <p className="text-sm text-gray-500 font-medium">Prospects</p>
+            <p className="text-sm text-black-300 font-semibold">Prospects</p>
             <p className="text-2xl font-bold text-blue-600">{prospectsCount}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 relative group">
             <div className="flex justify-between items-center">
-              <p className="text-sm text-gray-500 font-medium">Gender Split</p>
+              <p className="text-sm text-black-500 font-bold">Gender Split</p>
               {genderFilter && (
                 <button 
                   onClick={() => setGenderFilter(null)}
@@ -654,11 +654,11 @@ export default function AdminDashboard() {
             onClick={() => setActiveTab('All')}
             className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-primary-50 hover:border-primary-400 transition-colors"
           >
-            <p className="text-sm text-gray-500 font-medium">Total Memberships</p>
+            <p className="text-sm text-black-500 font-bold">Total Memberships</p>
             <p className="text-2xl font-bold text-primary-600">{totalMemberships}</p>
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
-            <p className="text-sm text-gray-500 font-medium">Member Types</p>
+            <p className="text-sm text-black-500 font-bold">Member Types</p>
             <div className="mt-1 flex flex-wrap gap-2">
               {Object.entries(membershipTypesCount).map(([type, count]) => (
                 <span key={type} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
