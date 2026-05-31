@@ -358,6 +358,7 @@ export default function AdminDashboard() {
     { key: 'city', label: 'City' },
     { key: 'postalCode', label: 'Postal Code' },
     { key: 'tagNumber', label: 'Shoe Tag Number' },
+    { key: 'wantsFreeLessons', label: 'Interested in Free Lessons (Yes/No)' },
     { key: 'membershipType', label: 'Membership Type (Plan)' },
     { key: 'status', label: 'Membership Status (Active/Pending)' },
     { key: 'amountPaid', label: 'Amount Paid' },

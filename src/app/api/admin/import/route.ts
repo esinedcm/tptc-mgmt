@@ -61,6 +61,9 @@ export async function POST(request: Request) {
         const postalCode = (record.postalCode || '').toString().trim();
         const tagNumber = (record.tagNumber || '').toString().trim();
         
+        const wantsFreeLessonsStr = (record.wantsFreeLessons || '').toString().toLowerCase().trim();
+        const wantsFreeLessons = wantsFreeLessonsStr === 'yes' || wantsFreeLessonsStr === 'true' || wantsFreeLessonsStr === 'y';
+        
         const membershipType = (record.membershipType || 'Adult').toString().trim();
         
         // Payment fields
@@ -104,6 +107,7 @@ export async function POST(request: Request) {
           if (city && !existingUser.city) updateData.city = city;
           if (postalCode && !existingUser.postalCode) updateData.postalCode = postalCode;
           if (tagNumber && !existingUser.tagNumber) updateData.tagNumber = tagNumber;
+          if (wantsFreeLessons && !existingUser.wantsFreeLessons) updateData.wantsFreeLessons = true;
 
           if (Object.keys(updateData).length > 0) {
             await tx.user.update({
@@ -154,6 +158,7 @@ export async function POST(request: Request) {
               city,
               postalCode,
               tagNumber,
+              wantsFreeLessons,
               passwordHash: defaultPasswordHash,
               memberNumber,
               householdId,
