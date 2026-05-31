@@ -892,12 +892,10 @@ export default function AdminDashboard() {
                             <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] mr-2">{m.membershipType}</span>
                             Registered {new Date(m.createdAt).toLocaleDateString()}
                           </div>
-                          {m.user.dateOfBirth && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              DOB: {new Date(m.user.dateOfBirth).toLocaleDateString()}
+                          <div className="text-xs text-gray-500 mt-1">
+                              DOB: {m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toLocaleDateString() : <span className="text-red-500 italic font-medium">Missing</span>}
                               {m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}
                             </div>
-                          )}
                           {m.archivedAt && (
                             <div className="text-xs text-red-500 mt-1 font-medium">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</div>
                           )}
@@ -1049,7 +1047,7 @@ export default function AdminDashboard() {
                     <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                       <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.user.email}</div>
                       {m.user.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.user.phoneNumber}</div>}
-                      {m.user.dateOfBirth && <div><span className="font-medium text-gray-400 w-16 inline-block">DOB:</span> {new Date(m.user.dateOfBirth).toLocaleDateString()}{m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}</div>}
+                      <div><span className="font-medium text-gray-400 w-16 inline-block">DOB:</span> {m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toLocaleDateString() : <span className="text-red-500 italic font-medium">Missing</span>}{m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}</div>
                     </div>
 
                     <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col gap-2">
