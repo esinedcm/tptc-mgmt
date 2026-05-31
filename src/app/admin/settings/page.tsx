@@ -35,6 +35,37 @@ const TEMPLATE_VARIABLES: Record<string, string[]> = {
   'IMPORT_WELCOME_EMAIL': ['{{firstName}}', '{{clubName}}', '{{resetUrl}}'],
 };
 
+const DEFAULT_TEMPLATES: Record<string, { subject: string, htmlBody: string }> = {
+  "WELCOME_EMAIL": {
+    "subject": "Welcome to the {{clubName}}!",
+    "htmlBody": "\n    <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n      <h2 style=\"color: #4f46e5;\">Welcome to the {{clubName}}!</h2>\n      <p>Hi {{firstName}},</p>\n      <p>Great news! Your club membership has been approved and activated.</p>\n      <p>Your official Member Number is: <strong>{{memberNumber}}</strong></p>\n      <p>You can now log into the Member Portal to view your status, update your contact details, and book tennis courts!</p>\n      <a href=\"{{loginLink}}\" style=\"display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;\">Log In to Member Portal</a>\n      <p>If you haven't set a password yet, simply click the \"Forgot your password?\" link on the login page.</p>\n      <p>See you on the courts!</p>\n    </div>\n  "
+  },
+  "REGISTRATION_PENDING": {
+    "subject": "Your Registration Details & Edit Link",
+    "htmlBody": "<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> {{memberNames}}</li><li><b>Total Amount Due:</b> $\\{{totalDue}}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>{{paymentEmail}}</strong>.<br/>\n<strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href=\"{{editUrl}}\">{{editUrl}}</a></p>"
+  },
+  "PROFILE_UPDATED": {
+    "subject": "Your Club Registration Details Were Updated",
+    "htmlBody": "<b>Your registration details were recently updated by an administrator.</b><br><br><p>Here are the changes:</p><ul>{{changesHtml}}</ul>"
+  },
+  "BOOKING_CONFIRMATION": {
+    "subject": "Court Booking {{actionTitle}}",
+    "htmlBody": "\n    <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n      <h2 style=\"color: #4f46e5;\">Court Booking {{actionTitle}}</h2>\n      <p>{{actionText}}</p>\n      <div style=\"background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;\">\n        <p style=\"margin: 5px 0;\"><strong>Court:</strong> {{courtName}}</p>\n        <p style=\"margin: 5px 0;\"><strong>Time:</strong> {{formattedStart}} to {{formattedEnd}}</p>\n        <p style=\"margin: 5px 0;\"><strong>Type:</strong> {{type}}</p>\n        <p style=\"margin: 5px 0;\"><strong>Players:</strong> {{participantNames}}</p>\n        <p style=\"margin: 5px 0; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;\"><strong>Booked By:</strong> {{bookedBy}} on {{formattedBookedAt}}</p>\n      </div>\n      <p><a href=\"{{portalLink}}\" style=\"color: #4f46e5;\">Manage your bookings in the Member Portal</a></p>\n    </div>\n  "
+  },
+  "INTEREST_CONFIRMATION": {
+    "subject": "Thanks for your interest in {{clubName}}!",
+    "htmlBody": "\n    <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n      <h2 style=\"color: #4f46e5;\">Thanks for your interest in {{clubName}}!</h2>\n      <p>Hi {{firstName}},</p>\n      <p>We've received your information and are thrilled you're interested in joining our Club.</p>\n      <p>We hope you make {{clubShortName}} your home this season, and together we will continue to build upon a great tradition of excellence.</p>\n      <p>If you're ready to take the next step and officially register your household, you can do so at any time using the link below:</p>\n      <a href=\"{{registerLink}}\" style=\"display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;\">Register for the Club</a>\n      <p>We look forward to seeing you on the courts!</p>\n    </div>\n  "
+  },
+  "ADMIN_NEW_REGISTRATION": {
+    "subject": "New Registration - Pending Approval",
+    "htmlBody": "\n    <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n      <h2 style=\"color: #4f46e5;\">New Club Registration!</h2>\n      <p>A new household has submitted a registration and is pending approval.</p>\n      <div style=\"background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;\">\n        <p style=\"margin: 5px 0;\"><strong>Registered Members:</strong> {{memberNames}}</p>\n        <p style=\"margin: 5px 0;\"><strong>Total Amount Due:</strong> $\\{{totalDue}}</p>\n      </div>\n      <p>Please review the registration and payment status in the Admin Dashboard:</p>\n      <a href=\"{{adminDashboardLink}}\" style=\"display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;\">Go to Admin Dashboard</a>\n    </div>\n  "
+  },
+  "IMPORT_WELCOME_EMAIL": {
+    "subject": "Welcome to the Club Portal!",
+    "htmlBody": "\n    <div style=\"font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;\">\n      <h2 style=\"color: #4f46e5;\">Welcome to the new {{clubName}} Portal!</h2>\n      <p>Hi {{firstName}},</p>\n      <p>We've launched a new Member Portal for the upcoming season, and your account is ready to go!</p>\n      <p>Click the link below to securely set your password and access your account:</p>\n      <a href=\"{{resetUrl}}\" style=\"display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;\">Set Password & Log In</a>\n      <p>Once logged in, you can update your profile, view your membership status, and book courts.</p>\n      <p>See you on the courts!</p>\n    </div>\n  "
+  }
+};
+
 export default function AdminSettingsPage() {
   const [cutoffMinutes, setCutoffMinutes] = useState(90);
   const [maxHoursPerDay, setMaxHoursPerDay] = useState(2);
@@ -311,7 +342,8 @@ export default function AdminSettingsPage() {
     if (existing) {
       setEditTemplateForm(existing);
     } else {
-      setEditTemplateForm({ subject: '', htmlBody: '' });
+      const fallback = DEFAULT_TEMPLATES[id] || { subject: '', htmlBody: '' };
+      setEditTemplateForm(fallback);
     }
   };
 
