@@ -627,7 +627,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-400">
-          <nav className="flex space-x-4 border-b border-gray-400">
+          <nav className="flex flex-wrap gap-x-4 gap-y-2 border-b border-gray-400 w-full md:w-auto">
             {['Pending', 'Active', 'All', 'Archived', 'Past Members'].map((tab) => (
               <button
                 key={tab}
@@ -636,7 +636,7 @@ export default function AdminDashboard() {
                   activeTab === tab
                     ? 'border-primary-500 text-primary-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                } whitespace-nowrap py-2 md:py-4 px-1 border-b-2 font-medium text-sm`}
               >
                 {tab} {tab === 'Pending' && pendingMembershipsCount > 0 && `(${pendingMembershipsCount})`}
                 {tab === 'Active' && `(${activeMembershipsCount})`}
@@ -685,29 +685,29 @@ export default function AdminDashboard() {
             </span>
           </div>
           
-          <div className="overflow-x-auto">
+          <div className="overflow-x-hidden md:overflow-x-auto">
             {activeTab !== 'Past Members' && filteredMemberships.length === 0 ? (
               <div className="p-8 text-center text-gray-500 bg-gray-50">
                 No memberships found matching your criteria.
               </div>
             ) : activeTab !== 'Past Members' && (
-              <table className="min-w-full divide-y divide-gray-400">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-400 block md:table">
+                <thead className="bg-gray-50 hidden md:table-header-group">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-400">
+                <tbody className="bg-white divide-y divide-gray-200 md:divide-gray-400 block md:table-row-group">
                   {filteredMemberships.map((m) => {
                     const isEditing = editingId === m.id;
                     const isPaying = payingId === m.id;
 
                     if (isPaying) {
                       return (
-                        <tr key={m.id} className="bg-green-50">
-                          <td className="px-6 py-4" colSpan={2}>
+                        <tr key={m.id} className="bg-green-50 block md:table-row p-4 md:p-0 border-b border-green-200 md:border-none">
+                          <td className="px-0 md:px-6 py-4 block md:table-cell" colSpan={2}>
                             <div className="flex gap-4 items-center">
                               <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
@@ -735,19 +735,21 @@ export default function AdminDashboard() {
                               </p>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-right text-sm font-medium space-y-2 sm:space-y-0 sm:space-x-2 flex flex-col sm:flex-row justify-end items-center h-full">
-                            <button
-                              onClick={() => handleSavePayment(m.id)}
-                              className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-xs px-4 py-2 transition-colors mt-4"
-                            >
-                              Confirm Payment
-                            </button>
-                            <button
-                              onClick={handleCancelPay}
-                              className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors mt-4"
-                            >
-                              Cancel
-                            </button>
+                          <td className="px-0 md:px-6 py-4 block md:table-cell align-middle">
+                            <div className="flex flex-col sm:flex-row justify-end items-center gap-2 mt-4 md:mt-0 w-full">
+                              <button
+                                onClick={() => handleSavePayment(m.id)}
+                                className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full md:w-auto"
+                              >
+                                Confirm Payment
+                              </button>
+                              <button
+                                onClick={handleCancelPay}
+                                className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full md:w-auto"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -755,8 +757,8 @@ export default function AdminDashboard() {
 
                     if (isEditing) {
                       return (
-                        <tr key={m.id} className="bg-blue-50">
-                          <td className="px-6 py-4">
+                        <tr key={m.id} className="bg-blue-50 block md:table-row p-4 md:p-0 border-b border-blue-200 md:border-none">
+                          <td className="px-0 md:px-6 py-4 block md:table-cell">
                             <div className="flex flex-col gap-2">
                               <input 
                                 className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
@@ -793,8 +795,8 @@ export default function AdminDashboard() {
                               <input type="text" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.paymentNotes} onChange={e => setEditForm({...editForm, paymentNotes: e.target.value})} />
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col gap-2">
+                          <td className="px-0 md:px-6 py-4 block md:table-cell">
+                            <div className="flex flex-col gap-2 mt-4 md:mt-0">
                               <input 
                                 className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
                                 value={editForm.email}
@@ -895,27 +897,29 @@ export default function AdminDashboard() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right text-sm font-medium space-y-2 sm:space-y-0 sm:space-x-2 flex flex-col sm:flex-row justify-end items-center">
-                            <button
-                              onClick={() => handleSaveEdit(m.id)}
-                              className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-xs px-3 py-1.5 transition-colors"
-                            >
-                              Save
-                            </button>
-                            <button
-                              onClick={handleCancelEdit}
-                              className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-3 py-1.5 transition-colors"
-                            >
-                              Cancel
-                            </button>
+                          <td className="px-0 md:px-6 py-4 block md:table-cell align-middle">
+                            <div className="flex flex-col sm:flex-row justify-end items-center gap-2 mt-4 md:mt-0 w-full">
+                              <button
+                                onClick={() => handleSaveEdit(m.id)}
+                                className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full md:w-auto"
+                              >
+                                Save Changes
+                              </button>
+                              <button
+                                onClick={handleCancelEdit}
+                                className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full md:w-auto"
+                              >
+                                Cancel
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
                     }
 
                     return (
-                      <tr key={m.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                      <tr key={m.id} className="hover:bg-gray-50 block md:table-row p-4 md:p-0 border-b border-gray-200 md:border-none">
+                        <td className="px-0 md:px-6 py-2 md:py-4 whitespace-nowrap block md:table-cell">
                           <div className="flex items-center gap-2 mb-1">
                             <div className="text-sm font-medium text-gray-900">{m.user.firstName} {m.user.lastName}</div>
                             {m.user.memberNumber && (
@@ -968,7 +972,7 @@ export default function AdminDashboard() {
                             return null;
                           })()}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                        <td className="px-0 md:px-6 py-2 md:py-4 text-sm text-gray-500 block md:table-cell">
                           <div>{m.user.email}</div>
                           {m.user.phoneNumber && <div className="text-gray-400 mt-1">{m.user.phoneNumber}</div>}
                           {(m.user.streetNumber || m.user.streetName) && (
@@ -983,60 +987,62 @@ export default function AdminDashboard() {
                             </div>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
-                          {activeTab !== 'Archived' && (
-                            <div className="inline-block relative mr-2">
+                        <td className="px-0 md:px-6 py-2 md:py-4 whitespace-nowrap md:text-right text-sm font-medium relative block md:table-cell align-middle border-t border-gray-100 md:border-none mt-2 md:mt-0 pt-4 md:pt-4">
+                          <div className="flex flex-wrap gap-2 md:justify-end items-center">
+                            {activeTab !== 'Archived' && (
+                              <div className="inline-block relative">
+                                <button
+                                  onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)}
+                                  className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors"
+                                >
+                                  Email ▾
+                                </button>
+                                {activeEmailMenu === m.id && (
+                                  <div className="absolute left-0 md:right-0 md:left-auto mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                                    <button
+                                      onClick={() => handleResendEmail(m.user.id, 'welcome')}
+                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                      Resend Welcome Email
+                                    </button>
+                                    <button
+                                      onClick={() => handleResendEmail(m.user.id, 'renewal')}
+                                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                      Resend Renewal Link
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            {activeTab !== 'Archived' && (
                               <button
-                                onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)}
-                                className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors"
+                                onClick={() => handleEditClick(m)}
+                                className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors"
                               >
-                                Email ▾
+                                Edit
                               </button>
-                              {activeEmailMenu === m.id && (
-                                <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                                  <button
-                                    onClick={() => handleResendEmail(m.user.id, 'welcome')}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Resend Welcome Email
-                                  </button>
-                                  <button
-                                    onClick={() => handleResendEmail(m.user.id, 'renewal')}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Resend Renewal Link
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          {activeTab !== 'Archived' && (
-                            <button
-                              onClick={() => handleEditClick(m)}
-                              className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2"
-                            >
-                              Edit
-                            </button>
-                          )}
-                          {activeTab !== 'Archived' && m.status !== 'Active' && (
-                            <button
-                              onClick={() => handlePayClick(m)}
-                              className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2"
-                            >
-                              Mark as Paid
-                            </button>
-                          )}
-                          {activeTab !== 'Archived' && (
-                            <button
-                              onClick={() => handleDeleteMembership(m.id)}
-                              className="text-white bg-red-600 hover:bg-red-700 font-medium rounded-md text-sm px-4 py-2 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          )}
-                          {activeTab === 'Archived' && (
-                            <span className="text-gray-400 text-sm italic">Archived</span>
-                          )}
+                            )}
+                            {activeTab !== 'Archived' && m.status !== 'Active' && (
+                              <button
+                                onClick={() => handlePayClick(m)}
+                                className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors"
+                              >
+                                Mark as Paid
+                              </button>
+                            )}
+                            {activeTab !== 'Archived' && (
+                              <button
+                                onClick={() => handleDeleteMembership(m.id)}
+                                className="text-white bg-red-600 hover:bg-red-700 font-medium rounded-md text-sm px-4 py-2 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            )}
+                            {activeTab === 'Archived' && (
+                              <span className="text-gray-400 text-sm italic">Archived</span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1051,8 +1057,8 @@ export default function AdminDashboard() {
               </div>
             )}
             {activeTab === 'Past Members' && filteredPastMembers.length > 0 && (
-              <table className="min-w-full divide-y divide-gray-400">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-400 block md:table">
+                <thead className="bg-gray-50 hidden md:table-header-group">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name / ID</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
@@ -1060,10 +1066,10 @@ export default function AdminDashboard() {
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tenure</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-400">
+                <tbody className="bg-white divide-y divide-gray-200 md:divide-gray-400 block md:table-row-group">
                   {filteredPastMembers.map(m => (
-                    <tr key={m.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <tr key={m.id} className="hover:bg-gray-50 block md:table-row p-4 md:p-0 border-b border-gray-200 md:border-none">
+                      <td className="px-0 md:px-6 py-2 md:py-4 whitespace-nowrap block md:table-cell">
                         <div className="flex flex-col gap-1">
                           <div className="text-sm font-medium text-gray-900">{m.firstName} {m.lastName}</div>
                           {m.memberNumber && (
@@ -1073,11 +1079,11 @@ export default function AdminDashboard() {
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-0 md:px-6 py-2 md:py-4 text-sm text-gray-500 block md:table-cell">
                         <div>{m.email}</div>
                         {m.phoneNumber && <div className="text-gray-400 mt-1">{m.phoneNumber}</div>}
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
+                      <td className="px-0 md:px-6 py-2 md:py-4 text-sm text-gray-500 block md:table-cell">
                         <ul className="list-disc pl-4 space-y-1">
                           {m.memberships.slice(0, 3).map((mem, i) => (
                             <li key={i} className="text-xs">
@@ -1089,7 +1095,7 @@ export default function AdminDashboard() {
                           )}
                         </ul>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <td className="px-0 md:px-6 py-2 md:py-4 whitespace-nowrap md:text-right block md:table-cell mt-2 md:mt-0">
                         <div className="text-sm text-indigo-600 font-semibold">
                           {new Set(m.memberships.map((x: any) => x.season)).size} Year(s)
                         </div>
