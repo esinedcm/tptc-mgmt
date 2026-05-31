@@ -691,7 +691,7 @@ export default function AdminDashboard() {
                 No memberships found matching your criteria.
               </div>
             ) : activeTab !== 'Past Members' && (
-              <table className="hidden lg:table min-w-full divide-y divide-gray-400">
+              <table className="hidden md:table min-w-full divide-y divide-gray-400">
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
