@@ -39,11 +39,14 @@ export async function GET() {
 
     const csvContent = [csvHeaders.join(','), ...csvRows].join('\n');
 
+    const now = new Date();
+    const datePrefix = now.getFullYear().toString() + (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
+
     return new NextResponse(csvContent, {
       status: 200,
       headers: {
         'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="free-lessons-interest.csv"`,
+        'Content-Disposition': `attachment; filename="${datePrefix}-free-lessons-interest.csv"`,
       },
     });
   } catch (error) {

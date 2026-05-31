@@ -39,10 +39,13 @@ export async function GET() {
       csvContent += `${memberNumber},${firstName},${lastName},${email}\n`;
     });
 
+    const now = new Date();
+    const datePrefix = now.getFullYear().toString() + (now.getMonth() + 1).toString().padStart(2, '0') + now.getDate().toString().padStart(2, '0');
+    
     // Return as a downloadable CSV file
     const headers = new Headers();
     headers.set('Content-Type', 'text/csv');
-    headers.set('Content-Disposition', 'attachment; filename="member_emails.csv"');
+    headers.set('Content-Disposition', `attachment; filename="${datePrefix}-member_emails.csv"`);
 
     return new NextResponse(csvContent, {
       status: 200,
