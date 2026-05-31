@@ -887,6 +887,7 @@ export default function AdminDashboard() {
                           {m.user.dateOfBirth && (
                             <div className="text-xs text-gray-500 mt-1">
                               DOB: {new Date(m.user.dateOfBirth).toLocaleDateString()}
+                              {m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}
                             </div>
                           )}
                           {m.archivedAt && (
@@ -1033,7 +1034,7 @@ export default function AdminDashboard() {
                     <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                       <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.user.email}</div>
                       {m.user.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.user.phoneNumber}</div>}
-                      {m.user.dateOfBirth && <div><span className="font-medium text-gray-400 w-16 inline-block">DOB:</span> {new Date(m.user.dateOfBirth).toLocaleDateString()}</div>}
+                      {m.user.dateOfBirth && <div><span className="font-medium text-gray-400 w-16 inline-block">DOB:</span> {new Date(m.user.dateOfBirth).toLocaleDateString()}{m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}</div>}
                     </div>
 
                     <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col gap-2">
