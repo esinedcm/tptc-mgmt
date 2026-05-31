@@ -123,7 +123,7 @@ export async function sendWelcomeEmail({
   memberNumber?: string | null;
 }) {
   const baseUrl = await getBaseUrl();
-  const loginLink = `${baseUrl}/login`;
+  const loginLink = `${baseUrl}/login?email=${encodeURIComponent(to)}`;
 
   const memberNumberText = memberNumber ? `<p>Your official Member Number is: <strong>${memberNumber}</strong></p>` : '';
 
