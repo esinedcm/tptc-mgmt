@@ -41,15 +41,11 @@ export async function POST(request: Request) {
 
     // Send the specific email
     if (type === 'welcome') {
-      const emailResult = await sendImportWelcomeEmail({
+      await sendImportWelcomeEmail({
         to: user.email,
         firstName: user.firstName,
         resetToken: resetToken,
       });
-
-      if (!emailResult.success) {
-        throw new Error('Email sending failed');
-      }
 
       await prisma.user.update({
         where: { id: userId },
@@ -57,11 +53,7 @@ export async function POST(request: Request) {
       });
 
     } else if (type === 'renewal') {
-      const emailResult = await sendRenewalLinkEmail(user.email, resetToken);
-
-      if (!emailResult.success) {
-        throw new Error('Email sending failed');
-      }
+      await sendRenewalLinkEmail(user.email, resetToken);
     }
 
     return NextResponse.json({ success: true });

@@ -16,6 +16,7 @@ type Membership = {
   season?: string;
   archivedAt?: string;
   user: {
+    id: string;
     firstName: string;
     lastName: string;
     memberNumber?: string;
@@ -875,8 +876,6 @@ export default function AdminDashboard() {
                                   placeholder="Zip"
                                 />
                               </div>
-                              {editErrors.postalCode && <span className="text-xs text-red-500">{editErrors.postalCode}</span>}
-                            </div>
                               {editErrors.postalCode && <span className="text-xs text-red-500">{editErrors.postalCode}</span>}
                               <div className="text-xs font-semibold text-gray-500 mt-2 mb-1">Membership Type</div>
                               {m.membershipType === 'Family' ? (
