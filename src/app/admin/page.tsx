@@ -697,7 +697,8 @@ export default function AdminDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -709,7 +710,7 @@ export default function AdminDashboard() {
                     if (isPaying) {
                       return (
                         <tr key={m.id} className="bg-green-50">
-                          <td className="px-6 py-4" colSpan={2}>
+                          <td className="px-6 py-4" colSpan={3}>
                             <div className="flex gap-4 items-center">
                               <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
@@ -732,23 +733,23 @@ export default function AdminDashboard() {
                               </div>
                             </div>
                             {m.membershipType === 'Family' && m.user.householdId && (
-                              <p className="mt-2 text-xs text-green-700 font-medium">
+                              <p className="mt-2 text-sm text-green-700 font-medium">
                                 * This will securely apply payment details to all pending family members in this household.
                               </p>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-right text-sm font-medium space-y-2 sm:space-y-0 sm:space-x-2 flex flex-col sm:flex-row justify-end items-center h-full">
-                            <button
-                              onClick={() => handleSavePayment(m.id)}
-                              className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-xs px-4 py-2 transition-colors mt-4"
-                            >
-                              Confirm Payment
-                            </button>
+                          <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                             <button
                               onClick={handleCancelPay}
-                              className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors mt-4"
+                              className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors mr-2"
                             >
                               Cancel
+                            </button>
+                            <button
+                              onClick={() => handleSavePayment(m.id)}
+                              className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-xs px-4 py-2 transition-colors"
+                            >
+                              Confirm Payment
                             </button>
                           </td>
                         </tr>
@@ -758,169 +759,56 @@ export default function AdminDashboard() {
                     if (isEditing) {
                       return (
                         <tr key={m.id} className="bg-blue-50">
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col gap-2">
-                              <input 
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                value={editForm.firstName}
-                                onChange={e => setEditForm({ ...editForm, firstName: e.target.value })}
-                                placeholder="First Name"
-                              />
-                              <input 
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                value={editForm.lastName}
-                                onChange={e => setEditForm({ ...editForm, lastName: e.target.value })}
-                                placeholder="Last Name"
-                              />
-                              <label className="block text-xs font-semibold text-gray-700 mt-2 mb-1">Date of Birth</label>
-                              <input 
-                                type="date"
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                value={editForm.dateOfBirth}
-                                onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })}
-                              />
-                              <label className="block text-xs font-semibold text-gray-700 mt-2 mb-1">Tag Number</label>
-                              <input type="text" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.tagNumber} onChange={e => setEditForm({...editForm, tagNumber: e.target.value})} placeholder="Tag Number" />
-                            </div>
-                            <div className="mt-2">
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
-                              <input type="number" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.amountPaid} onChange={e => setEditForm({...editForm, amountPaid: parseFloat(e.target.value) || 0})} />
-                            </div>
-                            <div className="mt-2">
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Payment Date</label>
-                              <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.paymentRecordedAt} onChange={e => setEditForm({...editForm, paymentRecordedAt: e.target.value})} />
-                            </div>
-                            <div className="mt-2">
-                              <label className="block text-xs font-semibold text-gray-700 mb-1">Payment Notes</label>
-                              <input type="text" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.paymentNotes} onChange={e => setEditForm({...editForm, paymentNotes: e.target.value})} />
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col gap-2">
-                              <input 
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                value={editForm.email}
-                                onChange={e => setEditForm({ ...editForm, email: e.target.value })}
-                                placeholder="Email"
-                              />
-                              <div className="flex gap-4">
-                                <div className="flex-1">
-                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Phone</label>
-                                  <input 
-                                    type="text"
-                                    className={`w-full border rounded px-2 py-1 text-sm ${editErrors.phoneNumber ? 'border-red-500' : 'border-gray-300'}`}
-                                    value={editForm.phoneNumber}
-                                    onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })}
-                                    onBlur={handleEditBlur}
-                                    placeholder="Phone Number"
-                                  />
-                                  {editErrors.phoneNumber && <span className="text-red-500 text-xs">{editErrors.phoneNumber}</span>}
-                                </div>
-                                <div className="flex-1">
-                                  <label className="block text-xs font-semibold text-gray-700 mb-1">Role</label>
-                                  <select 
-                                    className="w-full border border-gray-300 rounded px-2 py-1 text-sm"
-                                    value={editForm.role}
-                                    onChange={e => setEditForm({ ...editForm, role: e.target.value })}
-                                  >
-                                    <option value="MEMBER">Member</option>
-                                    <option value="ADMIN">Admin</option>
+                          <td className="px-6 py-4" colSpan={3}>
+                            <div className="grid grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">First Name</label>
+                                <input className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.firstName} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Last Name</label>
+                                <input className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.lastName} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Email</label>
+                                <input className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Phone Number</label>
+                                <input className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.phoneNumber} onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Birth</label>
+                                <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Tag Number</label>
+                                <input type="text" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.tagNumber} onChange={e => setEditForm({...editForm, tagNumber: e.target.value})} />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Membership Type</label>
+                                {m.membershipType === 'Family' ? (
+                                  <div className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-400" title="Family memberships cannot be changed individually">Family (Locked)</div>
+                                ) : (
+                                  <select className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.membershipType} onChange={e => setEditForm({ ...editForm, membershipType: e.target.value })}>
+                                    <option value="Adult">Adult</option>
+                                    <option value="Junior">Junior</option>
+                                    <option value="Senior">Senior</option>
                                   </select>
-                                </div>
+                                )}
                               </div>
-                              <div className="mt-2 flex items-center gap-2">
-                                <input 
-                                  type="checkbox" 
-                                  className="w-4 h-4 text-blue-600" 
-                                  checked={editForm.wantsFreeLessons} 
-                                  onChange={e => setEditForm({...editForm, wantsFreeLessons: e.target.checked})} 
-                                />
-                                <span className="text-xs text-gray-700">Wants Free Lessons</span>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
+                                <input type="number" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.amountPaid} onChange={e => setEditForm({...editForm, amountPaid: parseFloat(e.target.value) || 0})} />
                               </div>
-                              {editErrors.phoneNumber && <div className="text-red-500 text-xs mt-1">{editErrors.phoneNumber}</div>}
-                              <select
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full bg-white"
-                                value={editForm.gender}
-                                onChange={e => setEditForm({ ...editForm, gender: e.target.value })}
-                              >
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                              </select>
-                              <div className="text-xs font-semibold text-gray-500 mt-1">Household Address</div>
-                              <div className="flex gap-2">
-                                <input 
-                                  className="border border-gray-300 rounded px-2 py-1 text-sm w-16"
-                                  value={editForm.streetNumber}
-                                  onChange={e => setEditForm({ ...editForm, streetNumber: e.target.value })}
-                                  placeholder="No."
-                                />
-                                <input 
-                                  className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
-                                  value={editForm.streetName}
-                                  onChange={e => setEditForm({ ...editForm, streetName: e.target.value })}
-                                  placeholder="Street"
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <input 
-                                  className="border border-gray-300 rounded px-2 py-1 text-sm flex-1"
-                                  value={editForm.city}
-                                  onChange={e => setEditForm({ ...editForm, city: e.target.value })}
-                                  placeholder="City"
-                                />
-                                <input 
-                                  className={`border rounded px-2 py-1 text-sm w-20 ${editErrors.postalCode ? 'border-red-500' : 'border-gray-300'}`}
-                                  value={editForm.postalCode}
-                                  onChange={e => setEditForm({ ...editForm, postalCode: e.target.value })}
-                                  onBlur={handleEditBlur}
-                                  placeholder="Zip"
-                                />
-                              </div>
-                              {editErrors.postalCode && <span className="text-xs text-red-500">{editErrors.postalCode}</span>}
-                              <div className="text-xs font-semibold text-gray-500 mt-2 mb-1">Membership Type</div>
-                              {m.membershipType === 'Family' ? (
-                                <div className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-400 w-full" title="Family memberships cannot be changed individually">
-                                  Family (Locked)
-                                </div>
-                              ) : (
-                                <select
-                                  className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                  value={editForm.membershipType}
-                                  onChange={e => setEditForm({ ...editForm, membershipType: e.target.value })}
-                                >
-                                  <option value="Adult">Adult</option>
-                                  <option value="Junior">Junior</option>
-                                  <option value="Senior">Senior</option>
-                                </select>
-                              )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right text-sm font-medium space-y-2 sm:space-y-0 sm:space-x-2 flex flex-col sm:flex-row justify-between items-center w-full">
-                            <button
-                              onClick={() => {
-                                handleDeleteMembership(m.id);
-                                setEditingId(null);
-                              }}
-                              className="text-red-700 bg-red-100 hover:bg-red-200 border border-red-200 font-medium rounded-md text-xs px-4 py-2 transition-colors mr-auto"
-                            >
-                              Delete
-                            </button>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={handleCancelEdit}
-                                className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                onClick={() => handleSaveEdit(m.id)}
-                                className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-xs px-4 py-2 transition-colors"
-                              >
-                                Save Changes
-                              </button>
-                            </div>
+                          <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                            <button onClick={handleCancelEdit} className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors mr-2">Cancel</button>
+                            <button onClick={() => handleSaveEdit(m.id)} className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-xs px-4 py-2 transition-colors mr-2">Save</button>
+                            {activeTab !== 'Archived' && (
+                              <button onClick={() => { handleDeleteMembership(m.id); setEditingId(null); }} className="text-red-700 bg-red-100 hover:bg-red-200 border border-red-200 font-medium rounded-md text-xs px-4 py-2 transition-colors mt-2 block w-full text-center">Delete</button>
+                            )}
                           </td>
                         </tr>
                       );
@@ -932,117 +820,56 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-2 mb-1">
                             <div className="text-sm font-medium text-gray-900">{m.user.firstName} {m.user.lastName}</div>
                             {m.user.memberNumber && (
-                              <span className="bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-400">
-                                #{m.user.memberNumber}
-                              </span>
-                            )}
-                            {m.user.tagNumber && (
-                              <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200" title="Tag Number">
-                                Tag: {m.user.tagNumber}
-                              </span>
-                            )}
-                            {m.user.householdId && (
-                              <button 
-                                onClick={() => setSelectedHouseholdId(m.user.householdId!)}
-                                className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors" 
-                                title="Click to view household members"
-                              >
-                                Group: {m.user.householdId.substring(0, 6).toUpperCase()}
-                              </button>
-                            )}
-                            {m.user.wantsFreeLessons && (
-                              <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200" title="Wants Free Lessons">
-                                🎾 Lessons
-                              </span>
+                              <span className="bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-400">#{m.user.memberNumber}</span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500 mb-1">
+                          <div className="flex items-center gap-2 mt-2">
+                            {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
+                            {m.user.householdId && (
+                              <button onClick={() => setSelectedHouseholdId(m.user.householdId!)} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
+                            )}
+                            {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Lessons</span>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="font-medium text-gray-900">{m.user.email}</div>
+                          <div className="text-gray-500 mt-1">{m.user.phoneNumber || '-'}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <div className="mb-1">
+                            <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] mr-2">{m.membershipType}</span>
                             Registered {new Date(m.createdAt).toLocaleDateString()}
-                            <span className="mx-2 text-gray-300">|</span>
-                            <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px]">{m.membershipType}</span>
                           </div>
                           {m.user.dateOfBirth && (
-                            <div className="text-xs text-gray-500">
-                              DOB: {new Date(m.user.dateOfBirth).toLocaleDateString()} 
-                              <span className="text-gray-400 ml-1">
-                                ({Math.abs(new Date(Date.now() - new Date(m.user.dateOfBirth).getTime()).getUTCFullYear() - 1970)} yrs)
-                              </span>
-                            </div>
-                          )}
-                          {(() => {
-                            const tenure = m.user.memberships ? new Set(m.user.memberships.map((x: any) => x.season)).size : 1;
-                            if (tenure >= 2) {
-                              return (
-                                <div className="text-xs text-indigo-600 font-semibold mt-1">
-                                  Tenure: {tenure} Year(s)
-                                </div>
-                              );
-                            }
-                            return null;
-                          })()}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          <div>{m.user.email}</div>
-                          {m.user.phoneNumber && <div className="text-gray-400 mt-1">{m.user.phoneNumber}</div>}
-                          {(m.user.streetNumber || m.user.streetName) && (
-                            <div className="text-gray-400 mt-2 text-xs truncate max-w-[200px]" title={`${m.user.streetNumber} ${m.user.streetName}, ${m.user.city} ${m.user.postalCode}`}>
-                              {m.user.streetNumber} {m.user.streetName}<br/>
-                              {m.user.city}, {m.user.postalCode}
+                            <div className="text-xs text-gray-500 mt-1">
+                              DOB: {new Date(m.user.dateOfBirth).toLocaleDateString()}
                             </div>
                           )}
                           {m.archivedAt && (
-                            <div className="text-xs text-red-500 mt-2 font-medium">
-                              Deleted on: {new Date(m.archivedAt).toLocaleDateString()}
-                            </div>
+                            <div className="text-xs text-red-500 mt-1 font-medium">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</div>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           {activeTab !== 'Archived' && (
-                            <div className="inline-block relative mr-2">
-                              <button
-                                onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)}
-                                className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors"
-                              >
+                            <div className="inline-block relative mr-2 text-left">
+                              <button onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)} className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors">
                                 Email ▾
                               </button>
                               {activeEmailMenu === m.id && (
                                 <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                                  <button
-                                    onClick={() => handleResendEmail(m.user.id, 'welcome')}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Resend Welcome Email
-                                  </button>
-                                  <button
-                                    onClick={() => handleResendEmail(m.user.id, 'renewal')}
-                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    Resend Renewal Link
-                                  </button>
+                                  <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
+                                  <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Renewal Link</button>
                                 </div>
                               )}
                             </div>
                           )}
                           {activeTab !== 'Archived' && (
-                            <button
-                              onClick={() => handleEditClick(m)}
-                              className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2"
-                            >
-                              Edit
-                            </button>
+                            <button onClick={() => handleEditClick(m)} className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2">Edit</button>
                           )}
                           {activeTab !== 'Archived' && m.status !== 'Active' && (
-                            <button
-                              onClick={() => handlePayClick(m)}
-                              className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2"
-                            >
-                              Mark as Paid
-                            </button>
+                            <button onClick={() => handlePayClick(m)} className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2">Mark as Paid</button>
                           )}
-
-                          {activeTab === 'Archived' && (
-                            <span className="text-gray-400 text-sm italic">Archived</span>
-                          )}
+                          {activeTab === 'Archived' && <span className="text-gray-400 text-sm italic">Archived</span>}
                         </td>
                       </tr>
                     );
