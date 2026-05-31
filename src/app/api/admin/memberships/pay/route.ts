@@ -35,8 +35,43 @@ export async function POST(request: Request) {
         },
       });
 
-      // 2. If part of a household, sync payment status to the rest of the household 
+      // 2. Calculate if the amount paid covers the entire household
+      let shouldMarkOthers = false;
+      const paid = amountPaid ? parseFloat(amountPaid) : 0;
+      
       if (membership.user.householdId) {
+        const householdMembers = await tx.membership.findMany({
+          where: { 
+            user: { householdId: membership.user.householdId },
+            season: membership.season
+          }
+        });
+        
+        const plans = await tx.membershipPlan.findMany();
+        let totalDue = 0;
+        let hasFamily = false;
+        
+        for (const m of householdMembers) {
+          if (m.membershipType === 'Family') {
+            hasFamily = true;
+          } else {
+            const plan = plans.find(p => p.name === m.membershipType);
+            totalDue += (plan?.cost || 0);
+          }
+        }
+        
+        if (hasFamily) {
+          const fPlan = plans.find(p => p.name === 'Family');
+          totalDue = fPlan?.cost || 0;
+        }
+        
+        if (paid >= totalDue && totalDue > 0) {
+          shouldMarkOthers = true;
+        }
+      }
+
+      // 3. If part of a household and paid in full, sync payment status to the rest of the household 
+      if (shouldMarkOthers && membership.user.householdId) {
         await tx.membership.updateMany({
           where: {
             user: { householdId: membership.user.householdId },
