@@ -991,7 +991,9 @@ export default function AdminDashboard() {
                                 className="text-white hover:text-white bg-gray-800 hover:bg-gray-900 border border-gray-900 shadow-sm font-medium rounded-md text-sm px-3 py-2 transition-colors"
                                 title="Email Actions"
                               >
-                                ✉️
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                  <path d="M3 4a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2H3zm0 2h14v.511l-7 4.2-7-4.2V6z" />
+                                </svg>
                               </button>
                               {activeEmailMenu === m.id && (
                                 <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
