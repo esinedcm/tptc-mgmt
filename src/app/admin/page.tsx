@@ -107,6 +107,7 @@ export default function AdminDashboard() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('Pending');
+  const [genderFilter, setGenderFilter] = useState<string | null>(null);
 
   // Stats calculation
   const totalMemberships = memberships.length;
@@ -150,6 +151,7 @@ export default function AdminDashboard() {
     }
   }) as Membership) : memberships).filter(m => {
     if (activeTab !== 'All' && activeTab !== 'Archived' && activeTab !== 'Past Members' && m.status !== activeTab) return false;
+    if (genderFilter && m.user.gender !== genderFilter && (m as any).gender !== genderFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = m.user.firstName.toLowerCase();
@@ -161,6 +163,7 @@ export default function AdminDashboard() {
   });
 
   const filteredLeads = leads.filter(l => {
+    if (genderFilter && (l as any).gender !== genderFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = l.firstName.toLowerCase();
@@ -172,6 +175,7 @@ export default function AdminDashboard() {
   });
 
   const filteredPastMembers = pastMembers.filter(m => {
+    if (genderFilter && (m as any).gender !== genderFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = m.firstName.toLowerCase();
@@ -591,25 +595,65 @@ export default function AdminDashboard() {
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
+          <div 
+            onClick={() => setActiveTab('Active')}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-green-50 hover:border-green-400 transition-colors"
+          >
             <p className="text-sm text-gray-500 font-medium">Total Active Members</p>
             <p className="text-2xl font-bold text-green-600">{activeMembershipsCount}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
+          <div 
+            onClick={() => setActiveTab('Pending')}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-yellow-50 hover:border-yellow-400 transition-colors"
+          >
             <p className="text-sm text-gray-500 font-medium">Pending Payments</p>
             <p className="text-2xl font-bold text-yellow-600">{pendingMembershipsCount}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
+          <div 
+            onClick={() => {
+              const el = document.getElementById('prospects-table');
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-blue-50 hover:border-blue-400 transition-colors"
+          >
             <p className="text-sm text-gray-500 font-medium">Prospects</p>
             <p className="text-2xl font-bold text-blue-600">{prospectsCount}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
-            <p className="text-sm text-gray-500 font-medium">Gender Split</p>
-            <p className="text-xl font-bold text-gray-700">
-              <span className="text-pink-600">{femaleCount}F</span> / <span className="text-blue-600">{maleCount}M</span>
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 relative group">
+            <div className="flex justify-between items-center">
+              <p className="text-sm text-gray-500 font-medium">Gender Split</p>
+              {genderFilter && (
+                <button 
+                  onClick={() => setGenderFilter(null)}
+                  className="text-xs text-gray-400 hover:text-gray-700 bg-gray-100 px-2 rounded-full"
+                  title="Clear Filter"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            <p className="text-xl font-bold text-gray-700 mt-1 flex gap-2">
+              <span 
+                onClick={() => setGenderFilter(genderFilter === 'Female' ? null : 'Female')}
+                className={`cursor-pointer transition-colors px-2 py-0.5 rounded ${genderFilter === 'Female' ? 'bg-pink-100 text-pink-700' : 'text-pink-600 hover:bg-pink-50'}`}
+                title="Filter by Female"
+              >
+                {femaleCount}F
+              </span>
+              <span className="text-gray-300">/</span>
+              <span 
+                onClick={() => setGenderFilter(genderFilter === 'Male' ? null : 'Male')}
+                className={`cursor-pointer transition-colors px-2 py-0.5 rounded ${genderFilter === 'Male' ? 'bg-blue-100 text-blue-700' : 'text-blue-600 hover:bg-blue-50'}`}
+                title="Filter by Male"
+              >
+                {maleCount}M
+              </span>
             </p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
+          <div 
+            onClick={() => setActiveTab('All')}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-primary-50 hover:border-primary-400 transition-colors"
+          >
             <p className="text-sm text-gray-500 font-medium">Total Memberships</p>
             <p className="text-2xl font-bold text-primary-600">{totalMemberships}</p>
           </div>
