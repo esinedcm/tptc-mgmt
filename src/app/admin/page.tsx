@@ -93,6 +93,8 @@ export default function AdminDashboard() {
     lastName: '',
     email: '',
     phoneNumber: '',
+    alternatePhoneNumber: '',
+    notes: '',
     role: '',
     gender: '',
     dateOfBirth: '',
@@ -290,6 +292,8 @@ export default function AdminDashboard() {
       lastName: m.user.lastName,
       email: m.user.email,
       phoneNumber: m.user.phoneNumber || '',
+      alternatePhoneNumber: m.user.alternatePhoneNumber || '',
+      notes: m.user.notes || '',
       role: m.user.role || 'MEMBER',
       gender: m.user.gender || '',
       dateOfBirth: m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toISOString().split('T')[0] : '',
@@ -1116,6 +1120,9 @@ export default function AdminDashboard() {
                         
                         <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} placeholder="Email" />
                         <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.phoneNumber} onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })} placeholder="Phone Number" />
+                        <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.alternatePhoneNumber} onChange={e => setEditForm({ ...editForm, alternatePhoneNumber: e.target.value })} placeholder="Alternate Phone Number" />
+                        
+                        <textarea className="border border-gray-300 rounded px-3 py-2 text-sm w-full col-span-1 sm:col-span-2" rows={2} value={editForm.notes} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} placeholder="Member Notes (Allergies, Medical, General Info)"></textarea>
                         
                         <label className="text-xs font-semibold text-gray-700 mt-2">Amount Paid ($)</label>
                         <input type="number" className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.amountPaid} onChange={e => setEditForm({...editForm, amountPaid: parseFloat(e.target.value) || 0})} />

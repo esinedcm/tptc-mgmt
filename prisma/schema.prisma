@@ -38,6 +38,8 @@ model User {
   city         String?
   postalCode   String?
   phoneNumber  String?
+  alternatePhoneNumber String?
+  notes        String?
   gender       String?
   dateOfBirth  DateTime?
   wantsFreeLessons Boolean @default(false)
