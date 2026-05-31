@@ -462,7 +462,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleResendEmail = async (id: string, type: 'welcome' | 'renewal' | 'interest' | 'pending') => {
+  const handleResendEmail = async (id: string, type: 'welcome' | 'import-welcome' | 'renewal' | 'interest' | 'pending') => {
     try {
       setActiveEmailMenu(null);
       const payload = type === 'interest' ? { leadId: id, type } : { userId: id, type };
@@ -941,6 +941,7 @@ export default function AdminDashboard() {
                               {activeEmailMenu === m.id && (
                                 <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                                   <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
+                                  <button onClick={() => handleResendEmail(m.user.id, 'import-welcome')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Import Welcome Email</button>
                                   <button onClick={() => handleResendEmail(m.user.id, 'pending')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Registration Pending</button>
                                   <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Renewal Link</button>
                                 </div>

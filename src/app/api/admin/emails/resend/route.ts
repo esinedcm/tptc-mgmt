@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendImportWelcomeEmail, sendRenewalLinkEmail, sendInterestConfirmationEmail, sendEditLinkEmail } from '@/lib/email';
+import { sendImportWelcomeEmail, sendRenewalLinkEmail, sendInterestConfirmationEmail, sendEditLinkEmail, sendWelcomeEmail } from '@/lib/email';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing identifier or type' }, { status: 400 });
     }
 
-    if (type !== 'welcome' && type !== 'renewal' && type !== 'interest' && type !== 'pending') {
+    if (type !== 'welcome' && type !== 'renewal' && type !== 'interest' && type !== 'pending' && type !== 'import-welcome') {
       return NextResponse.json({ error: 'Invalid email type' }, { status: 400 });
     }
 
@@ -52,6 +52,17 @@ export async function POST(request: Request) {
     }
 
     if (type === 'welcome') {
+      await sendWelcomeEmail({
+        to: user.email,
+        firstName: user.firstName,
+        memberNumber: user.memberNumber,
+      });
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { welcomeEmailSent: true }
+      });
+    } else if (type === 'import-welcome') {
       await sendImportWelcomeEmail({
         to: user.email,
         firstName: user.firstName,
@@ -62,7 +73,6 @@ export async function POST(request: Request) {
         where: { id: userId },
         data: { welcomeEmailSent: true }
       });
-
     } else if (type === 'renewal') {
       await sendRenewalLinkEmail(user.email, resetToken);
     } else if (type === 'pending') {
