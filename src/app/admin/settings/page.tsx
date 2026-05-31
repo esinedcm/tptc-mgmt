@@ -800,6 +800,7 @@ export default function AdminSettingsPage() {
                 <option value="BOOKING_CONFIRMATION">Booking Confirmation</option>
                 <option value="INTEREST_CONFIRMATION">Interest Confirmation</option>
                 <option value="ADMIN_NEW_REGISTRATION">Admin Alert: New Registration</option>
+                <option value="IMPORT_WELCOME_EMAIL">Import Welcome Email</option>
               </select>
             </div>
 
