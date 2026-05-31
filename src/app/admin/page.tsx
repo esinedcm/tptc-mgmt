@@ -691,7 +691,9 @@ export default function AdminDashboard() {
                 No memberships found matching your criteria.
               </div>
             ) : activeTab !== 'Past Members' && (
-              <table className="hidden md:table min-w-full divide-y divide-gray-400">
+              <>
+              <div className="hidden md:block w-full overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-400">
                 <thead className="bg-gray-50">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
@@ -1047,6 +1049,145 @@ export default function AdminDashboard() {
                   })}
                 </tbody>
               </table>
+              </div>
+              <div className="block md:hidden space-y-4">
+              {filteredMemberships.map((m) => {
+                const isEditing = editingId === m.id;
+                const isPaying = payingId === m.id;
+
+                if (isPaying) {
+                  return (
+                    <div key={m.id} className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
+                        <input 
+                          type="number"
+                          className="border border-gray-300 rounded px-3 py-2 text-sm w-full focus:ring-green-500 focus:border-green-500"
+                          value={payForm.amountPaid}
+                          onChange={e => setPayForm({ ...payForm, amountPaid: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Payment Notes / E-transfer details</label>
+                        <input 
+                          type="text"
+                          placeholder="e.g. e-transfer confirmation #123456"
+                          className="border border-gray-300 rounded px-3 py-2 text-sm w-full focus:ring-green-500 focus:border-green-500"
+                          value={payForm.paymentNotes}
+                          onChange={e => setPayForm({ ...payForm, paymentNotes: e.target.value })}
+                        />
+                      </div>
+                      {m.membershipType === 'Family' && m.user.householdId && (
+                        <p className="mb-4 text-xs text-green-700 font-medium">
+                          * This will securely apply payment details to all pending family members in this household.
+                        </p>
+                      )}
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => handleSavePayment(m.id)}
+                          className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors w-full"
+                        >
+                          Confirm Payment
+                        </button>
+                        <button
+                          onClick={handleCancelPay}
+                          className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-sm px-4 py-2 transition-colors w-full"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (isEditing) {
+                  return (
+                    <div key={m.id} className="bg-blue-50 p-4 rounded-lg shadow-sm border border-blue-200">
+                      <div className="flex flex-col gap-3 mb-4">
+                        <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.firstName} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} placeholder="First Name" />
+                        <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.lastName} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} placeholder="Last Name" />
+                        
+                        <label className="text-xs font-semibold text-gray-700">Date of Birth</label>
+                        <input type="date" className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
+                        
+                        <input type="text" className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.tagNumber} onChange={e => setEditForm({...editForm, tagNumber: e.target.value})} placeholder="Tag Number" />
+                        
+                        <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} placeholder="Email" />
+                        <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.phoneNumber} onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })} placeholder="Phone Number" />
+                        
+                        <label className="text-xs font-semibold text-gray-700 mt-2">Amount Paid ($)</label>
+                        <input type="number" className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.amountPaid} onChange={e => setEditForm({...editForm, amountPaid: parseFloat(e.target.value) || 0})} />
+                        
+                        <label className="text-xs font-semibold text-gray-700 mt-2">Membership Type</label>
+                        {m.membershipType === 'Family' ? (
+                          <div className="text-sm font-medium text-gray-700 bg-gray-100 px-3 py-2 rounded border border-gray-400 w-full" title="Family memberships cannot be changed individually">Family (Locked)</div>
+                        ) : (
+                          <select className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.membershipType} onChange={e => setEditForm({ ...editForm, membershipType: e.target.value })}>
+                            <option value="Adult">Adult</option>
+                            <option value="Junior">Junior</option>
+                            <option value="Senior">Senior</option>
+                          </select>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 border-t border-blue-200 pt-4">
+                        <button onClick={() => handleSaveEdit(m.id)} className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-2 transition-colors w-full">Save Changes</button>
+                        <button onClick={handleCancelEdit} className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-sm px-4 py-2 transition-colors w-full">Cancel</button>
+                        <button onClick={() => { handleDeleteMembership(m.id); setEditingId(null); }} className="text-red-700 bg-red-100 hover:bg-red-200 border border-red-200 font-medium rounded-md text-sm px-4 py-2 transition-colors w-full mt-4">Delete Membership</button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={m.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="text-base font-semibold text-gray-900">{m.user.firstName} {m.user.lastName}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mr-2">{m.membershipType}</span>
+                          {new Date(m.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      {m.user.memberNumber && (
+                        <span className="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-1 rounded border border-gray-400">#{m.user.memberNumber}</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
+                      {m.user.householdId && <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</span>}
+                      {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Lessons</span>}
+                    </div>
+
+                    <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
+                      <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.user.email}</div>
+                      {m.user.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.user.phoneNumber}</div>}
+                      {m.user.dateOfBirth && <div><span className="font-medium text-gray-400 w-16 inline-block">DOB:</span> {new Date(m.user.dateOfBirth).toLocaleDateString()}</div>}
+                    </div>
+
+                    <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col gap-2">
+                      {activeTab !== 'Archived' && (
+                        <button onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)} className="w-full text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors">Email ▾</button>
+                      )}
+                      {activeEmailMenu === m.id && (
+                        <div className="flex flex-col gap-1 w-full bg-gray-50 border border-gray-200 rounded-md p-1">
+                          <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded">Resend Welcome</button>
+                          <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded">Resend Renewal</button>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2">
+                        {activeTab !== 'Archived' && <button onClick={() => handleEditClick(m)} className="flex-1 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>}
+                        {activeTab !== 'Archived' && m.status !== 'Active' && <button onClick={() => handlePayClick(m)} className="flex-1 text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors">Mark as Paid</button>}
+                      </div>
+                      
+                      {activeTab === 'Archived' && <div className="text-center w-full text-gray-400 text-sm italic mt-2">Archived on {new Date(m.archivedAt!).toLocaleDateString()}</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+              </>
             )}
 
             {activeTab === 'Past Members' && filteredPastMembers.length === 0 && (
@@ -1055,6 +1196,8 @@ export default function AdminDashboard() {
               </div>
             )}
             {activeTab === 'Past Members' && filteredPastMembers.length > 0 && (
+              <>
+              <div className="hidden md:block w-full overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-400">
                 <thead className="bg-gray-50">
                   <tr>
@@ -1102,6 +1245,47 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              </div>
+              {activeTab === 'Past Members' && filteredPastMembers.length > 0 && (
+              <div className="block md:hidden space-y-4">
+                {filteredPastMembers.map(m => (
+                  <div key={m.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="text-base font-semibold text-gray-900">{m.firstName} {m.lastName}</div>
+                        <div className="text-xs text-indigo-600 font-semibold mt-1">
+                          Tenure: {new Set(m.memberships.map((x: any) => x.season)).size} Year(s)
+                        </div>
+                      </div>
+                      {m.memberNumber && (
+                        <span className="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-1 rounded border border-gray-400">#{m.memberNumber}</span>
+                      )}
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
+                      <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.email}</div>
+                      {m.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.phoneNumber}</div>}
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Past Memberships</div>
+                      <ul className="space-y-2">
+                        {m.memberships.slice(0, 3).map((mem, i) => (
+                          <li key={i} className="flex justify-between items-center bg-gray-50 px-3 py-2 rounded text-sm">
+                            <span className="font-semibold text-gray-700">{mem.season}</span>
+                            <span className="text-gray-600">{mem.membershipType} <span className="text-xs text-gray-400 ml-1">({mem.status})</span></span>
+                          </li>
+                        ))}
+                        {m.memberships.length > 3 && (
+                          <li className="text-xs text-center text-gray-400 italic pt-1">+{m.memberships.length - 3} more records...</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+              </>
             )}
           </div>
         </div>
