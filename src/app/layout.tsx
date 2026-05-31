@@ -54,7 +54,19 @@ export default async function RootLayout({
       <head>
         <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-gray-50">
+        <main className="flex-1 flex flex-col">
+          {children}
+        </main>
+        <footer className="py-4 text-center text-xs text-gray-500 mt-auto border-t border-gray-200 bg-white">
+          <p>© {process.env.NEXT_PUBLIC_BUILD_DATE ? process.env.NEXT_PUBLIC_BUILD_DATE.split('-')[0] : new Date().getFullYear()} {process.env.NEXT_PUBLIC_CLUB_NAME || "Tennis Club"}</p>
+          <p className="mt-1">
+            Build v{process.env.NEXT_PUBLIC_BUILD_VERSION || "0.1.0"} 
+            <span className="mx-1">•</span> 
+            {process.env.NEXT_PUBLIC_BUILD_DATE || new Date().toISOString().split('T')[0]}
+          </p>
+        </footer>
+      </body>
     </html>
   );
 }
