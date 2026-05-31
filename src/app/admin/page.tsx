@@ -1013,7 +1013,7 @@ export default function AdminDashboard() {
                           {activeTab !== 'Archived' && (
                             <button
                               onClick={() => handleEditClick(m)}
-                              className="text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2"
+                              className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2"
                             >
                               Edit
                             </button>
