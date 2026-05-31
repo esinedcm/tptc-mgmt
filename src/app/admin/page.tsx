@@ -108,6 +108,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('Pending');
   const [genderFilter, setGenderFilter] = useState<string | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'email' | null, direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
 
   // Stats calculation
   const totalMemberships = memberships.length;
@@ -161,6 +162,23 @@ export default function AdminDashboard() {
     }
     return true;
   });
+
+  if (sortConfig.key) {
+    filteredMemberships.sort((a, b) => {
+      let aVal = '';
+      let bVal = '';
+      if (sortConfig.key === 'name') {
+        aVal = `${a.user?.firstName || ''} ${a.user?.lastName || ''}`.toLowerCase();
+        bVal = `${b.user?.firstName || ''} ${b.user?.lastName || ''}`.toLowerCase();
+      } else if (sortConfig.key === 'email') {
+        aVal = (a.user?.email || '').toLowerCase();
+        bVal = (b.user?.email || '').toLowerCase();
+      }
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
 
   const filteredLeads = leads.filter(l => {
     if (searchQuery) {
@@ -739,8 +757,22 @@ export default function AdminDashboard() {
               <table className="min-w-full divide-y divide-gray-400">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
+                      onClick={() => setSortConfig({ key: 'name', direction: sortConfig.key === 'name' && sortConfig.direction === 'asc' ? 'desc' : 'asc' })}
+                      title="Sort by Member Name"
+                    >
+                      Member {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
+                      onClick={() => setSortConfig({ key: 'email', direction: sortConfig.key === 'email' && sortConfig.direction === 'asc' ? 'desc' : 'asc' })}
+                      title="Sort by Contact Info"
+                    >
+                      Contact Info {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                    </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
