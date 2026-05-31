@@ -898,19 +898,30 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="px-0 md:px-6 py-4 block md:table-cell align-middle">
-                            <div className="flex flex-col sm:flex-row justify-end items-center gap-2 mt-4 md:mt-0 w-full">
+                            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 mt-4 md:mt-0 w-full">
                               <button
-                                onClick={() => handleSaveEdit(m.id)}
-                                className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full md:w-auto"
+                                onClick={() => {
+                                  handleDeleteMembership(m.id);
+                                  setEditingId(null);
+                                }}
+                                className="text-red-700 bg-red-100 hover:bg-red-200 border border-red-200 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full sm:w-auto mr-auto"
                               >
-                                Save Changes
+                                Delete
                               </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full md:w-auto"
-                              >
-                                Cancel
-                              </button>
+                              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="text-gray-700 bg-gray-200 hover:bg-gray-300 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full sm:w-auto"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => handleSaveEdit(m.id)}
+                                  className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-xs px-4 py-2 transition-colors w-full sm:w-auto"
+                                >
+                                  Save Changes
+                                </button>
+                              </div>
                             </div>
                           </td>
                         </tr>
@@ -1031,14 +1042,7 @@ export default function AdminDashboard() {
                                 Mark as Paid
                               </button>
                             )}
-                            {activeTab !== 'Archived' && (
-                              <button
-                                onClick={() => handleDeleteMembership(m.id)}
-                                className="text-white bg-red-600 hover:bg-red-700 font-medium rounded-md text-sm px-4 py-2 transition-colors"
-                              >
-                                Delete
-                              </button>
-                            )}
+
                             {activeTab === 'Archived' && (
                               <span className="text-gray-400 text-sm italic">Archived</span>
                             )}
