@@ -1,22 +1,35 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendImportWelcomeEmail, sendRenewalLinkEmail } from '@/lib/email';
+import { sendImportWelcomeEmail, sendRenewalLinkEmail, sendInterestConfirmationEmail } from '@/lib/email';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, type } = body;
+    const { userId, leadId, type } = body;
 
-    if (!userId || !type) {
-      return NextResponse.json({ error: 'Missing userId or type' }, { status: 400 });
+    if (!type || (!userId && !leadId)) {
+      return NextResponse.json({ error: 'Missing identifier or type' }, { status: 400 });
     }
 
-    if (type !== 'welcome' && type !== 'renewal') {
+    if (type !== 'welcome' && type !== 'renewal' && type !== 'interest') {
       return NextResponse.json({ error: 'Invalid email type' }, { status: 400 });
     }
 
-    // Find the user
+    if (type === 'interest') {
+      if (!leadId) return NextResponse.json({ error: 'Missing leadId' }, { status: 400 });
+      const lead = await prisma.lead.findUnique({ where: { id: leadId } });
+      if (!lead) return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
+      
+      await sendInterestConfirmationEmail({
+        to: lead.email,
+        firstName: lead.firstName,
+        leadId: lead.id,
+      });
+      return NextResponse.json({ success: true });
+    }
+
+    // Existing user logic
     const user = await prisma.user.findUnique({
       where: { id: userId }
     });
@@ -25,13 +38,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Ensure they have a resetToken for the magic link
     let resetToken = user.resetToken;
     let resetTokenExpiry = user.resetTokenExpiry;
 
     if (!resetToken || !resetTokenExpiry || resetTokenExpiry < new Date()) {
       resetToken = crypto.randomUUID();
-      resetTokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days valid for these links
+      resetTokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); 
       
       await prisma.user.update({
         where: { id: userId },
@@ -39,7 +51,6 @@ export async function POST(request: Request) {
       });
     }
 
-    // Send the specific email
     if (type === 'welcome') {
       await sendImportWelcomeEmail({
         to: user.email,

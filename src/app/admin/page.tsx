@@ -462,13 +462,14 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleResendEmail = async (userId: string, type: 'welcome' | 'renewal') => {
+  const handleResendEmail = async (id: string, type: 'welcome' | 'renewal' | 'interest') => {
     try {
       setActiveEmailMenu(null);
+      const payload = type === 'interest' ? { leadId: id, type } : { userId: id, type };
       const res = await fetch('/api/admin/emails/resend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, type }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -1247,14 +1248,20 @@ export default function AdminDashboard() {
                         {lead.status !== 'Converted' && (
                           <Link
                             href={`/register?leadId=${lead.id}`}
-                            className="text-white bg-primary-600 hover:bg-primary-700 font-medium rounded-md text-sm px-4 py-2 shadow-sm transition-colors mr-2"
+                            className="text-white bg-primary-600 hover:bg-primary-700 font-medium rounded-md text-sm px-3 py-1.5 shadow-sm transition-colors mr-2"
                           >
                             Register
                           </Link>
                         )}
                         <button
+                          onClick={() => handleResendEmail(lead.id, 'interest')}
+                          className="text-white bg-gray-600 hover:bg-gray-700 font-medium rounded-md text-sm px-3 py-1.5 shadow-sm transition-colors mr-2"
+                        >
+                          Resend Email
+                        </button>
+                        <button
                           onClick={() => handleDeleteLead(lead.id)}
-                          className="text-white bg-red-600 hover:bg-red-700 font-medium rounded-md text-sm px-4 py-2 shadow-sm transition-colors"
+                          className="text-white bg-red-600 hover:bg-red-700 font-medium rounded-md text-sm px-3 py-1.5 shadow-sm transition-colors"
                         >
                           Delete
                         </button>
@@ -1283,14 +1290,20 @@ export default function AdminDashboard() {
                       {lead.status !== 'Converted' && (
                         <Link
                           href={`/register?leadId=${lead.id}`}
-                          className="flex-1 text-center text-white bg-primary-600 hover:bg-primary-700 font-medium rounded-md text-sm px-4 py-2 transition-colors shadow-sm"
+                          className="flex-1 text-center text-white bg-primary-600 hover:bg-primary-700 font-medium rounded-md text-sm px-3 py-1.5 transition-colors shadow-sm"
                         >
                           Register
                         </Link>
                       )}
                       <button
+                        onClick={() => handleResendEmail(lead.id, 'interest')}
+                        className="flex-1 text-white bg-gray-600 hover:bg-gray-700 font-medium rounded-md text-sm px-3 py-1.5 transition-colors shadow-sm"
+                      >
+                        Resend Email
+                      </button>
+                      <button
                         onClick={() => handleDeleteLead(lead.id)}
-                        className="flex-1 text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 font-medium rounded-md text-sm px-4 py-2 transition-colors shadow-sm"
+                        className="flex-1 text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 font-medium rounded-md text-sm px-3 py-1.5 transition-colors shadow-sm"
                       >
                         Delete
                       </button>
