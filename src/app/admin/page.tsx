@@ -1411,6 +1411,14 @@ export default function AdminDashboard() {
             </div>
             
             <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
+              <div className="flex flex-col sm:flex-row mb-2 px-3">
+                <div className="w-full sm:w-1/2 text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-0">
+                  Database Field
+                </div>
+                <div className="w-full sm:w-1/2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  CSV File Column
+                </div>
+              </div>
               <div className="space-y-4">
                 {TARGET_FIELDS.map(field => (
                   <div key={field.key} className="flex flex-col sm:flex-row sm:items-center bg-white p-3 rounded border border-gray-200 shadow-sm">
