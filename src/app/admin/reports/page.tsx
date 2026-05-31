@@ -100,6 +100,45 @@ export default function ReportsHubPage() {
               </div>
             </div>
           </Link>
+          <a href="/api/admin/export-emails" target="_blank" className="bg-white overflow-hidden shadow rounded-lg border border-gray-400 hover:shadow-md transition-shadow group cursor-pointer block">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 bg-yellow-100 rounded-md p-3">
+                  <svg className="h-6 w-6 text-yellow-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dt className="text-lg font-medium text-gray-900 group-hover:text-primary-600 transition-colors truncate">
+                    Export Member Emails
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-500">
+                    Download a CSV file containing all active and pending member emails.
+                  </dd>
+                </div>
+              </div>
+            </div>
+          </a>
+
+          <a href="/api/admin/export-lessons" target="_blank" className="bg-white overflow-hidden shadow rounded-lg border border-gray-400 hover:shadow-md transition-shadow group cursor-pointer block">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 bg-teal-100 rounded-md p-3">
+                  <svg className="h-6 w-6 text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dt className="text-lg font-medium text-gray-900 group-hover:text-primary-600 transition-colors truncate">
+                    Export Free Lessons
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-500">
+                    Download a raw CSV of members interested in free lessons.
+                  </dd>
+                </div>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
     </div>
