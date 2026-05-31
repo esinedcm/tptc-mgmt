@@ -106,7 +106,7 @@ export default function AdminDashboard() {
   const [editErrors, setEditErrors] = useState({ phoneNumber: '', postalCode: '' });
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('Pending');
+  const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('All');
   const [genderFilter, setGenderFilter] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'email' | null, direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
 
@@ -690,7 +690,7 @@ export default function AdminDashboard() {
 
         <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-400">
           <nav className="flex flex-wrap gap-x-4 gap-y-2 border-b border-gray-400 w-full lg:w-auto">
-            {['Pending', 'Active', 'All', 'Archived', 'Past Members'].map((tab) => (
+            {['All', 'Pending', 'Active', 'Archived', 'Past Members'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
