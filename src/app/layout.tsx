@@ -30,8 +30,13 @@ export default async function RootLayout({
     if (settings?.primaryColor) {
       primaryColor = settings.primaryColor;
     }
-  } catch (err) {
-    console.error("Failed to load global settings for layout", err);
+  } catch (err: any) {
+    if (err?.code === 'P2021') {
+      // Table does not exist yet (first boot / migrations not run)
+      console.log("Database not initialized yet. Using default theme settings.");
+    } else {
+      console.error("Failed to load global settings for layout", err);
+    }
   }
 
   const palette = generatePalette(primaryColor);
