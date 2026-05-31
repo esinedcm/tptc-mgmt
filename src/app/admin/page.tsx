@@ -1184,10 +1184,12 @@ export default function AdminDashboard() {
               </span>
             </div>
             
-            <div className="overflow-x-auto">
+            <div>
               {filteredLeads.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">No prospects found.</div>
               ) : (
+                <>
+                <div className="hidden md:block w-full overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-400">
                   <thead className="bg-gray-50">
                   <tr>
@@ -1230,6 +1232,42 @@ export default function AdminDashboard() {
                   ))}
                 </tbody>
               </table>
+              </div>
+              
+              <div className="md:hidden flex flex-col gap-4 bg-gray-50 p-4 border-t border-gray-200">
+                {filteredLeads.map((lead) => (
+                  <div key={lead.id} className="bg-white border border-gray-300 rounded-lg shadow-sm p-4 flex flex-col relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="text-lg font-bold text-gray-900 leading-tight">{lead.firstName} {lead.lastName}</h4>
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">{new Date(lead.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    
+                    <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
+                      <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {lead.email}</div>
+                      {lead.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {lead.phoneNumber}</div>}
+                    </div>
+                    
+                    <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col sm:flex-row gap-2">
+                      {lead.status !== 'Converted' && (
+                        <Link
+                          href={`/register?leadId=${lead.id}`}
+                          className="flex-1 text-center text-white bg-primary-600 hover:bg-primary-700 font-medium rounded-md text-sm px-4 py-2 transition-colors shadow-sm"
+                        >
+                          Register
+                        </Link>
+                      )}
+                      <button
+                        onClick={() => handleDeleteLead(lead.id)}
+                        className="flex-1 text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 font-medium rounded-md text-sm px-4 py-2 transition-colors shadow-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              </>
             )}
           </div>
         </div>
