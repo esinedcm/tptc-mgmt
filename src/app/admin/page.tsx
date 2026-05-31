@@ -943,10 +943,6 @@ export default function AdminDashboard() {
                                 <input className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.phoneNumber} onChange={e => setEditForm({ ...editForm, phoneNumber: e.target.value })} />
                               </div>
                               <div>
-                                <label className="block text-xs font-semibold text-gray-700 mb-1">Date of Birth</label>
-                                <input type="date" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
-                              </div>
-                              <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Gender</label>
                                 <select className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.gender} onChange={e => setEditForm({ ...editForm, gender: e.target.value })}>
                                   <option value="">Unknown</option>
@@ -1014,8 +1010,7 @@ export default function AdminDashboard() {
                             Registered {new Date(m.createdAt).toLocaleDateString()}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
-                              DOB: {m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toLocaleDateString() : <span className="text-red-500 italic font-medium">Missing</span>}
-                              {m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}
+                              {m.user.gender && <span>{m.user.gender}</span>}
                             </div>
                           {m.archivedAt && (
                             <div className="text-xs text-red-500 mt-1 font-medium">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</div>
@@ -1108,9 +1103,6 @@ export default function AdminDashboard() {
                         <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.firstName} onChange={e => setEditForm({ ...editForm, firstName: e.target.value })} placeholder="First Name" />
                         <input className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.lastName} onChange={e => setEditForm({ ...editForm, lastName: e.target.value })} placeholder="Last Name" />
                         
-                        <label className="text-xs font-semibold text-gray-700">Date of Birth</label>
-                        <input type="date" className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.dateOfBirth} onChange={e => setEditForm({ ...editForm, dateOfBirth: e.target.value })} />
-                        
                         <label className="text-xs font-semibold text-gray-700 mt-2">Gender</label>
                         <select className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.gender} onChange={e => setEditForm({ ...editForm, gender: e.target.value })}>
                           <option value="">Unknown</option>
@@ -1173,7 +1165,7 @@ export default function AdminDashboard() {
                     <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                       <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.user.email}</div>
                       {m.user.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.user.phoneNumber}</div>}
-                      <div><span className="font-medium text-gray-400 w-16 inline-block">DOB:</span> {m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toLocaleDateString() : <span className="text-red-500 italic font-medium">Missing</span>}{m.user.gender && <span className="ml-2 pl-2 border-l border-gray-300">{m.user.gender}</span>}</div>
+                      {m.user.gender && <div><span className="font-medium text-gray-400 w-16 inline-block">Gender:</span> {m.user.gender}</div>}
                     </div>
 
                     <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col gap-2">
