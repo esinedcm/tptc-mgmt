@@ -12,7 +12,8 @@ const getBaseUrl = async () => {
   try {
     const headersList = await headers();
     const host = headersList.get('host');
-    const protocol = headersList.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    const isDev = process.env.NODE_ENV !== 'production';
+    const protocol = headersList.get('x-forwarded-proto') || (isDev || host?.includes('localhost') ? 'http' : 'https');
     if (host) {
       return `${protocol}://${host}`;
     }
