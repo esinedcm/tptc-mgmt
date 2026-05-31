@@ -80,6 +80,26 @@ export default function ReportsHubPage() {
               </div>
             </div>
           </Link>
+
+          <Link href="/admin/reports/bookings" className="bg-white overflow-hidden shadow rounded-lg border border-gray-400 hover:shadow-md transition-shadow group">
+            <div className="px-4 py-5 sm:p-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0 bg-purple-100 rounded-md p-3">
+                  <svg className="h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div className="ml-5 w-0 flex-1">
+                  <dt className="text-lg font-medium text-gray-900 group-hover:text-primary-600 transition-colors truncate">
+                    Court Booking Usage
+                  </dt>
+                  <dd className="mt-1 text-sm text-gray-500">
+                    Analyze court utilization and track member booking statistics.
+                  </dd>
+                </div>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
