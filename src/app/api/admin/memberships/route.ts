@@ -25,6 +25,7 @@ export async function GET() {
         season: true,
         user: {
           select: {
+            id: true,
             firstName: true,
             lastName: true,
             memberNumber: true,
