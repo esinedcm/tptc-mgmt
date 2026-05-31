@@ -163,7 +163,6 @@ export default function AdminDashboard() {
   });
 
   const filteredLeads = leads.filter(l => {
-    if (genderFilter && (l as any).gender !== genderFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = l.firstName.toLowerCase();
