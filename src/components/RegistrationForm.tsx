@@ -93,6 +93,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
             }]);
           }
         })
+        .finally(() => setLoadingHousehold(false));
     } else if (initialRenewalToken) {
       fetch(`/api/renew/${initialRenewalToken}`)
         .then(res => {
