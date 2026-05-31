@@ -937,6 +937,17 @@ export default function AdminDashboard() {
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
                                 <input type="number" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.amountPaid} onChange={e => setEditForm({...editForm, amountPaid: parseFloat(e.target.value) || 0})} />
                               </div>
+                              <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Free Lessons</label>
+                                <div className="flex items-center h-[30px]">
+                                  <input type="checkbox" className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked={editForm.wantsFreeLessons} onChange={e => setEditForm({ ...editForm, wantsFreeLessons: e.target.checked })} />
+                                  <span className="ml-2 text-sm text-gray-700">Interested</span>
+                                </div>
+                              </div>
+                              <div className="col-span-1 sm:col-span-2 md:col-span-3">
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">Payment Notes</label>
+                                <textarea className="border border-gray-300 rounded px-2 py-1 text-sm w-full" rows={1} value={editForm.paymentNotes} onChange={e => setEditForm({ ...editForm, paymentNotes: e.target.value })} placeholder="E.g., E-transfer confirmation #"></textarea>
+                              </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
@@ -1098,6 +1109,14 @@ export default function AdminDashboard() {
                             <option value="Senior">Senior</option>
                           </select>
                         )}
+                        
+                        <div className="flex items-center mt-3 mb-1">
+                          <input type="checkbox" id="mobileFreeLessons" className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked={editForm.wantsFreeLessons} onChange={e => setEditForm({ ...editForm, wantsFreeLessons: e.target.checked })} />
+                          <label htmlFor="mobileFreeLessons" className="ml-2 block text-sm text-gray-900">Interested in Free Lessons</label>
+                        </div>
+
+                        <label className="text-xs font-semibold text-gray-700 mt-2">Payment Notes</label>
+                        <textarea className="border border-gray-300 rounded px-3 py-2 text-sm w-full" rows={2} value={editForm.paymentNotes} onChange={e => setEditForm({ ...editForm, paymentNotes: e.target.value })} placeholder="E.g., E-transfer confirmation #"></textarea>
                       </div>
                       <div className="flex flex-col gap-2 border-t border-blue-200 pt-4">
                         <button onClick={() => handleSaveEdit(m.id)} className="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-2 transition-colors w-full">Save Changes</button>
