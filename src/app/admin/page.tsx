@@ -462,7 +462,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleResendEmail = async (id: string, type: 'welcome' | 'renewal' | 'interest') => {
+  const handleResendEmail = async (id: string, type: 'welcome' | 'renewal' | 'interest' | 'pending') => {
     try {
       setActiveEmailMenu(null);
       const payload = type === 'interest' ? { leadId: id, type } : { userId: id, type };
@@ -490,7 +490,7 @@ export default function AdminDashboard() {
               <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Club Logo" className="h-10 w-auto" />
             )}
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard<br /> {activeSeason && `${activeSeason} Season`}</h1>
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard<br /> {activeSeason && `${activeSeason}`}</h1>
               
             </div>
           </div>
@@ -941,6 +941,7 @@ export default function AdminDashboard() {
                               {activeEmailMenu === m.id && (
                                 <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                                   <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
+                                  <button onClick={() => handleResendEmail(m.user.id, 'pending')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Registration Pending</button>
                                   <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Renewal Link</button>
                                 </div>
                               )}

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendImportWelcomeEmail, sendRenewalLinkEmail, sendInterestConfirmationEmail } from '@/lib/email';
+import { sendImportWelcomeEmail, sendRenewalLinkEmail, sendInterestConfirmationEmail, sendEditLinkEmail } from '@/lib/email';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing identifier or type' }, { status: 400 });
     }
 
-    if (type !== 'welcome' && type !== 'renewal' && type !== 'interest') {
+    if (type !== 'welcome' && type !== 'renewal' && type !== 'interest' && type !== 'pending') {
       return NextResponse.json({ error: 'Invalid email type' }, { status: 400 });
     }
 
@@ -65,6 +65,49 @@ export async function POST(request: Request) {
 
     } else if (type === 'renewal') {
       await sendRenewalLinkEmail(user.email, resetToken);
+    } else if (type === 'pending') {
+      // Find all household members to list their names and calculate total due
+      const householdUsers = await prisma.user.findMany({
+        where: { householdId: user.householdId || user.id },
+        include: {
+          memberships: {
+            where: { season: String(new Date().getFullYear()) }
+          }
+        }
+      });
+      
+      const memberNames = householdUsers.map(u => `${u.firstName} ${u.lastName}`);
+      
+      const plans = await prisma.membershipPlan.findMany();
+      let totalDue = 0;
+      let hasFamily = false;
+      let familyCost = 0;
+
+      for (const u of householdUsers) {
+        if (u.memberships.length > 0) {
+          const type = u.memberships[0].membershipType;
+          if (type === 'Family') {
+            hasFamily = true;
+          } else {
+            const plan = plans.find(p => p.name === type);
+            totalDue += (plan?.cost || 0);
+          }
+        }
+      }
+
+      if (hasFamily) {
+        const fPlan = plans.find(p => p.name === 'Family');
+        familyCost = fPlan?.cost || 0;
+        totalDue = familyCost;
+      }
+      
+      let editToken = user.editToken;
+      if (!editToken) {
+        editToken = crypto.randomBytes(32).toString('hex');
+        await prisma.user.update({ where: { id: user.id }, data: { editToken } });
+      }
+
+      await sendEditLinkEmail(user.email, editToken, memberNames, totalDue);
     }
 
     return NextResponse.json({ success: true });
