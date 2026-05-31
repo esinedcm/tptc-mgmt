@@ -1176,7 +1176,7 @@ export default function AdminDashboard() {
         </div>
 
         {!(searchQuery && filteredLeads.length === 0) && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-400 mt-8">
+          <div id="prospects-table" className="bg-white shadow overflow-hidden sm:rounded-lg border border-gray-400 mt-8">
             <div className="px-4 py-5 sm:px-6 flex justify-between items-center border-b border-gray-400">
               <h3 className="text-lg leading-6 font-medium text-gray-900">Prospects (Leads)</h3>
               <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
