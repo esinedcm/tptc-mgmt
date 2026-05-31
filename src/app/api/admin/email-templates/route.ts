@@ -57,3 +57,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('auth_token')?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const payload = await verifyJwt(token);
+    if (!payload || payload.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing template ID' }, { status: 400 });
+    }
+
+    await prisma.emailTemplate.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true }, { status: 200 });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      // Record to delete does not exist, which is fine
+      return NextResponse.json({ success: true }, { status: 200 });
+    }
+    console.error('Error deleting email template:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

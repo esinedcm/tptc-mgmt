@@ -347,6 +347,30 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleResetTemplate = async () => {
+    if (!selectedTemplateId) return;
+    if (!window.confirm('Are you sure you want to reset this template to the system default? This will erase your customizations.')) return;
+    
+    setSavingTemplate(true);
+    try {
+      const res = await fetch(`/api/admin/email-templates?id=${selectedTemplateId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        alert('Template reset to default successfully!');
+        setEmailTemplates(prev => prev.filter(t => t.id !== selectedTemplateId));
+        const fallback = DEFAULT_TEMPLATES[selectedTemplateId] || { subject: '', htmlBody: '' };
+        setEditTemplateForm(fallback);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to reset template');
+      }
+    } catch (err) {
+      alert('Error resetting template');
+    }
+    setSavingTemplate(false);
+  };
+
   const handleSaveTemplate = async () => {
     if (!selectedTemplateId || !editTemplateForm.subject || !editTemplateForm.htmlBody) return alert('Subject and HTML Body are required');
     setSavingTemplate(true);
@@ -874,7 +898,14 @@ export default function AdminSettingsPage() {
                     placeholder="<p>Write your custom HTML email here...</p>"
                   />
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-between items-center mt-2">
+                  <button 
+                    onClick={handleResetTemplate}
+                    disabled={savingTemplate}
+                    className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 focus:outline-none"
+                  >
+                    Reset to Default
+                  </button>
                   <button 
                     onClick={handleSaveTemplate}
                     disabled={savingTemplate || !editTemplateForm.subject || !editTemplateForm.htmlBody}
