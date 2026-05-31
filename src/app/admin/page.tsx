@@ -988,12 +988,9 @@ export default function AdminDashboard() {
                             <div className="inline-block relative mr-2">
                               <button
                                 onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)}
-                                className="inline-flex items-center justify-center text-white hover:text-white bg-gray-800 hover:bg-gray-900 border border-gray-900 shadow-sm rounded-md p-2 transition-colors"
-                                title="Email Actions"
+                                className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.909A2.25 2.25 0 0 1 2.25 6.993V6.75m19.5 0 0 .001z" />
-                                </svg>
+                                Email ▾
                               </button>
                               {activeEmailMenu === m.id && (
                                 <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
