@@ -13,6 +13,22 @@ export default async function BookCourtPage() {
   const payload = await verifyJwt(token);
   if (!payload || !payload.userId) redirect('/login');
 
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId as string },
+    include: { memberships: { orderBy: { createdAt: 'desc' }, take: 1 } }
+  });
+
+  const isActive = user?.memberships[0]?.status === 'Active';
+
+  if (!isActive) {
+    return (
+      <div className="max-w-4xl mx-auto mt-12 p-8 text-center bg-yellow-50 rounded-lg border border-yellow-200">
+        <h2 className="text-2xl font-bold text-yellow-800 mb-2">Membership Pending</h2>
+        <p className="text-yellow-700">You must have an Active membership to book a court. If you recently paid, please wait for an administrator to activate your account.</p>
+      </div>
+    );
+  }
+
   const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
   const maxHours = settings?.maxHoursPerDay ?? 2;
   const maxDays = settings?.maxDaysInAdvance ?? 3;
