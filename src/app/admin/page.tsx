@@ -76,6 +76,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedHouseholdId, setSelectedHouseholdId] = useState<string | null>(null);
+  const [activeEmailMenu, setActiveEmailMenu] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
   const [payForm, setPayForm] = useState({
@@ -436,6 +437,22 @@ export default function AdminDashboard() {
       fetchData();
     } catch (err: unknown) {
       alert('Failed to delete prospect: ' + (err instanceof Error ? err.message : String(err)));
+    }
+  };
+
+  const handleResendEmail = async (userId: string, type: 'welcome' | 'renewal') => {
+    try {
+      setActiveEmailMenu(null);
+      const res = await fetch('/api/admin/emails/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, type }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert(`Successfully sent ${type} email!`);
+    } catch (err: any) {
+      alert(`Failed to send ${type} email: ` + err.message);
     }
   };
 
@@ -960,7 +977,34 @@ export default function AdminDashboard() {
                             </div>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
+                          {activeTab !== 'Archived' && (
+                            <div className="inline-block relative mr-2">
+                              <button
+                                onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)}
+                                className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium rounded-md text-sm px-3 py-2 transition-colors"
+                                title="Email Actions"
+                              >
+                                ✉️
+                              </button>
+                              {activeEmailMenu === m.id && (
+                                <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                                  <button
+                                    onClick={() => handleResendEmail(m.user.id, 'welcome')}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    Resend Welcome Email
+                                  </button>
+                                  <button
+                                    onClick={() => handleResendEmail(m.user.id, 'renewal')}
+                                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                  >
+                                    Resend Renewal Link
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                           {activeTab !== 'Archived' && (
                             <button
                               onClick={() => handleEditClick(m)}
