@@ -23,6 +23,8 @@ type Membership = {
     tagNumber?: string;
     email: string;
     phoneNumber?: string;
+    alternatePhoneNumber?: string;
+    notes?: string;
     role?: string;
     gender?: string;
     dateOfBirth?: string | Date;

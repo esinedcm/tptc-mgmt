@@ -473,7 +473,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 mt-4">
-                <Input label="Date of Birth" type="date" name="dateOfBirth" value={member.dateOfBirth} onChange={(e) => handleMemberChange(index, e)} required />
+                <Input label="Date of Birth (Optional)" type="date" name="dateOfBirth" value={member.dateOfBirth} onChange={(e) => handleMemberChange(index, e)} />
                 <Select 
                   label="Membership Type" 
                   name="membershipType" 

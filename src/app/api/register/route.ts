@@ -43,9 +43,7 @@ export async function POST(request: Request) {
     }
 
     for (let i = 0; i < members.length; i++) {
-      if (!members[i].dateOfBirth) {
-        return NextResponse.json({ error: `Date of Birth is required for Member ${i + 1}.` }, { status: 400 });
-      }
+
       if (members[i].phoneNumber && !isValidPhoneNumber(members[i].phoneNumber)) {
         return NextResponse.json({ error: `Invalid phone number format for Member ${i + 1}. Please use a standard 10-digit number.` }, { status: 400 });
       }
