@@ -30,9 +30,9 @@ export default function Login() {
       }
 
       if (data.role === 'ADMIN') {
-        router.push('/admin');
+        window.location.href = '/admin';
       } else {
-        router.push('/portal');
+        window.location.href = '/portal';
       }
     } catch (err: any) {
       setError(err.message);
