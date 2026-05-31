@@ -594,7 +594,7 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
           <div 
             onClick={() => setActiveTab('Active')}
             className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 cursor-pointer hover:bg-green-50 hover:border-green-400 transition-colors"
@@ -657,7 +657,7 @@ export default function AdminDashboard() {
             <p className="text-sm text-gray-500 font-medium">Total Memberships</p>
             <p className="text-2xl font-bold text-primary-600">{totalMemberships}</p>
           </div>
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400 md:col-span-2">
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-400">
             <p className="text-sm text-gray-500 font-medium">Member Types</p>
             <div className="mt-1 flex flex-wrap gap-2">
               {Object.entries(membershipTypesCount).map(([type, count]) => (
