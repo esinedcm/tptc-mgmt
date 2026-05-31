@@ -695,7 +695,6 @@ export default function AdminDashboard() {
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -707,7 +706,7 @@ export default function AdminDashboard() {
                     if (isPaying) {
                       return (
                         <tr key={m.id} className="bg-green-50">
-                          <td className="px-6 py-4" colSpan={3}>
+                          <td className="px-6 py-4" colSpan={2}>
                             <div className="flex gap-4 items-center">
                               <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
@@ -878,23 +877,24 @@ export default function AdminDashboard() {
                               </div>
                               {editErrors.postalCode && <span className="text-xs text-red-500">{editErrors.postalCode}</span>}
                             </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            {m.membershipType === 'Family' ? (
-                              <div className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-400" title="Family memberships cannot be changed individually">
-                                Family (Locked)
-                              </div>
-                            ) : (
-                              <select
-                                className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
-                                value={editForm.membershipType}
-                                onChange={e => setEditForm({ ...editForm, membershipType: e.target.value })}
-                              >
-                                <option value="Adult">Adult</option>
-                                <option value="Junior">Junior</option>
-                                <option value="Senior">Senior</option>
-                              </select>
-                            )}
+                              {editErrors.postalCode && <span className="text-xs text-red-500">{editErrors.postalCode}</span>}
+                              <div className="text-xs font-semibold text-gray-500 mt-2 mb-1">Membership Type</div>
+                              {m.membershipType === 'Family' ? (
+                                <div className="text-sm font-medium text-gray-700 bg-gray-100 px-2 py-1 rounded border border-gray-400 w-full" title="Family memberships cannot be changed individually">
+                                  Family (Locked)
+                                </div>
+                              ) : (
+                                <select
+                                  className="border border-gray-300 rounded px-2 py-1 text-sm w-full"
+                                  value={editForm.membershipType}
+                                  onChange={e => setEditForm({ ...editForm, membershipType: e.target.value })}
+                                >
+                                  <option value="Adult">Adult</option>
+                                  <option value="Junior">Junior</option>
+                                  <option value="Senior">Senior</option>
+                                </select>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4 text-right text-sm font-medium space-y-2 sm:space-y-0 sm:space-x-2 flex flex-col sm:flex-row justify-end items-center">
                             <button
@@ -944,7 +944,11 @@ export default function AdminDashboard() {
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-gray-500 mb-1">Registered {new Date(m.createdAt).toLocaleDateString()}</div>
+                          <div className="text-sm text-gray-500 mb-1">
+                            Registered {new Date(m.createdAt).toLocaleDateString()}
+                            <span className="mx-2 text-gray-300">|</span>
+                            <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px]">{m.membershipType}</span>
+                          </div>
                           {m.user.dateOfBirth && (
                             <div className="text-xs text-gray-500">
                               DOB: {new Date(m.user.dateOfBirth).toLocaleDateString()} 
@@ -953,9 +957,17 @@ export default function AdminDashboard() {
                               </span>
                             </div>
                           )}
-                          <div className="text-xs text-indigo-600 font-semibold mt-1">
-                            Tenure: {m.user.memberships ? new Set(m.user.memberships.map((x: any) => x.season)).size : 1} Year(s)
-                          </div>
+                          {(() => {
+                            const tenure = m.user.memberships ? new Set(m.user.memberships.map((x: any) => x.season)).size : 1;
+                            if (tenure >= 2) {
+                              return (
+                                <div className="text-xs text-indigo-600 font-semibold mt-1">
+                                  Tenure: {tenure} Year(s)
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           <div>{m.user.email}</div>
@@ -966,11 +978,6 @@ export default function AdminDashboard() {
                               {m.user.city}, {m.user.postalCode}
                             </div>
                           )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                            {m.membershipType}
-                          </span>
                           {m.archivedAt && (
                             <div className="text-xs text-red-500 mt-2 font-medium">
                               Deleted on: {new Date(m.archivedAt).toLocaleDateString()}
@@ -982,7 +989,7 @@ export default function AdminDashboard() {
                             <div className="inline-block relative mr-2">
                               <button
                                 onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)}
-                                className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 font-medium rounded-md text-sm px-3 py-2 transition-colors"
+                                className="text-white hover:text-white bg-gray-800 hover:bg-gray-900 border border-gray-900 shadow-sm font-medium rounded-md text-sm px-3 py-2 transition-colors"
                                 title="Email Actions"
                               >
                                 ✉️
