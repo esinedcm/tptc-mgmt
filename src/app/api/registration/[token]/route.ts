@@ -25,8 +25,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
     // Format back into the shape the form expects
     const address = {
-      streetNumber: users[0].streetNumber || '',
-      streetName: users[0].streetName || '',
+      streetAddress: users[0].streetAddress || '',
       city: users[0].city || '',
       postalCode: users[0].postalCode || '',
     };

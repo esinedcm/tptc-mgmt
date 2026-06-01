@@ -15,8 +15,7 @@ type MembershipPlan = {
 
 export function RegistrationForm({ initialEditToken, initialLeadId, initialRenewalToken, genderOptions = ['Male', 'Female', 'Prefer not to say'] }: { initialEditToken?: string; initialLeadId?: string; initialRenewalToken?: string; genderOptions?: string[] }) {
   const [address, setAddress] = useState({
-    streetNumber: '',
-    streetName: '',
+    streetAddress: '',
     city: '',
     postalCode: '',
   });
@@ -293,7 +292,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
           <div className="mb-6">
             <h5 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Household Address</h5>
             <p className="text-gray-800 text-sm">
-              {address.streetNumber} {address.streetName}<br />
+              {address.streetAddress}<br />
               {address.city}, {address.postalCode}
             </p>
           </div>
@@ -373,7 +372,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
           </button>
           <button 
             onClick={() => {
-              setAddress({ streetNumber: '', streetName: '', city: '', postalCode: '' });
+              setAddress({ streetAddress: '', city: '', postalCode: '' });
               setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', wantsFreeLessons: false, membershipType: '' }]);
               setSuccess(false);
             }}
@@ -422,8 +421,9 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-400">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Household Address</h3>
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <Input label="Street Number" name="streetNumber" value={address.streetNumber} onChange={handleAddressChange} required />
-          <Input label="Street Name" name="streetName" value={address.streetName} onChange={handleAddressChange} required />
+          <div className="col-span-2">
+            <Input label="Street Address" name="streetAddress" value={address.streetAddress} onChange={handleAddressChange} required />
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Input label="City" name="city" value={address.city} onChange={handleAddressChange} required />

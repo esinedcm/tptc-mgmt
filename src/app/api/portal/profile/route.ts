@@ -19,7 +19,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json();
-    const { firstName, lastName, phoneNumber, gender, streetNumber, streetName, city, postalCode, wantsFreeLessons } = body;
+    const { firstName, lastName, phoneNumber, gender, streetAddress, city, postalCode, wantsFreeLessons } = body;
 
     if (postalCode && !isValidPostalCode(postalCode)) {
       return NextResponse.json({ error: 'Invalid Postal Code format. Please use a valid Canadian format (e.g. M1M 1M1).' }, { status: 400 });
@@ -37,8 +37,7 @@ export async function PATCH(req: Request) {
         phoneNumber,
         gender,
         wantsFreeLessons,
-        streetNumber,
-        streetName,
+        streetAddress,
         city,
         postalCode
       }

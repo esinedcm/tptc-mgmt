@@ -33,8 +33,7 @@ model User {
   lastName     String
   email        String       @unique
   passwordHash String
-  streetNumber String?
-  streetName   String?
+  streetAddress String?
   city         String?
   postalCode   String?
   phoneNumber  String?

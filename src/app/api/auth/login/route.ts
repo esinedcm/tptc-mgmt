@@ -5,7 +5,9 @@ import { signJwt } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const email = body.email?.toLowerCase().trim();
+    const password = body.password;
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {

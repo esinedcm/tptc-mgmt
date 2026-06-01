@@ -9,8 +9,7 @@ export async function POST(request: Request) {
   try {
     const body: {
       address?: {
-        streetNumber: string;
-        streetName: string;
+        streetAddress: string;
         city: string;
         postalCode: string;
       };
@@ -139,8 +138,7 @@ export async function POST(request: Request) {
                phoneNumber: member.phoneNumber,
                gender: member.gender,
                wantsFreeLessons: member.wantsFreeLessons || false,
-               streetNumber: address.streetNumber,
-               streetName: address.streetName,
+               streetAddress: address.streetAddress,
                city: address.city,
                postalCode: address.postalCode,
                householdId,
@@ -164,8 +162,7 @@ export async function POST(request: Request) {
                  gender: member.gender,
                  dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
                  wantsFreeLessons: member.wantsFreeLessons || false,
-                 streetNumber: address.streetNumber,
-                 streetName: address.streetName,
+                 streetAddress: address.streetAddress,
                  city: address.city,
                  postalCode: address.postalCode,
                  householdId,
@@ -198,8 +195,7 @@ export async function POST(request: Request) {
                  gender: member.gender,
                  dateOfBirth: member.dateOfBirth ? new Date(member.dateOfBirth) : null,
                  wantsFreeLessons: member.wantsFreeLessons || false,
-                 streetNumber: address.streetNumber,
-                 streetName: address.streetName,
+                 streetAddress: address.streetAddress,
                  city: address.city,
                  postalCode: address.postalCode,
                  householdId,

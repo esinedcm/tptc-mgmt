@@ -29,8 +29,7 @@ type Membership = {
     gender?: string;
     dateOfBirth?: string | Date;
     wantsFreeLessons?: boolean;
-    streetNumber?: string;
-    streetName?: string;
+    streetAddress?: string;
     city?: string;
     postalCode?: string;
     householdId?: string;
@@ -103,8 +102,7 @@ export default function AdminDashboard() {
     dateOfBirth: '',
     wantsFreeLessons: false,
     membershipType: '',
-    streetNumber: '',
-    streetName: '',
+    streetAddress: '',
     city: '',
     postalCode: '',
     tagNumber: '',
@@ -153,8 +151,7 @@ export default function AdminDashboard() {
       wantsFreeLessons: a.wantsFreeLessons || false,
       memberNumber: undefined,
       tagNumber: undefined,
-      streetNumber: undefined,
-      streetName: undefined,
+      streetAddress: undefined,
       city: undefined,
       postalCode: undefined,
       householdId: undefined,
@@ -349,8 +346,7 @@ export default function AdminDashboard() {
       dateOfBirth: m.user.dateOfBirth ? new Date(m.user.dateOfBirth).toISOString().split('T')[0] : '',
       wantsFreeLessons: m.user.wantsFreeLessons || false,
       membershipType: m.membershipType,
-      streetNumber: m.user.streetNumber || '',
-      streetName: m.user.streetName || '',
+      streetAddress: m.user.streetAddress || '',
       city: m.user.city || '',
       postalCode: m.user.postalCode || '',
       tagNumber: m.user.tagNumber || '',
@@ -389,8 +385,7 @@ export default function AdminDashboard() {
     { key: 'email', label: 'Email Address', required: true },
     { key: 'phoneNumber', label: 'Phone Number' },
     { key: 'gender', label: 'Gender' },
-    { key: 'streetNumber', label: 'Street Number' },
-    { key: 'streetName', label: 'Street Name' },
+    { key: 'streetAddress', label: 'Street Address' },
     { key: 'city', label: 'City' },
     { key: 'postalCode', label: 'Postal Code' },
     { key: 'tagNumber', label: 'Shoe Tag Number' },
@@ -609,7 +604,7 @@ export default function AdminDashboard() {
               <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Club Logo" className="h-10 w-auto" />
             )}
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Admin Dashboard<br /> {activeSeason && `${activeSeason}`}</h1>
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">{process.env.NEXT_PUBLIC_CLUB_NAME}<br /> {activeSeason && `${activeSeason}`}<br /></h2>
               
             </div>
           </div>

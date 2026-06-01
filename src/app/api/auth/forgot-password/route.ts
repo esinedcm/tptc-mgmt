@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const email = (await req.json()).email?.toLowerCase().trim();
 
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {

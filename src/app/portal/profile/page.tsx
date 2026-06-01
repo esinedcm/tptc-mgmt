@@ -37,8 +37,7 @@ export default async function ProfilePage() {
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-400">
         <ProfileForm initialData={{
           phoneNumber: user.phoneNumber || '',
-          streetNumber: user.streetNumber || '',
-          streetName: user.streetName || '',
+          streetAddress: user.streetAddress || '',
           city: user.city || '',
           postalCode: user.postalCode || '',
           dateOfBirth: user.dateOfBirth ? user.dateOfBirth.toISOString().split('T')[0] : null,

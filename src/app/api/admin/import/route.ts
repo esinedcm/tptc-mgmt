@@ -55,8 +55,7 @@ export async function POST(request: Request) {
         // Optional Fields
         const phoneNumber = (record.phoneNumber || '').toString().trim();
         const gender = (record.gender || '').toString().trim();
-        const streetNumber = (record.streetNumber || '').toString().trim();
-        const streetName = (record.streetName || '').toString().trim();
+        const streetAddress = (record.streetAddress || '').toString().trim();
         const city = (record.city || '').toString().trim();
         const postalCode = (record.postalCode || '').toString().trim();
         const tagNumber = (record.tagNumber || '').toString().trim();
@@ -102,8 +101,7 @@ export async function POST(request: Request) {
           const updateData: any = {};
           if (householdId && existingUser.householdId !== householdId) updateData.householdId = householdId;
           if (phoneNumber && !existingUser.phoneNumber) updateData.phoneNumber = phoneNumber;
-          if (streetNumber && !existingUser.streetNumber) updateData.streetNumber = streetNumber;
-          if (streetName && !existingUser.streetName) updateData.streetName = streetName;
+          if (streetAddress && !existingUser.streetAddress) updateData.streetAddress = streetAddress;
           if (city && !existingUser.city) updateData.city = city;
           if (postalCode && !existingUser.postalCode) updateData.postalCode = postalCode;
           if (tagNumber && !existingUser.tagNumber) updateData.tagNumber = tagNumber;
@@ -153,8 +151,7 @@ export async function POST(request: Request) {
               lastName,
               phoneNumber,
               gender,
-              streetNumber,
-              streetName,
+              streetAddress,
               city,
               postalCode,
               tagNumber,
