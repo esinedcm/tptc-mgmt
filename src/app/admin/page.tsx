@@ -86,9 +86,10 @@ export default function AdminDashboard() {
   const [activeEmailMenu, setActiveEmailMenu] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
-  const [payForm, setPayForm] = useState({
+  const [payForm, setPayForm] = useState<{ amountPaid: number, paymentNotes: string, coveredMembershipIds: string[] }>({
     amountPaid: 0,
     paymentNotes: '',
+    coveredMembershipIds: [],
   });
   const [editForm, setEditForm] = useState({
     firstName: '',
@@ -253,12 +254,58 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
+  const calculateHouseholdTotal = (selectedIds: string[]) => {
+    let adults = 0;
+    let juniors = 0;
+    let total = 0;
+
+    const selectedMemberships = memberships.filter(m => selectedIds.includes(m.id));
+
+    selectedMemberships.forEach(m => {
+      const plan = plans.find(p => p.name === m.membershipType);
+      if (m.membershipType === 'Adult') adults++;
+      else if (m.membershipType === 'Junior') juniors++;
+      else if (m.membershipType === 'Family') total += 200; // Fallback
+      else total += (plan?.cost || 0); // e.g. Seniors
+    });
+
+    // Apply Family Bundle: 2 Adults + 1 or 2 Juniors = $200
+    while (adults >= 2 && juniors >= 1) {
+      total += 200;
+      adults -= 2;
+      const juniorsToConsume = Math.min(juniors, 2);
+      juniors -= juniorsToConsume;
+    }
+
+    // Add remaining adults and juniors
+    if (adults > 0) {
+      const adultPlan = plans.find(p => p.name === 'Adult');
+      total += adults * (adultPlan?.cost || 85);
+    }
+    if (juniors > 0) {
+      const juniorPlan = plans.find(p => p.name === 'Junior');
+      total += juniors * (juniorPlan?.cost || 50);
+    }
+
+    return total;
+  };
+
   const handlePayClick = (m: Membership) => {
     setPayingId(m.id);
-    const plan = plans.find(p => p.name === m.membershipType);
+    
+    const householdMembers = m.user.householdId 
+      ? memberships.filter(x => x.user.householdId === m.user.householdId && x.status === 'Pending')
+      : [m];
+      
+    const selectedIds = householdMembers.map(x => x.id);
+    if (!selectedIds.includes(m.id)) selectedIds.push(m.id);
+
+    const amount = calculateHouseholdTotal(selectedIds);
+
     setPayForm({
-      amountPaid: plan ? plan.cost : 0,
+      amountPaid: amount,
       paymentNotes: '',
+      coveredMembershipIds: selectedIds,
     });
   };
 
@@ -274,7 +321,8 @@ export default function AdminDashboard() {
         body: JSON.stringify({ 
           membershipId, 
           amountPaid: payForm.amountPaid, 
-          paymentNotes: payForm.paymentNotes 
+          paymentNotes: payForm.paymentNotes,
+          coveredMembershipIds: payForm.coveredMembershipIds
         }),
       });
       const data = await res.json();
@@ -867,10 +915,37 @@ export default function AdminDashboard() {
                                 />
                               </div>
                             </div>
-                            {m.membershipType === 'Family' && m.user.householdId && (
-                              <p className="mt-2 text-sm text-green-700 font-medium">
-                                * This will securely apply payment details to all pending family members in this household.
-                              </p>
+                            {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId && x.status === 'Pending').length > 1 && (
+                              <div className="mt-4 bg-white p-3 border border-green-200 rounded text-sm max-w-lg">
+                                <div className="font-semibold text-green-900 mb-2">Household Members Covered</div>
+                                {memberships.filter(x => x.user.householdId === m.user.householdId && x.status === 'Pending').map(hm => (
+                                  <label key={hm.id} className="flex items-center gap-2 mb-1 cursor-pointer">
+                                    <input 
+                                      type="checkbox" 
+                                      className="rounded text-green-600 focus:ring-green-500 h-4 w-4"
+                                      checked={payForm.coveredMembershipIds.includes(hm.id)}
+                                      disabled={hm.id === m.id}
+                                      onChange={(e) => {
+                                        const newIds = e.target.checked 
+                                          ? [...payForm.coveredMembershipIds, hm.id]
+                                          : payForm.coveredMembershipIds.filter(id => id !== hm.id);
+                                        
+                                        setPayForm({
+                                          ...payForm,
+                                          coveredMembershipIds: newIds,
+                                          amountPaid: calculateHouseholdTotal(newIds)
+                                        });
+                                      }}
+                                    />
+                                    <span className="text-gray-800">{hm.user.firstName} {hm.user.lastName} ({hm.membershipType})</span>
+                                  </label>
+                                ))}
+                                {payForm.amountPaid !== calculateHouseholdTotal(payForm.coveredMembershipIds) && (
+                                  <div className="text-red-600 font-medium mt-2">
+                                    Warning: Amount entered does not match the calculated amount due (${calculateHouseholdTotal(payForm.coveredMembershipIds)}).
+                                  </div>
+                                )}
+                              </div>
                             )}
                           </td>
                           <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
@@ -1059,10 +1134,37 @@ export default function AdminDashboard() {
                           onChange={e => setPayForm({ ...payForm, paymentNotes: e.target.value })}
                         />
                       </div>
-                      {m.membershipType === 'Family' && m.user.householdId && (
-                        <p className="mb-4 text-xs text-green-700 font-medium">
-                          * This will securely apply payment details to all pending family members in this household.
-                        </p>
+                      {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId && x.status === 'Pending').length > 1 && (
+                        <div className="mb-4 bg-white p-3 border border-green-200 rounded text-sm">
+                          <div className="font-semibold text-green-900 mb-2">Household Members Covered</div>
+                          {memberships.filter(x => x.user.householdId === m.user.householdId && x.status === 'Pending').map(hm => (
+                            <label key={hm.id} className="flex items-center gap-2 mb-2 cursor-pointer">
+                              <input 
+                                type="checkbox" 
+                                className="rounded text-green-600 focus:ring-green-500 h-4 w-4"
+                                checked={payForm.coveredMembershipIds.includes(hm.id)}
+                                disabled={hm.id === m.id}
+                                onChange={(e) => {
+                                  const newIds = e.target.checked 
+                                    ? [...payForm.coveredMembershipIds, hm.id]
+                                    : payForm.coveredMembershipIds.filter(id => id !== hm.id);
+                                  
+                                  setPayForm({
+                                    ...payForm,
+                                    coveredMembershipIds: newIds,
+                                    amountPaid: calculateHouseholdTotal(newIds)
+                                  });
+                                }}
+                              />
+                              <span className="text-gray-800">{hm.user.firstName} {hm.user.lastName} <span className="text-gray-500">({hm.membershipType})</span></span>
+                            </label>
+                          ))}
+                          {payForm.amountPaid !== calculateHouseholdTotal(payForm.coveredMembershipIds) && (
+                            <div className="text-red-600 font-medium mt-2 text-xs">
+                              Warning: Amount entered does not match the calculated amount due (${calculateHouseholdTotal(payForm.coveredMembershipIds)}).
+                            </div>
+                          )}
+                        </div>
                       )}
                       <div className="flex flex-col gap-2">
                         <button

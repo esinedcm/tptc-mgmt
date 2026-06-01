@@ -5,7 +5,7 @@ import { sendWelcomeEmail } from '@/lib/email';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { membershipId, amountPaid, paymentNotes } = body;
+    const { membershipId, amountPaid, paymentNotes, coveredMembershipIds } = body;
 
     if (!membershipId) {
       return NextResponse.json({ error: 'Missing membershipId' }, { status: 400 });
@@ -35,56 +35,25 @@ export async function POST(request: Request) {
         },
       });
 
-      // 2. Calculate if the amount paid covers the entire household
-      let shouldMarkOthers = false;
-      const paid = amountPaid ? parseFloat(amountPaid) : 0;
-      
-      if (membership.user.householdId) {
-        const householdMembers = await tx.membership.findMany({
-          where: { 
-            user: { householdId: membership.user.householdId },
-            season: membership.season
-          }
-        });
+      // 2. Process other explicitly covered household members
+      if (Array.isArray(coveredMembershipIds) && coveredMembershipIds.length > 0) {
+        // Filter out the primary membershipId from the covered array just to be safe
+        const otherIds = coveredMembershipIds.filter((id: string) => id !== membershipId);
         
-        const plans = await tx.membershipPlan.findMany();
-        let totalDue = 0;
-        let hasFamily = false;
-        
-        for (const m of householdMembers) {
-          if (m.membershipType === 'Family') {
-            hasFamily = true;
-          } else {
-            const plan = plans.find(p => p.name === m.membershipType);
-            totalDue += (plan?.cost || 0);
-          }
+        if (otherIds.length > 0) {
+          await tx.membership.updateMany({
+            where: {
+              id: { in: otherIds },
+              status: { not: 'Active' }, // Only update pending ones
+            },
+            data: {
+              status: 'Active',
+              amountPaid: 0, // Attached to the primary member
+              paymentNotes: paymentNotes || null,
+              paymentRecordedAt: now,
+            }
+          });
         }
-        
-        if (hasFamily) {
-          const fPlan = plans.find(p => p.name === 'Family');
-          totalDue = fPlan?.cost || 0;
-        }
-        
-        if (paid >= totalDue && totalDue > 0) {
-          shouldMarkOthers = true;
-        }
-      }
-
-      // 3. If part of a household and paid in full, sync payment status to the rest of the household 
-      if (shouldMarkOthers && membership.user.householdId) {
-        await tx.membership.updateMany({
-          where: {
-            user: { householdId: membership.user.householdId },
-            id: { not: membershipId }, // Don't overwrite the primary we just updated
-            status: { not: 'Active' }, // Only update pending ones
-          },
-          data: {
-            status: 'Active',
-            amountPaid: 0, // Attached to the primary member
-            paymentNotes: paymentNotes || null,
-            paymentRecordedAt: now,
-          }
-        });
       }
 
       return updatedPrimary;
