@@ -25,6 +25,13 @@ type EmailTemplate = {
   htmlBody: string;
 };
 
+type BookingType = {
+  id: string;
+  name: string;
+  color: string;
+  isBuiltIn: boolean;
+};
+
 const TEMPLATE_VARIABLES: Record<string, string[]> = {
   'WELCOME_EMAIL': ['{{firstName}}', '{{memberNumber}}', '{{clubName}}', '{{loginLink}}'],
   'REGISTRATION_PENDING': ['{{memberNames}}', '{{totalDue}}', '{{paymentEmail}}', '{{editUrl}}'],
@@ -103,6 +110,13 @@ export default function AdminSettingsPage() {
   const [editTemplateForm, setEditTemplateForm] = useState<Partial<EmailTemplate>>({});
   const [savingTemplate, setSavingTemplate] = useState(false);
   
+  const [bookingTypes, setBookingTypes] = useState<BookingType[]>([]);
+  const [bookingTypesLoading, setBookingTypesLoading] = useState(true);
+  const [newBookingType, setNewBookingType] = useState({ name: '', color: '#3b82f6' });
+  const [editingBookingTypeId, setEditingBookingTypeId] = useState<string | null>(null);
+  const [editBookingTypeForm, setEditBookingTypeForm] = useState<Partial<BookingType>>({});
+  const [savingBookingType, setSavingBookingType] = useState(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const fetchCourts = async () => {
@@ -161,7 +175,85 @@ export default function AdminSettingsPage() {
         if (data.templates) setEmailTemplates(data.templates);
       })
       .catch(console.error);
+
+    fetch('/api/admin/booking-types')
+      .then(res => res.json())
+      .then(data => {
+        if (data.bookingTypes) setBookingTypes(data.bookingTypes);
+        setBookingTypesLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setBookingTypesLoading(false);
+      });
   }, []);
+
+  const handleSaveNewBookingType = async () => {
+    if (!newBookingType.name) return alert('Name is required');
+    setSavingBookingType(true);
+    try {
+      const res = await fetch('/api/admin/booking-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newBookingType)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBookingTypes([...bookingTypes, data.bookingType]);
+        setNewBookingType({ name: '', color: '#3b82f6' });
+      } else {
+        const data = await res.json();
+        alert(`Failed to save new booking type: ${data.error}`);
+      }
+    } catch (err) {
+      alert('Error saving booking type');
+    }
+    setSavingBookingType(false);
+  };
+
+  const handleStartEditBookingType = (bt: BookingType) => {
+    setEditingBookingTypeId(bt.id);
+    setEditBookingTypeForm(bt);
+  };
+
+  const handleSaveEditBookingType = async () => {
+    if (!editingBookingTypeId || (!editBookingTypeForm.name && !editBookingTypeForm.color)) return;
+    try {
+      const res = await fetch(`/api/admin/booking-types/${editingBookingTypeId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editBookingTypeForm)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBookingTypes(bookingTypes.map(bt => bt.id === editingBookingTypeId ? data.bookingType : bt));
+        setEditingBookingTypeId(null);
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to update booking type');
+      }
+    } catch (err) {
+      alert('Error updating booking type');
+    }
+  };
+
+  const handleDeleteBookingType = async (bt: BookingType) => {
+    if (bt.isBuiltIn) return alert('Cannot delete built-in booking types.');
+    if (!confirm(`Are you sure you want to delete the ${bt.name} booking type?`)) return;
+    try {
+      const res = await fetch(`/api/admin/booking-types/${bt.id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setBookingTypes(bookingTypes.filter(b => b.id !== bt.id));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete booking type');
+      }
+    } catch (err) {
+      alert('Error deleting booking type');
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -797,7 +889,7 @@ export default function AdminSettingsPage() {
             ))}
             {courts.length === 0 && <p className="text-sm text-gray-500 italic">No courts found.</p>}
           </div>
-
+          
           <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
             <h4 className="text-sm font-medium text-gray-900 mb-3">Add New Court</h4>
             <div className="flex flex-col space-y-3">
@@ -805,25 +897,32 @@ export default function AdminSettingsPage() {
                 className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
                 value={newCourt.name}
                 onChange={e => setNewCourt({...newCourt, name: e.target.value})}
-                placeholder="Court Name (e.g. Centre Court)"
+                placeholder="Court Name (e.g. Court 1)"
               />
-              <div className="flex items-center space-x-3">
-                <input 
-                  type="number" min="0" max="23"
-                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
-                  value={newCourt.openTime}
-                  onChange={e => setNewCourt({...newCourt, openTime: e.target.value})}
-                  placeholder="Open Hour"
-                />
-                <input 
-                  type="number" min="0" max="23"
-                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
-                  value={newCourt.closeTime}
-                  onChange={e => setNewCourt({...newCourt, closeTime: e.target.value})}
-                  placeholder="Close Hour"
-                />
+              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-2">
+                  <span>Open Time:</span>
+                  <input 
+                    type="number"
+                    min="0" max="23"
+                    className="border border-gray-300 rounded-md px-2 py-1.5 text-sm w-20"
+                    value={newCourt.openTime}
+                    onChange={e => setNewCourt({...newCourt, openTime: e.target.value})}
+                    placeholder="Global"
+                  />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>Close Time:</span>
+                  <input 
+                    type="number"
+                    min="0" max="23"
+                    className="border border-gray-300 rounded-md px-2 py-1.5 text-sm w-20"
+                    value={newCourt.closeTime}
+                    onChange={e => setNewCourt({...newCourt, closeTime: e.target.value})}
+                    placeholder="Global"
+                  />
+                </div>
               </div>
-              <p className="text-xs text-gray-500">Leave hours blank to use global settings.</p>
               <div className="flex justify-end pt-1">
                 <button 
                   onClick={handleSaveNewCourt}
@@ -838,6 +937,86 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="pt-6 border-t mt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Booking Types</h3>
+          <p className="text-sm text-gray-500 mb-6">Manage the types of bookings available and customize their calendar colors. "MEMBER" is a required system type that asks for playing partners.</p>
+          <div className="space-y-4 mb-6">
+            {bookingTypesLoading ? <p className="text-sm text-gray-500">Loading booking types...</p> : bookingTypes.map(bt => (
+              <div key={bt.id} className="border border-gray-400 rounded-md p-4 flex justify-between items-center bg-gray-50">
+                {editingBookingTypeId === bt.id ? (
+                  <div className="w-full flex flex-col space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <input 
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm font-medium text-gray-900 flex-1 uppercase"
+                        value={editBookingTypeForm.name || ''}
+                        onChange={e => setEditBookingTypeForm({...editBookingTypeForm, name: e.target.value})}
+                        placeholder="Booking Type Name"
+                        disabled={bt.isBuiltIn}
+                        title={bt.isBuiltIn ? "Cannot rename built-in types" : ""}
+                      />
+                      <input 
+                        type="color"
+                        className="border border-gray-300 rounded-md h-8 w-12 cursor-pointer p-0.5"
+                        value={editBookingTypeForm.color || '#3b82f6'}
+                        onChange={e => setEditBookingTypeForm({...editBookingTypeForm, color: e.target.value})}
+                      />
+                    </div>
+                    <div className="flex space-x-2 pt-2">
+                      <button onClick={handleSaveEditBookingType} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Save</button>
+                      <button onClick={() => setEditingBookingTypeId(null)} className="text-gray-500 hover:text-gray-700 text-sm font-medium">Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-6 h-6 rounded border border-gray-300" style={{ backgroundColor: bt.color }}></div>
+                      <h4 className="text-base font-medium text-gray-900">{bt.name}</h4>
+                      {bt.isBuiltIn && <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">System</span>}
+                    </div>
+                    <div className="flex space-x-3">
+                      <button onClick={() => handleStartEditBookingType(bt)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
+                      {!bt.isBuiltIn && (
+                        <button onClick={() => handleDeleteBookingType(bt)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+            {!bookingTypesLoading && bookingTypes.length === 0 && <p className="text-sm text-gray-500 italic">No booking types found.</p>}
+          </div>
+
+          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Add New Booking Type</h4>
+            <div className="flex flex-col space-y-3">
+              <div className="flex items-center space-x-3">
+                <input 
+                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1 uppercase"
+                  value={newBookingType.name}
+                  onChange={e => setNewBookingType({...newBookingType, name: e.target.value})}
+                  placeholder="Name (e.g. TOURNAMENT)"
+                />
+                <input 
+                  type="color"
+                  className="border border-gray-300 rounded-md h-9 w-14 cursor-pointer p-0.5"
+                  value={newBookingType.color}
+                  onChange={e => setNewBookingType({...newBookingType, color: e.target.value})}
+                  title="Calendar Color"
+                />
+              </div>
+              <div className="flex justify-end pt-1">
+                <button 
+                  onClick={handleSaveNewBookingType}
+                  disabled={savingBookingType || !newBookingType.name}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {savingBookingType ? 'Adding...' : 'Add Type'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t pt-6 mt-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Email Templates</h3>
           <p className="text-sm text-gray-500 mb-6">Customize the automated emails sent to your members. Use HTML formatting.</p>
           

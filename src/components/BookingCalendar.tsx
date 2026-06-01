@@ -5,6 +5,8 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 type Court = { id: string; name: string; openTime: number | null; closeTime: number | null };
 type User = { id: string; firstName: string; lastName: string; email: string };
+type BookingTypeItem = { id: string; name: string; color: string; isBuiltIn: boolean };
+
 type Booking = {
   id: string;
   courtId: string;
@@ -37,6 +39,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
   const [selectedStartTime, setSelectedStartTime] = useState<Date | null>(null);
   const [selectedEndTime, setSelectedEndTime] = useState<Date | null>(null);
   const [bookingType, setBookingType] = useState('MEMBER');
+  const [availableTypes, setAvailableTypes] = useState<BookingTypeItem[]>([]);
   
   // Advanced Admin Block Booking State
   const [bookAllCourts, setBookAllCourts] = useState(false);
@@ -80,9 +83,12 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       const data = await res.json();
       if (data.bookings) {
         setBookings(data.bookings);
-        // Extract real court IDs from bookings if they exist, to map them correctly.
-        // Or better yet, we need the real court IDs. Let's fetch them from the bookings. If no bookings, we might not have court IDs. 
-        // We will just fetch /api/bookings and we should ideally have a /api/courts route. We will build that next.
+      }
+
+      const typesRes = await fetch('/api/booking-types');
+      const typesData = await typesRes.json();
+      if (typesData.bookingTypes) {
+        setAvailableTypes(typesData.bookingTypes);
       }
     } catch (err) {
       console.error(err);
@@ -217,11 +223,11 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left border-collapse min-w-[800px] table-fixed">
-          <thead className="bg-gray-50 border-b">
+      <div className="overflow-x-auto overflow-y-auto max-h-[75vh] border rounded-lg shadow-inner">
+        <table className="w-full text-sm text-left border-collapse min-w-[800px] table-fixed relative">
+          <thead className="bg-gray-50 border-b sticky top-0 z-20 shadow-sm">
             <tr>
-              <th className="p-3 w-20 border-r" rowSpan={2}>Time</th>
+              <th className="p-3 w-20 border-r bg-gray-50" rowSpan={2}>Time</th>
               {Array.from({ length: daysToShow }).map((_, dayOffset) => {
                 const d = new Date(currentDate);
                 d.setDate(d.getDate() + dayOffset);
@@ -263,18 +269,23 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                       const durationHours = (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60);
                       
                       const isMyBooking = booking.participants.some(p => p.id === currentUserId) || booking.organizer?.id === currentUserId;
-                      const bgClass = booking.type === 'LESSON' ? 'bg-purple-100 border-purple-300' :
-                                      booking.type === 'LEAGUE' ? 'bg-orange-100 border-orange-300' :
-                                      isMyBooking ? 'bg-blue-100 border-blue-300' : 'bg-gray-200 border-gray-300';
+                      
+                      const typeInfo = availableTypes.find(t => t.name === booking.type);
+                      const baseColor = typeInfo ? typeInfo.color : '#e5e7eb'; // Default gray if type deleted
+                      
+                      // For "My Bookings" we might want to highlight them, but user preferred dynamic colors.
+                      // Let's use the dynamic color and just add a thicker border if it's my booking
+                      const myBookingBorder = isMyBooking ? 'border-gray-800 border-2 shadow-sm' : 'border-black/10';
                       
                       return (
                         <td key={`${dayOffset}-${court.id}`} rowSpan={durationHours} className={`border-r p-1 align-top`}>
                           <div 
                             onClick={() => setViewBooking(booking)}
-                            className={`h-full w-full rounded p-1 border cursor-pointer hover:shadow-md transition-shadow overflow-hidden ${bgClass}`}
+                            className={`h-full w-full rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden ${myBookingBorder}`}
+                            style={{ backgroundColor: baseColor, color: '#1f2937' }}
                           >
-                            <div className="font-semibold text-gray-800 text-xs truncate">{booking.type}</div>
-                            <div className="text-[10px] text-gray-600 leading-tight truncate">{booking.organizer?.firstName} {booking.organizer?.lastName}</div>
+                            <div className="font-semibold text-xs truncate" style={{ color: 'inherit' }}>{booking.type}</div>
+                            <div className="text-[10px] leading-tight truncate" style={{ color: 'inherit', opacity: 0.9 }}>{booking.organizer?.firstName} {booking.organizer?.lastName}</div>
                           </div>
                         </td>
                       );
@@ -423,10 +434,9 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                       onChange={(e) => setBookingType(e.target.value)}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
                     >
-                      <option value="MEMBER">Member Play</option>
-                      <option value="LESSON">Lesson</option>
-                      <option value="LEAGUE">League Match</option>
-                      <option value="MAINTENANCE">Maintenance</option>
+                      {availableTypes.map(t => (
+                        <option key={t.id} value={t.name}>{t.name} {t.isBuiltIn && t.name === 'MEMBER' ? '(Member Play)' : ''}</option>
+                      ))}
                     </select>
                   </div>
 
