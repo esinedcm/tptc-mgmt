@@ -843,6 +843,9 @@ export default function AdminDashboard() {
                       return (
                         <tr key={m.id} className="bg-green-50">
                           <td className="px-6 py-4" colSpan={3}>
+                            <div className="mb-3 text-sm font-medium text-green-900 bg-green-100 p-2 rounded inline-block">
+                              Applying payment for: {m.user.firstName} {m.user.lastName} ({m.user.email})
+                            </div>
                             <div className="flex gap-4 items-center">
                               <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
@@ -1032,6 +1035,11 @@ export default function AdminDashboard() {
                 if (isPaying) {
                   return (
                     <div key={m.id} className="bg-green-50 p-4 rounded-lg shadow-sm border border-green-200">
+                      <div className="mb-4 pb-3 border-b border-green-200">
+                        <div className="font-semibold text-green-900 text-sm">Applying payment for:</div>
+                        <div className="text-sm text-green-800">{m.user.firstName} {m.user.lastName}</div>
+                        <div className="text-xs text-green-700">{m.user.email}</div>
+                      </div>
                       <div className="mb-4">
                         <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
                         <input 
