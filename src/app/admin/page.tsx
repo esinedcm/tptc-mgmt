@@ -1449,6 +1449,54 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {selectedHouseholdId && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-lg">
+              <h3 className="text-lg font-bold text-gray-900">
+                Household Group: {selectedHouseholdId.substring(0, 6).toUpperCase()}
+              </h3>
+              <button
+                onClick={() => setSelectedHouseholdId(null)}
+                className="text-gray-400 hover:text-gray-500 focus:outline-none"
+              >
+                <span className="text-2xl">&times;</span>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              <div className="space-y-4">
+                {memberships.filter(m => m.user.householdId === selectedHouseholdId).map(m => (
+                  <div key={m.id} className="border border-gray-200 rounded-md p-4 bg-white shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <div className="text-sm font-bold text-gray-900">{m.user.firstName} {m.user.lastName}</div>
+                      <div className="text-xs text-gray-500">{m.user.email}</div>
+                      {m.user.phoneNumber && <div className="text-xs text-gray-500">{m.user.phoneNumber}</div>}
+                    </div>
+                    <div className="flex flex-col sm:items-end gap-1">
+                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {m.membershipType}
+                      </span>
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${m.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                        {m.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end rounded-b-lg">
+              <button
+                onClick={() => setSelectedHouseholdId(null)}
+                className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
