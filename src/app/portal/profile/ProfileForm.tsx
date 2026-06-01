@@ -63,7 +63,7 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
 
     try {
       const res = await fetch('/api/portal/profile', {
-        method: 'PUT',
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
