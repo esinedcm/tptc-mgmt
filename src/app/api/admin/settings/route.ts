@@ -40,7 +40,7 @@ export async function PUT(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -52,6 +52,8 @@ export async function PUT(req: Request) {
     if (typeof calendarSkipDays === 'number') updateData.calendarSkipDays = calendarSkipDays;
     if (typeof primaryColor === 'string') updateData.primaryColor = primaryColor;
     if (typeof activeSeason === 'string') updateData.activeSeason = activeSeason;
+    if (typeof enableCsvImport === 'boolean') updateData.enableCsvImport = enableCsvImport;
+    if (typeof enableWelcomeEmails === 'boolean') updateData.enableWelcomeEmails = enableWelcomeEmails;
     if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
 
     const settings = await prisma.systemSetting.upsert({
@@ -68,6 +70,8 @@ export async function PUT(req: Request) {
         calendarSkipDays: typeof calendarSkipDays === 'number' ? calendarSkipDays : 1,
         primaryColor: typeof primaryColor === 'string' ? primaryColor : '#4f46e5',
         activeSeason: typeof activeSeason === 'string' ? activeSeason : '2026',
+        enableCsvImport: typeof enableCsvImport === 'boolean' ? enableCsvImport : true,
+        enableWelcomeEmails: typeof enableWelcomeEmails === 'boolean' ? enableWelcomeEmails : true,
         genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say']
       }
     });

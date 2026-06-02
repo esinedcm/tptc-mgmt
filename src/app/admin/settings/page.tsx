@@ -83,6 +83,8 @@ export default function AdminSettingsPage() {
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
   const [activeSeason, setActiveSeason] = useState('2026');
+  const [enableCsvImport, setEnableCsvImport] = useState(true);
+  const [enableWelcomeEmails, setEnableWelcomeEmails] = useState(true);
   const [genderOptions, setGenderOptions] = useState('Male, Female, Prefer not to say');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -145,6 +147,8 @@ export default function AdminSettingsPage() {
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
           setActiveSeason(data.settings.activeSeason ?? '2026');
+          setEnableCsvImport(data.settings.enableCsvImport ?? true);
+          setEnableWelcomeEmails(data.settings.enableWelcomeEmails ?? true);
           if (data.settings.genderOptions && Array.isArray(data.settings.genderOptions)) {
             setGenderOptions(data.settings.genderOptions.join(', '));
           }
@@ -270,6 +274,8 @@ export default function AdminSettingsPage() {
           calendarSkipDays: calendarSkipDays,
           primaryColor: primaryColor,
           activeSeason,
+          enableCsvImport,
+          enableWelcomeEmails,
           courtOpenTime,
           courtCloseTime,
           genderOptions: genderOptions.split(',').map(s => s.trim()).filter(Boolean)
@@ -714,6 +720,70 @@ export default function AdminSettingsPage() {
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
               placeholder="e.g. Male, Female, Non-Binary"
             />
+          </div>
+        </div>
+
+        <div className="border-b pb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Member Data Settings</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Enable CSV Import</label>
+              <p className="text-sm text-gray-500 mb-2">
+                Show the "Import CSV" button on the Admin Dashboard. Typically only needed during initial setup.
+              </p>
+              <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setEnableCsvImport(!enableCsvImport)}
+                  className={`${
+                    enableCsvImport ? 'bg-primary-600' : 'bg-gray-200'
+                  } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                  role="switch"
+                  aria-checked={enableCsvImport}
+                >
+                  <span className="sr-only">Enable CSV Import</span>
+                  <span
+                    aria-hidden="true"
+                    className={`${
+                      enableCsvImport ? 'translate-x-5' : 'translate-x-0'
+                    } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                  />
+                </button>
+                <span className="text-sm text-gray-700">
+                  {enableCsvImport ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Enable Welcome Emails</label>
+              <p className="text-sm text-gray-500 mb-2">
+                Show the "Send Welcome Emails" button on the Admin Dashboard to manually trigger welcome emails for pending members.
+              </p>
+              <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setEnableWelcomeEmails(!enableWelcomeEmails)}
+                  className={`${
+                    enableWelcomeEmails ? 'bg-primary-600' : 'bg-gray-200'
+                  } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                  role="switch"
+                  aria-checked={enableWelcomeEmails}
+                >
+                  <span className="sr-only">Enable Welcome Emails</span>
+                  <span
+                    aria-hidden="true"
+                    className={`${
+                      enableWelcomeEmails ? 'translate-x-5' : 'translate-x-0'
+                    } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                  />
+                </button>
+                <span className="text-sm text-gray-700">
+                  {enableWelcomeEmails ? 'Enabled' : 'Disabled'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 

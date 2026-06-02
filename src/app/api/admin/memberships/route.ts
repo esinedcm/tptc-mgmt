@@ -6,7 +6,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     const settings = await prisma.systemSetting.findUnique({
-      where: { id: 'global' }
+      where: { id: 'global' },
+      select: { activeSeason: true, enableCsvImport: true, enableWelcomeEmails: true }
     });
     const activeSeason = settings?.activeSeason || '2026';
 
@@ -53,7 +54,12 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({ memberships, activeSeason }, { status: 200 });
+    return NextResponse.json({ 
+      memberships, 
+      activeSeason,
+      enableCsvImport: settings?.enableCsvImport ?? true,
+      enableWelcomeEmails: settings?.enableWelcomeEmails ?? true 
+    }, { status: 200 });
   } catch (error) {
     console.error('Fetch memberships error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

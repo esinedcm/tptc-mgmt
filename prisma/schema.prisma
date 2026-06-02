@@ -21,6 +21,8 @@ model SystemSetting {
   courtCloseTime            Int      @default(23)
   calendarDaysToShow        Int      @default(3)
   calendarSkipDays          Int      @default(1)
+  enableCsvImport           Boolean  @default(true)
+  enableWelcomeEmails       Boolean  @default(true)
   primaryColor              String   @default("#4f46e5")
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])

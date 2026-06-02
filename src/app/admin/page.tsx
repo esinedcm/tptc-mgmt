@@ -72,6 +72,8 @@ export default function AdminDashboard() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [pendingWelcomeCount, setPendingWelcomeCount] = useState(0);
+  const [enableCsvImport, setEnableCsvImport] = useState(true);
+  const [enableWelcomeEmails, setEnableWelcomeEmails] = useState(true);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number, skipped: number, skippedRecords: { email: string, name: string, reason: string }[] } | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -217,7 +219,7 @@ export default function AdminDashboard() {
         fetch('/api/admin/archived-memberships'),
         fetch('/api/admin/leads'),
         fetch('/api/plans'),
-        fetch('/api/admin/memberships/past'),
+        fetch('/api/admin/past-memberships'),
         fetch('/api/admin/send-welcome')
       ]);
 
@@ -230,6 +232,8 @@ export default function AdminDashboard() {
 
       if (memData.memberships) setMemberships(memData.memberships);
       if (memData.activeSeason) setActiveSeason(memData.activeSeason);
+      if (memData.enableCsvImport !== undefined) setEnableCsvImport(memData.enableCsvImport);
+      if (memData.enableWelcomeEmails !== undefined) setEnableWelcomeEmails(memData.enableWelcomeEmails);
       if (archData.archived) setArchived(archData.archived);
       if (leadsData.leads) setLeads(leadsData.leads);
       if (plansData.plans) setPlans(plansData.plans);
@@ -637,25 +641,29 @@ export default function AdminDashboard() {
               </svg>
               Settings
             </Link>
-            <input 
-              type="file" 
-              accept=".csv" 
-              ref={fileInputRef} 
-              style={{ display: 'none' }} 
-              onChange={handleImportCSV} 
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={importing}
-              title="Required columns: Email, First Name, Last Name. Optional: Phone, Gender, Type, Paid, Household"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-              {importing ? 'Importing...' : 'Import CSV'}
-            </button>
-            {pendingWelcomeCount > 0 && (
+            {enableCsvImport && (
+              <>
+                <input 
+                  type="file" 
+                  accept=".csv" 
+                  ref={fileInputRef} 
+                  style={{ display: 'none' }} 
+                  onChange={handleImportCSV} 
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={importing}
+                  title="Required columns: Email, First Name, Last Name. Optional: Phone, Gender, Type, Paid, Household"
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50"
+                >
+                  <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  {importing ? 'Importing...' : 'Import CSV'}
+                </button>
+              </>
+            )}
+            {enableWelcomeEmails && pendingWelcomeCount > 0 && (
               <button
                 onClick={handleSendWelcomeEmails}
                 className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors"
