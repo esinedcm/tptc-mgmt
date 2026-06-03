@@ -251,6 +251,8 @@ export async function sendBookingEmail({
     startTime: Date;
     endTime: Date;
     type: string;
+    title?: string | null;
+    description?: string | null;
     participantNames: string[];
     bookedBy: string;
     bookedAt: Date;
@@ -259,7 +261,7 @@ export async function sendBookingEmail({
   const baseUrl = await getBaseUrl();
   const portalLink = `${baseUrl}/portal/book`;
 
-  const { action, courtName, startTime, endTime, type, participantNames, bookedBy, bookedAt } = bookingDetails;
+  const { action, courtName, startTime, endTime, type, title, description, participantNames, bookedBy, bookedAt } = bookingDetails;
   
   const formattedStart = startTime.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
   const formattedEnd = endTime.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -278,6 +280,8 @@ export async function sendBookingEmail({
         <p style="margin: 5px 0;"><strong>Court:</strong> {{courtName}}</p>
         <p style="margin: 5px 0;"><strong>Time:</strong> {{formattedStart}} to {{formattedEnd}}</p>
         <p style="margin: 5px 0;"><strong>Type:</strong> {{type}}</p>
+        ${title ? `<p style="margin: 5px 0;"><strong>Event Title:</strong> {{title}}</p>` : ''}
+        ${description ? `<p style="margin: 5px 0;"><strong>Event Details:</strong> {{description}}</p>` : ''}
         <p style="margin: 5px 0;"><strong>Players:</strong> {{participantNames}}</p>
         <p style="margin: 5px 0; margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb;"><strong>Booked By:</strong> {{bookedBy}} on {{formattedBookedAt}}</p>
       </div>
@@ -294,6 +298,8 @@ export async function sendBookingEmail({
     formattedStart,
     formattedEnd,
     type,
+    title: title || '',
+    description: description || '',
     participantNames: participantNames.join(', '),
     bookedBy,
     formattedBookedAt,

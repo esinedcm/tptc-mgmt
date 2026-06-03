@@ -13,9 +13,12 @@ type Booking = {
   startTime: string;
   endTime: string;
   type: string;
+  title?: string | null;
+  description?: string | null;
   notes?: string;
   participants: User[];
   organizer: { id: string; firstName: string; lastName: string };
+  recurringGroupId?: string;
 };
 
 export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, closeTime = 23, daysToShow = 3, skipDays = 1 }: { isAdmin: boolean; currentUserId: string; openTime?: number; closeTime?: number; daysToShow?: number; skipDays?: number }) {
@@ -39,6 +42,8 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
   const [selectedStartTime, setSelectedStartTime] = useState<Date | null>(null);
   const [selectedEndTime, setSelectedEndTime] = useState<Date | null>(null);
   const [bookingType, setBookingType] = useState('MEMBER');
+  const [bookingTitle, setBookingTitle] = useState('');
+  const [bookingDescription, setBookingDescription] = useState('');
   const [availableTypes, setAvailableTypes] = useState<BookingTypeItem[]>([]);
   
   // Advanced Admin Block Booking State
@@ -46,6 +51,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrenceWeeks, setRecurrenceWeeks] = useState(4);
   const [recurrenceDays, setRecurrenceDays] = useState<number[]>([]);
+  const [applyToFuture, setApplyToFuture] = useState(false);
   
   // Member Search State
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,7 +63,11 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
 
   const [error, setError] = useState('');
 
-  const hours = Array.from({ length: closeTime - openTime }, (_, i) => i + openTime);
+  const timeSlots: { hour: number, min: number }[] = [];
+  for (let h = openTime; h < closeTime; h++) {
+    timeSlots.push({ hour: h, min: 0 });
+    timeSlots.push({ hour: h, min: 30 });
+  }
 
   useEffect(() => {
     fetchCourtsAndBookings();
@@ -129,8 +139,11 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
           startTime: selectedStartTime.toISOString(),
           endTime: selectedEndTime.toISOString(),
           type: bookingType,
+          title: bookingTitle || undefined,
+          description: bookingDescription || undefined,
           participantIds: selectedParticipants.map(p => p.id),
           bookAllCourts: isAdmin ? bookAllCourts : undefined,
+          applyToFuture: (isAdmin && editingBookingId) ? applyToFuture : undefined,
           recurrence: (isAdmin && isRecurring && !editingBookingId) ? {
             daysOfWeek: recurrenceDays,
             weeks: recurrenceWeeks
@@ -157,10 +170,17 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
     }
   };
 
-  const handleDeleteBooking = async (id: string) => {
-    if (!confirm('Are you sure you want to cancel this booking?')) return;
+  const handleDeleteBooking = async (booking: Booking) => {
+    let applyFuture = false;
+    if (booking.recurringGroupId && isAdmin) {
+      const deleteGroup = confirm('This booking is part of a recurring series.\n\nClick OK to cancel ALL future bookings in this series.\nClick Cancel to ONLY cancel this specific booking.');
+      applyFuture = deleteGroup;
+      if (!deleteGroup && !confirm('Are you sure you want to cancel just THIS booking?')) return;
+    } else {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+    }
     try {
-      const res = await fetch(`/api/bookings/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/bookings/${booking.id}?applyToFuture=${applyFuture}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete booking');
       setViewBooking(null);
       fetchCourtsAndBookings();
@@ -169,18 +189,24 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
     }
   };
 
-  // Helper to get bookings for a specific court, date, and hour
-  const getBookingForSlot = (courtId: string, cellDate: Date, hour: number) => {
+  // Helper to get bookings for a specific court, date, and timeslot
+  const getBookingForSlot = (courtId: string, cellDate: Date, hour: number, min: number) => {
     return bookings.find(b => {
       const bStart = new Date(b.startTime);
       const bEnd = new Date(b.endTime);
       
-      // Check if booking is on this exact date and covers this hour
+      // Check if booking is on this exact date
       const isSameDate = bStart.getFullYear() === cellDate.getFullYear() && 
                          bStart.getMonth() === cellDate.getMonth() && 
                          bStart.getDate() === cellDate.getDate();
                          
-      return isSameDate && b.courtId === courtId && bStart.getHours() <= hour && bEnd.getHours() > hour;
+      if (!isSameDate || b.courtId !== courtId) return false;
+
+      const slotTime = hour + min / 60;
+      const startTime = bStart.getHours() + bStart.getMinutes() / 60;
+      const endTime = bEnd.getHours() + bEnd.getMinutes() / 60;
+
+      return slotTime >= startTime && slotTime < endTime;
     });
   };
 
@@ -190,6 +216,17 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Court Schedule</h2>
         <div className="flex space-x-4 items-center">
+          <button 
+            onClick={() => { 
+              const today = new Date();
+              today.setHours(12, 0, 0, 0); // Avoid timezone shifts when formatting to string
+              setCurrentDate(today); 
+              router.replace(`${pathname}?date=${today.toISOString().split('T')[0]}`, { scroll: false });
+            }}
+            className="px-3 py-1 bg-primary-50 text-primary-700 font-medium border border-primary-200 rounded hover:bg-primary-100"
+          >
+            Today
+          </button>
           <button 
             onClick={() => { 
               const d = new Date(currentDate); 
@@ -249,42 +286,46 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
             </tr>
           </thead>
           <tbody>
-            {hours.map(hour => (
-              <tr key={hour} className="border-b h-16">
-                <td className="p-2 border-r bg-gray-50 font-medium text-gray-500 text-xs">
-                  {hour === 12 ? '12:00 PM' : hour > 12 ? `${hour - 12}:00 PM` : `${hour}:00 AM`}
+            {timeSlots.map(slot => (
+              <tr key={`${slot.hour}-${slot.min}`} className={`border-b h-8`}>
+                <td className="p-2 border-r bg-gray-50 font-medium text-gray-500 text-xs relative">
+                  {slot.min === 0 && (
+                    <span className="absolute -top-3 left-2 bg-gray-50 px-1">
+                      {slot.hour === 12 ? '12:00 PM' : slot.hour > 12 ? `${slot.hour - 12}:00 PM` : `${slot.hour}:00 AM`}
+                    </span>
+                  )}
                 </td>
                 {Array.from({ length: daysToShow }).map((_, dayOffset) => {
                   const cellDate = new Date(currentDate);
                   cellDate.setDate(cellDate.getDate() + dayOffset);
                   
                   return courts.map(court => {
-                    const booking = getBookingForSlot(court.id, cellDate, hour);
+                    const booking = getBookingForSlot(court.id, cellDate, slot.hour, slot.min);
                     
                     if (booking) {
-                      // Is this the first hour of the booking?
-                      const isStart = new Date(booking.startTime).getHours() === hour;
+                      // Is this the first slot of the booking?
+                      const bStart = new Date(booking.startTime);
+                      const isStart = bStart.getHours() === slot.hour && bStart.getMinutes() === slot.min;
                       if (!isStart) return null; // We'll rowspan the starting cell
 
-                      const durationHours = (new Date(booking.endTime).getTime() - new Date(booking.startTime).getTime()) / (1000 * 60 * 60);
+                      const durationHours = (new Date(booking.endTime).getTime() - bStart.getTime()) / (1000 * 60 * 60);
+                      const rowSpanValue = Math.round(durationHours * 2); // 2 rows per hour
                       
                       const isMyBooking = booking.participants.some(p => p.id === currentUserId) || booking.organizer?.id === currentUserId;
                       
                       const typeInfo = availableTypes.find(t => t.name === booking.type);
-                      const baseColor = typeInfo ? typeInfo.color : '#e5e7eb'; // Default gray if type deleted
+                      const baseColor = typeInfo ? typeInfo.color : '#e5e7eb';
                       
-                      // For "My Bookings" we might want to highlight them, but user preferred dynamic colors.
-                      // Let's use the dynamic color and just add a thicker border if it's my booking
                       const myBookingBorder = isMyBooking ? 'border-gray-800 border-2 shadow-sm' : 'border-black/10';
                       
                       return (
-                        <td key={`${dayOffset}-${court.id}`} rowSpan={durationHours} className={`border-r p-1 align-top`}>
+                        <td key={`${dayOffset}-${court.id}`} rowSpan={rowSpanValue} className={`border-r p-1 align-top`}>
                           <div 
                             onClick={() => setViewBooking(booking)}
                             className={`h-full w-full rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden ${myBookingBorder}`}
                             style={{ backgroundColor: baseColor, color: '#1f2937' }}
                           >
-                            <div className="font-semibold text-xs truncate" style={{ color: 'inherit' }}>{booking.type}</div>
+                            <div className="font-semibold text-xs truncate" style={{ color: 'inherit' }}>{booking.title || booking.type}</div>
                             <div className="text-[10px] leading-tight truncate" style={{ color: 'inherit', opacity: 0.9 }}>{booking.organizer?.firstName} {booking.organizer?.lastName}</div>
                           </div>
                         </td>
@@ -294,28 +335,32 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     return (
                       <td 
                         key={`${dayOffset}-${court.id}`} 
-                        className="border-r p-1 hover:bg-green-50 cursor-pointer transition-colors"
+                        className="border-r hover:bg-green-50 cursor-pointer transition-colors"
                         onClick={() => {
                           setSelectedCourtId(court.id);
                           const start = new Date(cellDate);
-                          start.setHours(hour, 0, 0, 0);
+                          start.setHours(slot.hour, slot.min, 0, 0);
                           setSelectedStartTime(start);
                           
                           const end = new Date(cellDate);
-                          end.setHours(hour + 1, 0, 0, 0);
+                          end.setHours(slot.hour + 1, slot.min, 0, 0);
                           setSelectedEndTime(end);
                           
                           setBookingType('MEMBER');
+                          setBookingTitle('');
+                          setBookingDescription('');
                           setSelectedParticipants([]);
                           setEditingBookingId(null);
                           setBookAllCourts(false);
                           setIsRecurring(false);
                           setRecurrenceDays([cellDate.getDay()]);
+                          setApplyToFuture(false);
+                          setError('');
                           setShowModal(true);
                         }}
                       >
                         <div className="h-full w-full flex items-center justify-center opacity-0 hover:opacity-100 text-green-600 font-medium text-xs">
-                          + Book
+                          +
                         </div>
                       </td>
                     );
@@ -331,10 +376,24 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-            <h3 className="text-xl font-bold mb-4">Book {courts.find(c => c.id === selectedCourtId)?.name}</h3>
+            <h3 className="text-xl font-bold mb-4">{editingBookingId ? 'Edit Booking' : 'New Booking'}</h3>
             {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
             
             <form onSubmit={handleCreateBooking} className="space-y-4">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700">Court</label>
+                <select
+                  required
+                  value={selectedCourtId}
+                  onChange={e => setSelectedCourtId(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                  disabled={bookAllCourts}
+                >
+                  {courts.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">Date</label>
                 <input 
@@ -379,12 +438,14 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                           required
                           min={minTime}
                           max={maxTime}
-                          value={selectedStartTime ? selectedStartTime.toTimeString().slice(0,5) : ''}
+                          value={selectedStartTime ? `${String(selectedStartTime.getHours()).padStart(2, '0')}:${String(selectedStartTime.getMinutes()).padStart(2, '0')}` : ''}
                           onChange={(e) => {
-                            if (!selectedStartTime) return;
-                            const [h, m] = e.target.value.split(':');
+                            if (!selectedStartTime || !e.target.value) return;
+                            const parts = e.target.value.split(':');
+                            if (parts.length < 2) return;
+                            const [h, m] = parts;
                             const d = new Date(selectedStartTime);
-                            d.setHours(parseInt(h), parseInt(m));
+                            d.setHours(parseInt(h), parseInt(m), 0, 0);
                             setSelectedStartTime(d);
                           }}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
@@ -409,12 +470,14 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                           required
                           min={minTime}
                           max={maxTime}
-                          value={selectedEndTime ? selectedEndTime.toTimeString().slice(0,5) : ''}
+                          value={selectedEndTime ? `${String(selectedEndTime.getHours()).padStart(2, '0')}:${String(selectedEndTime.getMinutes()).padStart(2, '0')}` : ''}
                           onChange={(e) => {
-                            if (!selectedEndTime) return;
-                            const [h, m] = e.target.value.split(':');
+                            if (!selectedEndTime || !e.target.value) return;
+                            const parts = e.target.value.split(':');
+                            if (parts.length < 2) return;
+                            const [h, m] = parts;
                             const d = new Date(selectedEndTime);
-                            d.setHours(parseInt(h), parseInt(m));
+                            d.setHours(parseInt(h), parseInt(m), 0, 0);
                             setSelectedEndTime(d);
                           }}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
@@ -438,6 +501,26 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                         <option key={t.id} value={t.name}>{t.name} {t.isBuiltIn && t.name === 'MEMBER' ? '(Member Play)' : ''}</option>
                       ))}
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Title (Optional)</label>
+                    <input 
+                      type="text" 
+                      value={bookingTitle} 
+                      onChange={(e) => setBookingTitle(e.target.value)}
+                      placeholder="e.g., Men's Finals"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Description (Optional)</label>
+                    <textarea 
+                      value={bookingDescription} 
+                      onChange={(e) => setBookingDescription(e.target.value)}
+                      placeholder="Visible to all users viewing the calendar..."
+                      rows={4}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
+                    />
                   </div>
 
                   {!editingBookingId && (
@@ -509,6 +592,23 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                 </div>
               )}
 
+              {isAdmin && editingBookingId && bookings.find(b => b.id === editingBookingId)?.recurringGroupId && (
+                <div className="space-y-4 border border-indigo-100 bg-indigo-50 p-4 rounded-md">
+                  <div className="flex items-center">
+                    <input
+                      id="applyToFuture"
+                      type="checkbox"
+                      checked={applyToFuture}
+                      onChange={(e) => setApplyToFuture(e.target.checked)}
+                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="applyToFuture" className="ml-2 block text-sm font-medium text-gray-900">
+                      Apply changes to all future bookings in this recurring series
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {bookingType === 'MEMBER' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Add Playing Partners</label>
@@ -566,6 +666,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                   onClick={() => {
                     setShowModal(false);
                     setEditingBookingId(null);
+                    setError('');
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
@@ -590,7 +691,13 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
             <h3 className="text-xl font-bold mb-4">Booking Details</h3>
             
             <div className="space-y-3 mb-6 text-sm">
-              <p><strong>Type:</strong> {viewBooking.type}</p>
+              <p><strong>Title:</strong> {viewBooking.title || viewBooking.type}</p>
+              {viewBooking.description && (
+                <div>
+                  <strong>Description:</strong> 
+                  <p className="whitespace-pre-wrap mt-1 text-gray-700 border-l-2 border-gray-200 pl-3">{viewBooking.description}</p>
+                </div>
+              )}
               <p><strong>Time:</strong> {new Date(viewBooking.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(viewBooking.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
               <p><strong>Organizer:</strong> {viewBooking.organizer.firstName} {viewBooking.organizer.lastName}</p>
               <p><strong>Participants:</strong> {viewBooking.participants.map(p => `${p.firstName} ${p.lastName}`).join(', ')}</p>
@@ -606,8 +713,11 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     setSelectedStartTime(new Date(viewBooking.startTime));
                     setSelectedEndTime(new Date(viewBooking.endTime));
                     setBookingType(viewBooking.type);
+                    setBookingTitle(viewBooking.title || '');
+                    setBookingDescription(viewBooking.description || '');
                     setSelectedParticipants(viewBooking.participants);
                     setEditingBookingId(viewBooking.id);
+                    setApplyToFuture(false);
                     setViewBooking(null);
                     setShowModal(true);
                   }}
@@ -619,7 +729,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
               {(isAdmin || viewBooking.organizer.id === currentUserId) && (
                 <button 
                   type="button" 
-                  onClick={() => handleDeleteBooking(viewBooking.id)}
+                  onClick={() => handleDeleteBooking(viewBooking)}
                   className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700"
                 >
                   Cancel Booking

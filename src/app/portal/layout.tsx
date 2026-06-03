@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignOutButton } from '@/components/SignOutButton';
 
+import { verifyJwt } from '@/lib/auth';
+
 export default async function PortalLayout({
   children,
 }: {
@@ -11,6 +13,14 @@ export default async function PortalLayout({
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('auth_token')?.value;
+
+  let isAdmin = false;
+  if (token) {
+    const payload = await verifyJwt(token);
+    if (payload && payload.role === 'ADMIN') {
+      isAdmin = true;
+    }
+  }
 
   if (!token) {
     redirect('/login');
@@ -31,7 +41,13 @@ export default async function PortalLayout({
               <div className="hidden md:flex gap-4">
                 <Link href="/portal" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</Link>
                 <Link href="/portal/book" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Book a Court</Link>
+                <Link href="/portal/calendar" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Calendar</Link>
                 <Link href="/portal/profile" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">My Profile</Link>
+                {isAdmin && (
+                  <Link href="/admin" className="bg-primary-700 text-white hover:bg-primary-800 px-3 py-2 rounded-md text-sm font-bold transition-colors shadow-sm border border-primary-500">
+                    Admin Dashboard
+                  </Link>
+                )}
               </div>
             </div>
             <div>

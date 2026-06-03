@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { courtId, startTime, endTime, type, participantIds, notes, bookAllCourts, recurrence } = await req.json();
+    const { courtId, startTime, endTime, type, title, description, participantIds, notes, bookAllCourts, recurrence } = await req.json();
 
     if ((!courtId && !bookAllCourts) || !startTime || !endTime) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -153,12 +153,13 @@ export async function POST(req: Request) {
       courtsToBook = allCourts.map(c => c.id);
     }
 
-    const slots: { courtId: string; start: Date; end: Date }[] = [];
+    const slots: { courtId: string; start: Date; end: Date; recurringGroupId?: string }[] = [];
     
     if (isAdmin && recurrence && recurrence.weeks > 0 && recurrence.daysOfWeek && recurrence.daysOfWeek.length > 0) {
       const durationMs = end.getTime() - start.getTime();
       const startOfDay = new Date(start);
       startOfDay.setHours(0, 0, 0, 0);
+      const recurringGroupId = crypto.randomUUID();
 
       for (let w = 0; w < recurrence.weeks; w++) {
         for (const dow of recurrence.daysOfWeek) {
@@ -172,7 +173,7 @@ export async function POST(req: Request) {
           if (slotStart.getTime() >= startOfDay.getTime()) {
             const slotEnd = new Date(slotStart.getTime() + durationMs);
             for (const cid of courtsToBook) {
-              slots.push({ courtId: cid, start: slotStart, end: slotEnd });
+              slots.push({ courtId: cid, start: slotStart, end: slotEnd, recurringGroupId });
             }
           }
         }
@@ -215,7 +216,10 @@ export async function POST(req: Request) {
           startTime: slot.start,
           endTime: slot.end,
           type: bookingType,
+          title: isAdmin ? title : null,
+          description: isAdmin ? description : null,
           notes,
+          recurringGroupId: slot.recurringGroupId,
           organizerId: payload.userId as string,
           participants: {
             connect: finalParticipantIds.map((id: string) => ({ id }))

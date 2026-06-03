@@ -36,7 +36,7 @@ const TEMPLATE_VARIABLES: Record<string, string[]> = {
   'WELCOME_EMAIL': ['{{firstName}}', '{{memberNumber}}', '{{clubName}}', '{{loginLink}}'],
   'REGISTRATION_PENDING': ['{{memberNames}}', '{{totalDue}}', '{{paymentEmail}}', '{{editUrl}}'],
   'PROFILE_UPDATED': ['{{changesHtml}}'],
-  'BOOKING_CONFIRMATION': ['{{actionTitle}}', '{{actionText}}', '{{courtName}}', '{{formattedStart}}', '{{formattedEnd}}', '{{type}}', '{{participantNames}}', '{{bookedBy}}', '{{formattedBookedAt}}', '{{portalLink}}'],
+  'BOOKING_CONFIRMATION': ['{{actionTitle}}', '{{actionText}}', '{{courtName}}', '{{formattedStart}}', '{{formattedEnd}}', '{{type}}', '{{title}}', '{{description}}', '{{participantNames}}', '{{bookedBy}}', '{{formattedBookedAt}}', '{{portalLink}}'],
   'INTEREST_CONFIRMATION': ['{{firstName}}', '{{clubName}}', '{{clubShortName}}', '{{registerLink}}'],
   'ADMIN_NEW_REGISTRATION': ['{{memberNames}}', '{{totalDue}}', '{{adminDashboardLink}}'],
   'IMPORT_WELCOME_EMAIL': ['{{firstName}}', '{{clubName}}', '{{resetUrl}}'],
@@ -120,6 +120,7 @@ export default function AdminSettingsPage() {
   const [savingBookingType, setSavingBookingType] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [wiping, setWiping] = useState(false);
 
   const fetchCourts = async () => {
     try {
@@ -516,6 +517,28 @@ export default function AdminSettingsPage() {
       textarea.focus();
       textarea.setSelectionRange(startPos + variable.length, startPos + variable.length);
     }, 0);
+  };
+
+  const handleWipeBookings = async () => {
+    const confirm1 = confirm('DANGER: This will permanently delete ALL court bookings from the database. This action CANNOT BE UNDONE. Are you absolutely sure?');
+    if (!confirm1) return;
+    
+    const confirm2 = confirm('Please confirm one more time: Do you really want to WIPE ALL BOOKINGS?');
+    if (!confirm2) return;
+
+    setWiping(true);
+    try {
+      const res = await fetch('/api/admin/bookings/wipe', { method: 'DELETE' });
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Successfully deleted ${data.count} bookings.`);
+      } else {
+        alert('Failed to wipe bookings.');
+      }
+    } catch (err) {
+      alert('Error wiping bookings.');
+    }
+    setWiping(false);
   };
 
   if (loading || plansLoading || courtsLoading) return <div className="p-8">Loading settings...</div>;
@@ -1165,6 +1188,30 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="border-t border-red-200 pt-6 mt-6">
+          <h3 className="text-lg font-medium text-red-700 mb-4 flex items-center">
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+            Danger Zone
+          </h3>
+          <div className="bg-red-50 p-4 border border-red-200 rounded-md shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-red-900">Wipe All Bookings</h4>
+                <p className="text-sm text-red-700 mt-1">
+                  Permanently delete all court bookings from the system. This action cannot be undone.
+                </p>
+              </div>
+              <button
+                onClick={handleWipeBookings}
+                disabled={wiping}
+                className="mt-4 sm:mt-0 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 whitespace-nowrap"
+              >
+                {wiping ? 'Wiping...' : 'Wipe Bookings'}
+              </button>
+            </div>
           </div>
         </div>
 

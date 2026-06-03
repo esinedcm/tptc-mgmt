@@ -9,6 +9,7 @@ type Booking = {
   endTime: string;
   type: string;
   status: string;
+  recurringGroupId?: string | null;
 };
 
 export default function MyBookingsList({ 
@@ -23,9 +24,34 @@ export default function MyBookingsList({
 
   const now = new Date();
 
-  const activeBookings = bookings.filter(b => b.status === 'ACTIVE' && new Date(b.startTime) > now);
-  const pastBookings = bookings.filter(b => b.status === 'ACTIVE' && new Date(b.endTime) <= now);
-  const cancelledBookings = bookings.filter(b => b.status === 'CANCELLED');
+  const groupBookings = (bookingList: Booking[], sortDesc = false) => {
+    const grouped: Record<string, Booking & { count: number, courts: Set<string>, dates: Set<string> }> = {};
+    
+    // Sort bookings by time first to ensure we grab the earliest (or latest for past) instance
+    const sortedList = [...bookingList].sort((a, b) => 
+      sortDesc ? new Date(b.startTime).getTime() - new Date(a.startTime).getTime() 
+               : new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+
+    sortedList.forEach(b => {
+      // Group by recurring group or fallback to same time/type/status
+      const key = b.recurringGroupId || `${b.startTime}-${b.endTime}-${b.type}-${b.status}`;
+      const dateStr = new Date(b.startTime).toDateString();
+      if (!grouped[key]) {
+        grouped[key] = { ...b, count: 1, courts: new Set([b.court.name]), dates: new Set([dateStr]) };
+      } else {
+        grouped[key].count += 1;
+        grouped[key].courts.add(b.court.name);
+        grouped[key].dates.add(dateStr);
+      }
+    });
+
+    return Object.values(grouped);
+  };
+
+  const activeBookings = groupBookings(bookings.filter(b => b.status === 'ACTIVE' && new Date(b.startTime) > now));
+  const pastBookings = groupBookings(bookings.filter(b => b.status === 'ACTIVE' && new Date(b.endTime) <= now), true);
+  const cancelledBookings = groupBookings(bookings.filter(b => b.status === 'CANCELLED'), true);
 
   const handleCancel = async (id: string) => {
     if (!confirm('Are you sure you want to cancel this booking?')) return;
@@ -42,68 +68,87 @@ export default function MyBookingsList({
     setCancelling(null);
   };
 
-  const renderBookingCard = (b: Booking, isActiveList = false) => {
-    const start = new Date(b.startTime);
-    const end = new Date(b.endTime);
-    
-    // Check if within cutoff
-    const cutoffTime = new Date(now.getTime() + cutoffMinutes * 60000);
-    const canCancel = isActiveList && start >= cutoffTime;
+  const renderTable = (bookingsToRender: (Booking & { count?: number, courts?: Set<string>, dates?: Set<string> })[], isActiveList = false, title: string) => {
+    if (bookingsToRender.length === 0) {
+      return (
+        <div className="mb-8">
+          <h3 className="text-lg font-bold text-gray-800 mb-3 border-b pb-1">{title}</h3>
+          <p className="text-sm text-gray-500 italic">No bookings.</p>
+        </div>
+      );
+    }
 
     return (
-      <div key={b.id} className="border p-3 rounded-md mb-2 flex justify-between items-center bg-white shadow-sm">
-        <div>
-          <div className="font-semibold text-gray-800">{b.court.name} - {b.type}</div>
-          <div className="text-sm text-gray-600">
-            {start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-          </div>
+      <div className="mb-8">
+        <h3 className="text-lg font-bold text-gray-800 mb-3 border-b pb-1">{title}</h3>
+        <div className="overflow-x-auto rounded-lg border border-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900">Date</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900">Time</th>
+                <th className="px-4 py-3 text-left font-semibold text-gray-900">Court</th>
+                {isActiveList && <th className="px-4 py-3"></th>}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {bookingsToRender.map(b => {
+                const start = new Date(b.startTime);
+                const end = new Date(b.endTime);
+                const cutoffTime = new Date(now.getTime() + cutoffMinutes * 60000);
+                const canCancel = isActiveList && start >= cutoffTime;
+
+                return (
+                  <React.Fragment key={b.id}>
+                    <tr className="hover:bg-gray-50 transition-colors border-b-0">
+                      <td className="px-4 pt-3 pb-1 whitespace-nowrap text-gray-700">
+                        {start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      </td>
+                      <td className="px-4 pt-3 pb-1 whitespace-nowrap text-gray-700">
+                        {start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </td>
+                      <td className="px-4 pt-3 pb-1 text-gray-900 font-medium">
+                        {b.courts && b.courts.size > 1 ? 'All' : b.court.name.replace(/^Court\s+/i, '')}
+                      </td>
+                      {isActiveList && (
+                        <td className="px-4 py-3 text-right whitespace-nowrap" rowSpan={2}>
+                          <button
+                            onClick={() => handleCancel(b.id)}
+                            disabled={cancelling === b.id || !canCancel}
+                            title={!canCancel ? `Cannot cancel less than ${cutoffMinutes} mins before start.` : ''}
+                            className={`font-medium ${
+                              canCancel 
+                                ? 'text-red-600 hover:text-red-900' 
+                                : 'text-gray-400 cursor-not-allowed'
+                            }`}
+                          >
+                            {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                    <tr className="hover:bg-gray-50 transition-colors">
+                      <td colSpan={3} className="px-4 pb-3 pt-0 border-t-0 text-xs text-gray-500">
+                        {b.type} {b.dates && b.dates.size > 1 && <span className="ml-1 text-indigo-600 font-medium">({b.dates.size} instances total)</span>}
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        {isActiveList && (
-          <div>
-            <button
-              onClick={() => handleCancel(b.id)}
-              disabled={cancelling === b.id || !canCancel}
-              title={!canCancel ? `Cannot cancel less than ${cutoffMinutes} mins before start.` : ''}
-              className={`px-3 py-1 text-sm font-medium rounded border ${
-                canCancel 
-                  ? 'border-red-300 text-red-600 hover:bg-red-50' 
-                  : 'border-gray-400 text-gray-400 cursor-not-allowed bg-gray-50'
-              }`}
-            >
-              {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
-            </button>
-          </div>
-        )}
       </div>
     );
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-bold text-gray-800 mb-3 border-b pb-1">Active Bookings</h3>
-        {activeBookings.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No upcoming bookings.</p>
-        ) : (
-          activeBookings.map(b => renderBookingCard(b, true))
-        )}
-      </div>
-
-      <div>
-        <h3 className="text-lg font-bold text-gray-800 mb-3 border-b pb-1">Past Bookings</h3>
-        {pastBookings.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No past bookings.</p>
-        ) : (
-          pastBookings.map(b => renderBookingCard(b, false))
-        )}
-      </div>
-
+    <div className="space-y-2">
+      {renderTable(activeBookings, true, 'Active Bookings')}
+      {renderTable(pastBookings, false, 'Past Bookings')}
       {cancelledBookings.length > 0 && (
-        <div>
-          <h3 className="text-lg font-bold text-gray-800 mb-3 border-b pb-1 text-gray-400">Cancelled Bookings</h3>
-          <div className="opacity-60">
-            {cancelledBookings.map(b => renderBookingCard(b, false))}
-          </div>
+        <div className="opacity-60">
+          {renderTable(cancelledBookings, false, 'Cancelled Bookings')}
         </div>
       )}
     </div>

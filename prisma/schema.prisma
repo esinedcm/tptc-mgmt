@@ -130,6 +130,8 @@ model Booking {
   endTime     DateTime
   type        String   @default("MEMBER") // 'MEMBER', 'LESSON', 'LEAGUE', 'MAINTENANCE'
   status      String   @default("ACTIVE") // 'ACTIVE', 'CANCELLED'
+  title       String?
+  description String?
   notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -138,6 +140,8 @@ model Booking {
   organizer   User?    @relation("BookingOrganizer", fields: [organizerId], references: [id])
   
   participants User[]  @relation("BookingParticipants")
+  
+  recurringGroupId String?
 }
 
 model EmailTemplate {
@@ -153,4 +157,17 @@ model BookingType {
   color     String   @default("#3b82f6") // Hex color for the calendar
   isBuiltIn Boolean  @default(false)     // True for 'MEMBER' so it can't be deleted
   createdAt DateTime @default(now())
+}
+
+model ClubEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  isAllDay    Boolean  @default(false)
+  colorHex    String   @default("#8b5cf6")
+  season      String   @default("2026")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

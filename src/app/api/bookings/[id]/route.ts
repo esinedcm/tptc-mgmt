@@ -12,6 +12,9 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     const payload = await verifyJwt(token);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const { searchParams } = new URL(request.url);
+    const applyToFuture = searchParams.get('applyToFuture') === 'true';
+
     const { id } = await params;
     if (!id) return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
 
@@ -39,33 +42,53 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       }
     }
 
-    await prisma.booking.update({
-      where: { id },
+    let bookingsToCancel = [booking];
+    if (applyToFuture && booking.recurringGroupId && payload.role === 'ADMIN') {
+      const futureGroupBookings = await prisma.booking.findMany({
+        where: {
+          recurringGroupId: booking.recurringGroupId,
+          startTime: { gte: booking.startTime },
+          status: 'ACTIVE'
+        },
+        include: { court: true, participants: true, organizer: true }
+      });
+      bookingsToCancel = futureGroupBookings;
+    }
+
+    await prisma.booking.updateMany({
+      where: { id: { in: bookingsToCancel.map(b => b.id) } },
       data: { status: 'CANCELLED' }
     });
 
     // Send emails
-    const participantNames = booking.participants.map(p => `${p.firstName} ${p.lastName}`);
-    for (const participant of booking.participants) {
-      if (participant.email) {
-        await sendBookingEmail({
-          to: participant.email,
-          subject: 'Court Booking Cancelled',
-          bookingDetails: {
-            action: 'cancelled',
-            courtName: booking.court.name,
-            startTime: booking.startTime,
-            endTime: booking.endTime,
-            type: booking.type,
-            participantNames,
-            bookedBy: booking.organizer ? `${booking.organizer.firstName} ${booking.organizer.lastName}` : 'System',
-            bookedAt: booking.createdAt
-          }
-        });
+    const emailedAddresses = new Set<string>();
+    
+    for (const b of bookingsToCancel) {
+      const participantNames = b.participants.map(p => `${p.firstName} ${p.lastName}`);
+      for (const participant of b.participants) {
+        if (participant.email) {
+          if (emailedAddresses.has(participant.email)) continue;
+          emailedAddresses.add(participant.email);
+          
+          await sendBookingEmail({
+            to: participant.email,
+            subject: 'Court Booking Cancelled',
+            bookingDetails: {
+              action: 'cancelled',
+              courtName: b.court.name,
+              startTime: b.startTime,
+              endTime: b.endTime,
+              type: b.type,
+              participantNames,
+              bookedBy: b.organizer ? `${b.organizer.firstName} ${b.organizer.lastName}` : 'System',
+              bookedAt: b.createdAt
+            }
+          });
+        }
       }
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ success: true, count: bookingsToCancel.length }, { status: 200 });
   } catch (error) {
     console.error('Delete booking error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -84,7 +107,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     if (!id) return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
 
-    const { courtId, startTime, endTime, type, participantIds, notes } = await request.json();
+    const { courtId, startTime, endTime, type, title, description, participantIds, notes, applyToFuture } = await request.json();
 
     const start = new Date(startTime);
     const end = new Date(endTime);
@@ -124,13 +147,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       const maxDays = settings?.maxDaysInAdvance ?? 3;
       const maxMinutes = (settings?.maxHoursPerDay ?? 2) * 60;
 
-      // Check days in advance
       const daysAhead = (start.getTime() - new Date().getTime()) / (1000 * 3600 * 24);
       if (daysAhead > maxDays) {
         return NextResponse.json({ error: `Members can only book up to ${maxDays} days in advance.` }, { status: 400 });
       }
 
-      // Check daily limit (excluding this exact booking)
       const startOfDay = new Date(start);
       startOfDay.setHours(0,0,0,0);
       const endOfDay = new Date(start);
@@ -142,7 +163,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           status: 'ACTIVE',
           startTime: { gte: startOfDay },
           endTime: { lte: endOfDay },
-          id: { not: id } // Exclude the current booking we are editing
+          id: { not: id }
         }
       });
 
@@ -156,31 +177,29 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       }
     }
 
-    // Check overlaps excluding current booking
-    const overlapping = await prisma.booking.findFirst({
-      where: {
-        courtId,
-        id: { not: id },
-        status: 'ACTIVE',
-        startTime: { lt: end },
-        endTime: { gt: start }
-      }
-    });
+    let bookingsToUpdate = [booking];
+    const startDelta = start.getTime() - new Date(booking.startTime).getTime();
+    const endDelta = end.getTime() - new Date(booking.endTime).getTime();
 
-    if (overlapping) {
-      return NextResponse.json({ error: 'This court is already booked for the selected time.' }, { status: 400 });
+    if (applyToFuture && booking.recurringGroupId && isAdmin) {
+      const futureGroupBookings = await prisma.booking.findMany({
+        where: {
+          recurringGroupId: booking.recurringGroupId,
+          startTime: { gte: booking.startTime },
+          status: 'ACTIVE'
+        },
+        include: { court: true, participants: true, organizer: true }
+      });
+      bookingsToUpdate = futureGroupBookings;
     }
 
     // Always include organizer
     const finalParticipantIds = Array.from(new Set([...(participantIds || []), booking.organizerId]));
 
-    // Check if all participants (except maybe admin) have an active membership
     const activeMembers = await prisma.user.findMany({
       where: {
         id: { in: finalParticipantIds },
-        memberships: {
-          some: { status: 'Active' }
-        }
+        memberships: { some: { status: 'Active' } }
       },
       select: { id: true }
     });
@@ -189,53 +208,83 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const nonActiveParticipants = finalParticipantIds.filter(id => !activeMemberIds.includes(id as string));
 
     if (nonActiveParticipants.length > 0) {
-      // If it's just the admin who isn't active, that's fine.
       if (!(isAdmin && nonActiveParticipants.length === 1 && nonActiveParticipants[0] === payload.userId)) {
         return NextResponse.json({ error: 'Only Active members can book courts or be added as playing partners.' }, { status: 400 });
       }
     }
 
-    const updatedBooking = await prisma.booking.update({
-      where: { id },
-      data: {
-        courtId,
-        startTime: start,
-        endTime: end,
-        type,
-        notes,
-        participants: {
-          set: finalParticipantIds.map((pid: string) => ({ id: pid }))
+    // Prepare updates and check for overlapping
+    const transactionOperations = [];
+    
+    const uniqueCourtsInSeries = new Set(bookingsToUpdate.map(b => b.courtId));
+    const isMultiCourtSeries = uniqueCourtsInSeries.size > 1;
+
+    for (const b of bookingsToUpdate) {
+      const newStart = new Date(new Date(b.startTime).getTime() + startDelta);
+      const newEnd = new Date(new Date(b.endTime).getTime() + endDelta);
+      const targetCourtId = isMultiCourtSeries ? b.courtId : courtId;
+
+      // Check overlaps excluding all bookings in this update batch
+      const overlapping = await prisma.booking.findFirst({
+        where: {
+          courtId: targetCourtId,
+          id: { notIn: bookingsToUpdate.map(updateB => updateB.id) },
+          status: 'ACTIVE',
+          startTime: { lt: newEnd },
+          endTime: { gt: newStart }
         }
-      },
-      include: {
-        court: true,
-        participants: true,
-        organizer: true
+      });
+
+      if (overlapping) {
+        return NextResponse.json({ error: `The court is already booked for a conflicting time on ${newStart.toLocaleDateString()}.` }, { status: 400 });
       }
-    });
+
+      transactionOperations.push(
+        prisma.booking.update({
+          where: { id: b.id },
+          data: {
+            courtId: targetCourtId,
+            startTime: newStart,
+            endTime: newEnd,
+            type,
+            title: isAdmin ? (title || null) : undefined,
+            description: isAdmin ? (description || null) : undefined,
+            notes,
+            participants: {
+              set: finalParticipantIds.map((pid: string) => ({ id: pid }))
+            }
+          },
+          include: { court: true, participants: true, organizer: true }
+        })
+      );
+    }
+
+    const results = await prisma.$transaction(transactionOperations);
 
     // Send emails
-    const participantNames = updatedBooking.participants.map(p => `${p.firstName} ${p.lastName}`);
-    for (const participant of updatedBooking.participants) {
-      if (participant.email) {
-        await sendBookingEmail({
-          to: participant.email,
-          subject: 'Court Booking Updated',
-          bookingDetails: {
-            action: 'updated',
-            courtName: updatedBooking.court.name,
-            startTime: updatedBooking.startTime,
-            endTime: updatedBooking.endTime,
-            type: updatedBooking.type,
-            participantNames,
-            bookedBy: updatedBooking.organizer ? `${updatedBooking.organizer.firstName} ${updatedBooking.organizer.lastName}` : 'System',
-            bookedAt: updatedBooking.createdAt
-          }
-        });
+    for (const updatedBooking of results) {
+      const participantNames = updatedBooking.participants.map(p => `${p.firstName} ${p.lastName}`);
+      for (const participant of updatedBooking.participants) {
+        if (participant.email) {
+          await sendBookingEmail({
+            to: participant.email,
+            subject: 'Court Booking Updated',
+            bookingDetails: {
+              action: 'updated',
+              courtName: updatedBooking.court.name,
+              startTime: updatedBooking.startTime,
+              endTime: updatedBooking.endTime,
+              type: updatedBooking.type,
+              participantNames,
+              bookedBy: updatedBooking.organizer ? `${updatedBooking.organizer.firstName} ${updatedBooking.organizer.lastName}` : 'System',
+              bookedAt: updatedBooking.createdAt
+            }
+          });
+        }
       }
     }
 
-    return NextResponse.json({ success: true, booking: updatedBooking }, { status: 200 });
+    return NextResponse.json({ success: true, booking: results[0] }, { status: 200 });
   } catch (error) {
     console.error('Update booking error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
