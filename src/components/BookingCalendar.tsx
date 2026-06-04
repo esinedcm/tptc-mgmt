@@ -90,11 +90,34 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
         setBookingDescription(b.description || '');
         setSelectedParticipants(b.participants);
         setShowModal(true);
-        
         router.replace(pathname + (initialDateParam ? `?date=${initialDateParam}` : ''), { scroll: false });
       }
     }
-  }, [editParamId, bookings, showModal, editingBookingId, router, pathname, initialDateParam]);
+    
+    const newParam = searchParams.get('new');
+    if (newParam && !showModal && courts.length > 0) {
+      setViewBooking(null);
+      setEditingBookingId(null);
+      setSelectedCourtId(courts[0].id);
+      
+      const now = new Date();
+      now.setMinutes(0, 0, 0);
+      now.setHours(Math.max(openTime, now.getHours() + 1));
+      
+      const end = new Date(now);
+      end.setHours(now.getHours() + 1);
+      
+      setSelectedStartTime(now);
+      setSelectedEndTime(end);
+      setBookingType('MEMBER');
+      setBookingTitle('');
+      setBookingDescription('');
+      setSelectedParticipants([]);
+      setShowModal(true);
+      
+      router.replace(pathname + (initialDateParam ? `?date=${initialDateParam}` : ''), { scroll: false });
+    }
+  }, [editParamId, searchParams, bookings, showModal, editingBookingId, router, pathname, initialDateParam, courts, openTime]);
 
   const fetchCourtsAndBookings = async () => {
     setLoading(true);
@@ -397,7 +420,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       {/* Modals */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold mb-4">{editingBookingId ? 'Edit Booking' : 'New Booking'}</h3>
             {error && <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm">{error}</div>}
             

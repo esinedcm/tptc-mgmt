@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import BookingCalendar from '@/components/BookingCalendar';
 import BookingList from '@/components/BookingList';
 
@@ -13,7 +14,13 @@ type Props = {
 };
 
 export default function AdminBookingsTabs({ currentUserId, openTime, closeTime, daysToShow, skipDays }: Props) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'calendar' | 'list'>('calendar');
+
+  const handleEdit = (bookingId: string, date: string) => {
+    setActiveTab('calendar');
+    router.push(`/admin/bookings?edit=${bookingId}&date=${date}`);
+  };
 
   return (
     <div>
@@ -52,7 +59,7 @@ export default function AdminBookingsTabs({ currentUserId, openTime, closeTime, 
           skipDays={skipDays} 
         />
       ) : (
-        <BookingList />
+        <BookingList onEdit={handleEdit} />
       )}
     </div>
   );

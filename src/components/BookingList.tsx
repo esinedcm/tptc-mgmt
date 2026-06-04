@@ -16,7 +16,7 @@ type Booking = {
   organizer: User;
 };
 
-export default function BookingList() {
+export default function BookingList({ onEdit }: { onEdit?: (id: string, date: string) => void }) {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -216,6 +216,14 @@ export default function BookingList() {
                     {g.recurringGroupId && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Series</span>}
                   </td>
                   <td className="px-6 py-4 text-right whitespace-nowrap">
+                    {onEdit && (
+                      <button 
+                        onClick={() => onEdit(g.ids[0], g.startDateObj.toISOString().split('T')[0])} 
+                        className="text-primary-600 hover:text-primary-900 font-medium mr-4"
+                      >
+                        Edit
+                      </button>
+                    )}
                     <button onClick={() => handleDeleteGroup(g)} className="text-red-600 hover:text-red-900 font-medium">Delete</button>
                   </td>
                 </tr>
