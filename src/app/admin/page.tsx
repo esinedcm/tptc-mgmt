@@ -1085,7 +1085,6 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="mb-1">
                             <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] mr-2">{m.membershipType}</span>
-                            Registered {new Date(m.createdAt).toLocaleDateString()}
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
                               {m.user.gender && <span>{m.user.gender}</span>}
