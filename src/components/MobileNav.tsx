@@ -29,6 +29,7 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
             <Link href="/portal" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Dashboard</Link>
             <Link href="/portal/book" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Book a Court</Link>
             <Link href="/portal/calendar" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Calendar</Link>
+            <Link href="/portal/events" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Events</Link>
             <Link href="/portal/profile" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">My Profile</Link>
             {isAdmin && (
               <Link href="/admin" onClick={() => setIsOpen(false)} className="text-primary-100 hover:bg-primary-700 hover:text-white px-3 py-2 rounded-md font-bold border-t border-primary-500 mt-2 pt-2">

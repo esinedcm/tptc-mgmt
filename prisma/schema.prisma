@@ -58,6 +58,7 @@ model User {
   memberships           Membership[]
   organizedBookings     Booking[]    @relation("BookingOrganizer")
   participatingBookings Booking[]    @relation("BookingParticipants")
+  eventRegistrations    EventRegistration[]
 }
 
 model Membership {
@@ -169,6 +170,22 @@ model ClubEvent {
   isAllDay    Boolean  @default(false)
   colorHex    String   @default("#8b5cf6")
   season      String   @default("2026")
+  cost        Float?
+  maxParticipants Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  registrations EventRegistration[]
+}
+
+model EventRegistration {
+  id           String    @id @default(cuid())
+  eventId      String
+  event        ClubEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       String    @default("REGISTERED") // 'REGISTERED', 'WAITLISTED', 'CANCELLED'
+  hasPaid      Boolean   @default(false)
+  registeredAt DateTime  @default(now())
+  
+  @@unique([eventId, userId])
 }

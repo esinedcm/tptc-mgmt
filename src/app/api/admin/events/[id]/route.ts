@@ -5,7 +5,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, description, startDate, endDate, isAllDay, colorHex } = body;
+    const { title, description, startDate, endDate, isAllDay, colorHex, cost, maxParticipants } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
@@ -19,7 +19,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         startDate: startDate ? new Date(startDate) : undefined,
         endDate: endDate ? new Date(endDate) : undefined,
         isAllDay,
-        colorHex
+        colorHex,
+        cost: cost !== undefined ? (cost === null || cost === '' ? null : parseFloat(cost)) : undefined,
+        maxParticipants: maxParticipants !== undefined ? (maxParticipants === null || maxParticipants === '' ? null : parseInt(maxParticipants, 10)) : undefined
       }
     });
 

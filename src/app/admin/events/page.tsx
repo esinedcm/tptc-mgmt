@@ -11,6 +11,9 @@ type ClubEvent = {
   endDate: string;
   isAllDay: boolean;
   colorHex: string;
+  cost?: number | null;
+  maxParticipants?: number | null;
+  _count?: { registrations: number };
 };
 
 const getLocalDatetimeString = (isoString: string | undefined, isAllDay: boolean) => {
@@ -29,6 +32,9 @@ export default function AdminEventsPage() {
   
   const [isEditing, setIsEditing] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<Partial<ClubEvent>>({});
+  
+  const [viewingRegistrationsEvent, setViewingRegistrationsEvent] = useState<ClubEvent | null>(null);
+  const [registrations, setRegistrations] = useState<any[]>([]);
 
   useEffect(() => {
     fetchEvents();
@@ -59,7 +65,9 @@ export default function AdminEventsPage() {
         startDate: currentEvent.startDate,
         endDate: currentEvent.endDate,
         isAllDay: currentEvent.isAllDay || false,
-        colorHex: currentEvent.colorHex || '#8b5cf6'
+        colorHex: currentEvent.colorHex || '#8b5cf6',
+        cost: currentEvent.cost,
+        maxParticipants: currentEvent.maxParticipants
       };
 
       const res = await fetch(url, {
@@ -89,6 +97,31 @@ export default function AdminEventsPage() {
     }
   };
 
+  const openRegistrations = async (event: ClubEvent) => {
+    setViewingRegistrationsEvent(event);
+    setRegistrations([]);
+    try {
+      const res = await fetch(`/api/admin/events/${event.id}/registrations`);
+      if (res.ok) {
+        const data = await res.json();
+        setRegistrations(data.registrations || []);
+      }
+    } catch(e) {}
+  };
+
+  const togglePaid = async (regId: string, currentHasPaid: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/events/registrations/${regId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hasPaid: !currentHasPaid })
+      });
+      if (res.ok) {
+        setRegistrations(registrations.map(r => r.id === regId ? { ...r, hasPaid: !currentHasPaid } : r));
+      }
+    } catch(e) {}
+  };
+
   const openNewEvent = () => {
     setCurrentEvent({
       title: '',
@@ -96,7 +129,9 @@ export default function AdminEventsPage() {
       startDate: new Date().toISOString().slice(0,16),
       endDate: new Date().toISOString().slice(0,16),
       isAllDay: false,
-      colorHex: '#8b5cf6'
+      colorHex: '#8b5cf6',
+      cost: null,
+      maxParticipants: null
     });
     setIsEditing(true);
   };
@@ -186,6 +221,30 @@ export default function AdminEventsPage() {
               </div>
             </div>
 
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700">Cost ($) - Optional</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  value={currentEvent.cost || ''}
+                  onChange={e => setCurrentEvent({...currentEvent, cost: e.target.value ? parseFloat(e.target.value) : null})}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700">Max Participants - Optional</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
+                  value={currentEvent.maxParticipants || ''}
+                  onChange={e => setCurrentEvent({...currentEvent, maxParticipants: e.target.value ? parseInt(e.target.value, 10) : null})}
+                />
+              </div>
+            </div>
+
             <div className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -242,6 +301,7 @@ export default function AdminEventsPage() {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registrations</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -267,7 +327,17 @@ export default function AdminEventsPage() {
                   {new Date(event.startDate).toLocaleDateString()}
                   {!event.isAllDay && ` • ${new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {event._count?.registrations || 0} {event.maxParticipants ? `/ ${event.maxParticipants}` : ''} registered
+                  {event.cost ? ` • $${event.cost.toFixed(2)}` : ''}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => openRegistrations(event)}
+                    className="text-primary-600 hover:text-primary-900 mr-4"
+                  >
+                    View Registrations
+                  </button>
                   <button
                     onClick={() => {
                       setCurrentEvent(event);
@@ -289,6 +359,60 @@ export default function AdminEventsPage() {
           </tbody>
         </table>
       </div>
+
+      {viewingRegistrationsEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto relative">
+            <button onClick={() => setViewingRegistrationsEvent(null)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 className="text-2xl font-bold mb-2">{viewingRegistrationsEvent.title} - Registrations</h2>
+            <p className="text-gray-600 mb-6">
+              {registrations.length} registered {viewingRegistrationsEvent.maxParticipants ? `out of ${viewingRegistrationsEvent.maxParticipants}` : ''} 
+              {viewingRegistrationsEvent.cost ? ` • Cost: $${viewingRegistrationsEvent.cost.toFixed(2)}` : ''}
+            </p>
+
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Member</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registered At</th>
+                  {viewingRegistrationsEvent.cost ? <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Payment</th> : null}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {registrations.length === 0 ? (
+                  <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500">No registrations yet.</td></tr>
+                ) : registrations.map(reg => (
+                  <tr key={reg.id}>
+                    <td className="px-4 py-3 font-medium text-gray-900">{reg.user.firstName} {reg.user.lastName}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{reg.user.email}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${reg.status === 'WAITLISTED' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
+                        {reg.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{new Date(reg.registeredAt).toLocaleString()}</td>
+                    {viewingRegistrationsEvent.cost ? (
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => togglePaid(reg.id, reg.hasPaid)}
+                          className={`text-xs px-3 py-1 rounded-full font-medium ${reg.hasPaid ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'}`}
+                        >
+                          {reg.hasPaid ? 'Paid' : 'Mark Paid'}
+                        </button>
+                      </td>
+                    ) : null}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

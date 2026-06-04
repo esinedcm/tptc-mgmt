@@ -13,6 +13,11 @@ export async function GET() {
 
     const events = await prisma.clubEvent.findMany({
       where: { season: activeSeason },
+      include: {
+        _count: {
+          select: { registrations: true }
+        }
+      },
       orderBy: { startDate: 'asc' }
     });
 
@@ -26,7 +31,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, description, startDate, endDate, isAllDay, colorHex } = body;
+    const { title, description, startDate, endDate, isAllDay, colorHex, cost, maxParticipants } = body;
 
     if (!title || !startDate || !endDate) {
       return NextResponse.json({ error: 'Title, start date, and end date are required' }, { status: 400 });
@@ -46,7 +51,9 @@ export async function POST(request: Request) {
         endDate: new Date(endDate),
         isAllDay: !!isAllDay,
         colorHex: colorHex || '#8b5cf6',
-        season: activeSeason
+        season: activeSeason,
+        cost: cost ? parseFloat(cost) : null,
+        maxParticipants: maxParticipants ? parseInt(maxParticipants, 10) : null
       }
     });
 

@@ -495,3 +495,54 @@ export async function sendImportWelcomeEmail({
   
   return previewUrl;
 }
+
+export async function sendEventRegistrationEmail(primaryUser: any, event: any, registrations: any[]) {
+  if (!primaryUser.email) return;
+
+  const clubName = process.env.NEXT_PUBLIC_CLUB_NAME || 'Tennis Club';
+  const eventDate = new Date(event.startDate).toLocaleDateString();
+  const eventTime = event.isAllDay ? 'All Day' : new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  
+  let costText = '';
+  if (event.cost && event.cost > 0) {
+    const totalCost = event.cost * registrations.length;
+    costText = `<p><strong>Cost Details:</strong> $${event.cost.toFixed(2)} per person. Total for your group: $${totalCost.toFixed(2)}. Please arrange payment in person at the club.</p>`;
+  }
+
+  let waitlistNotice = '';
+  const waitlisted = registrations.filter(r => r.status === 'WAITLISTED');
+  if (waitlisted.length > 0) {
+    waitlistNotice = `<p style="color: #d97706; font-weight: bold;">Note: ${waitlisted.length} member(s) in your party were placed on the waitlist because the event is currently at capacity.</p>`;
+  }
+
+  const registeredNames = registrations.map(r => `<li>${r.user.firstName} ${r.user.lastName} (${r.status})</li>`).join('');
+
+  const html = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #333;">Registration Confirmation: ${event.title}</h2>
+      <p>Hi ${primaryUser.firstName},</p>
+      <p>This email confirms registration for the upcoming event at ${clubName}.</p>
+      
+      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <p style="margin: 0 0 10px 0;"><strong>Date:</strong> ${eventDate}</p>
+        <p style="margin: 0 0 10px 0;"><strong>Time:</strong> ${eventTime}</p>
+        <p style="margin: 0;"><strong>Registered Members:</strong></p>
+        <ul style="margin-top: 5px;">
+          ${registeredNames}
+        </ul>
+      </div>
+
+      ${waitlistNotice}
+      ${costText}
+
+      <p>We look forward to seeing you!</p>
+      <p>Best regards,<br/>The ${clubName} Team</p>
+    </div>
+  `;
+
+  await sendEmail({
+    to: primaryUser.email,
+    subject: `Event Registration: ${event.title}`,
+    html
+  });
+}
