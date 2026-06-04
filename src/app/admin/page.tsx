@@ -1062,7 +1062,7 @@ export default function AdminDashboard() {
                           </div>
                           <div className="flex items-center gap-2 mt-2">
                             {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
-                            {m.user.householdId && (
+                            {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && (
                               <button onClick={() => setSelectedHouseholdId(m.user.householdId!)} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
                             )}
                             {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Lessons</span>}
@@ -1266,7 +1266,7 @@ export default function AdminDashboard() {
                     
                     <div className="flex flex-wrap gap-1 mb-3">
                       {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
-                      {m.user.householdId && <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</span>}
+                      {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer" onClick={() => setSelectedHouseholdId(m.user.householdId!)}>Group: {m.user.householdId.substring(0, 6).toUpperCase()}</span>}
                       {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Lessons</span>}
                     </div>
 
