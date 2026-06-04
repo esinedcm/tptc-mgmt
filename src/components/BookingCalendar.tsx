@@ -306,7 +306,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       </div>
 
       <div className="overflow-x-auto overflow-y-auto max-h-[75vh] border rounded-lg shadow-inner">
-        <table className="w-full text-sm text-left border-collapse min-w-[800px] table-fixed relative">
+        <table className="w-full text-sm text-left border-collapse min-w-full md:min-w-[800px] table-fixed relative">
           <thead className="bg-gray-50 border-b sticky top-0 z-20 shadow-sm">
             <tr>
               <th className="p-3 w-20 border-r bg-gray-50 sticky left-0 z-30" rowSpan={2}>Time</th>
