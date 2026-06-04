@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
 import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
+import Link from 'next/link';
 
 type MembershipPlan = {
   id: string;
@@ -386,6 +387,12 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+          <Link 
+            href="/"
+            className="px-6 py-2 border border-green-600 text-green-700 font-medium rounded hover:bg-green-50 transition-colors text-center"
+          >
+            Return to Home
+          </Link>
           <button 
             onClick={() => setSuccess(false)}
             className="px-6 py-2 border border-green-600 text-green-700 font-medium rounded hover:bg-green-50 transition-colors"
@@ -400,7 +407,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
             }}
             className="px-6 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition-colors"
           >
-            Start New Registration
+            Register Another Household
           </button>
         </div>
       </div>
