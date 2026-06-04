@@ -259,8 +259,8 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Court Schedule</h2>
-        <div className="flex space-x-4 items-center">
+        {!isAdmin && <h2 className="text-2xl font-bold text-gray-800">Court Schedule</h2>}
+        <div className={`flex space-x-4 items-center ${isAdmin ? 'ml-auto' : ''}`}>
           <button 
             onClick={() => { 
               const today = new Date();
