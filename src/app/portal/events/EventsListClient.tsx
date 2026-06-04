@@ -91,7 +91,7 @@ export default function EventsListClient({ events, currentUser, householdMembers
               <div className="p-6 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 mb-1">{event.title}</h3>
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-gray-500 mb-2" suppressHydrationWarning>
                     {new Date(event.startDate).toLocaleDateString()} 
                     {!event.isAllDay && ` • ${new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
                   </p>
