@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignOutButton } from '@/components/SignOutButton';
+import { MobileNav } from '@/components/MobileNav';
 
 import { verifyJwt } from '@/lib/auth';
 
@@ -50,8 +51,11 @@ export default async function PortalLayout({
                 )}
               </div>
             </div>
-            <div>
-              <SignOutButton />
+            <div className="flex items-center">
+              <div className="hidden md:block">
+                <SignOutButton />
+              </div>
+              <MobileNav isAdmin={isAdmin} />
             </div>
           </div>
         </div>
