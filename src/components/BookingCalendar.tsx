@@ -319,10 +319,10 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                       const myBookingBorder = isMyBooking ? 'border-gray-800 border-2 shadow-sm' : 'border-black/10';
                       
                       return (
-                        <td key={`${dayOffset}-${court.id}`} rowSpan={rowSpanValue} className={`border-r p-1 align-top`}>
+                        <td key={`${dayOffset}-${court.id}`} rowSpan={rowSpanValue} className={`border-r align-top relative p-0`}>
                           <div 
                             onClick={() => setViewBooking(booking)}
-                            className={`h-full w-full rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden ${myBookingBorder}`}
+                            className={`absolute inset-0 m-1 rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden ${myBookingBorder}`}
                             style={{ backgroundColor: baseColor, color: '#1f2937' }}
                           >
                             <div className="font-semibold text-xs truncate" style={{ color: 'inherit' }}>{booking.title || booking.type}</div>
