@@ -1087,20 +1087,17 @@ export default function AdminDashboard() {
                           <tr className="bg-gray-50 border-b border-gray-200 shadow-inner">
                             <td colSpan={4} className="px-6 py-4">
                               <div className="flex flex-col md:flex-row justify-between gap-6">
-                                <div className="space-y-3">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    {m.user.memberNumber && <span className="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-0.5 rounded border border-gray-300">ID: {m.user.memberNumber}</span>}
-                                    {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-xs font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
-                                    {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && (
-                                      <button onClick={(e) => { e.stopPropagation(); setSelectedHouseholdId(m.user.householdId!); }} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
-                                    )}
-                                    {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-xs font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Free Lessons</span>}
-                                  </div>
-                                  <div className="text-sm text-gray-600 space-y-1">
-                                    {m.user.phoneNumber && <div><span className="font-medium text-gray-400 inline-block w-16">Phone:</span> {formatPhoneNumber(m.user.phoneNumber)}</div>}
-                                    <div><span className="font-medium text-gray-400 inline-block w-16">Joined:</span> {new Date(m.createdAt).toLocaleDateString()}</div>
-                                    {m.archivedAt && <div className="text-red-500 font-medium mt-1">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</div>}
-                                  </div>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-600">
+                                  {m.user.memberNumber && <span className="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-0.5 rounded border border-gray-300">ID: {m.user.memberNumber}</span>}
+                                  {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-xs font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
+                                  {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && (
+                                    <button onClick={(e) => { e.stopPropagation(); setSelectedHouseholdId(m.user.householdId!); }} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
+                                  )}
+                                  {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-xs font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Free Lessons</span>}
+                                  
+                                  {m.user.phoneNumber && <span><span className="font-medium text-gray-400">Phone:</span> {formatPhoneNumber(m.user.phoneNumber)}</span>}
+                                  <span><span className="font-medium text-gray-400">Joined:</span> {new Date(m.createdAt).toLocaleDateString()}</span>
+                                  {m.archivedAt && <span className="text-red-500 font-medium">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</span>}
                                 </div>
                                 <div className="flex flex-wrap gap-2 items-start justify-end shrink-0">
                                   {activeTab !== 'Archived' && (
@@ -1109,7 +1106,7 @@ export default function AdminDashboard() {
                                         Email ▾
                                       </button>
                                       {activeEmailMenu === m.id && (
-                                        <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 py-1">
+                                        <div className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 py-1">
                                           <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'welcome'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
                                           <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'import-welcome'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Import Welcome Email</button>
                                           <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'pending'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Registration Pending</button>

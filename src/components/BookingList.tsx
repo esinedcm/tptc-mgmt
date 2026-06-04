@@ -195,38 +195,36 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-white">
               <tr>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">First Date</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">Time</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">Title / Type</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">Courts</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-900">Instances</th>
-                <th className="px-6 py-3 text-right font-semibold text-gray-900">Actions</th>
+                <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900">First Date</th>
+                <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900">Time</th>
+                <th className="px-3 sm:px-6 py-3 text-left font-semibold text-gray-900">Title / Type</th>
+                <th className="hidden sm:table-cell px-6 py-3 text-left font-semibold text-gray-900">Courts</th>
+                <th className="hidden sm:table-cell px-6 py-3 text-left font-semibold text-gray-900">Instances</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {groupedBookings.map((g, i) => (
                 <tr key={i} onClick={() => setViewGroup(g)} className="hover:bg-gray-50 transition-colors cursor-pointer">
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-gray-700">
                     {g.startDateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-700">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-gray-700">
                     {g.startDateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - 
                     {new Date(g.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
-                  <td className="px-6 py-4 text-gray-900 font-medium">{g.title}</td>
-                  <td className="px-6 py-4 text-gray-600">{g.courtsList}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] sm:max-w-none">
+                    {g.title}
+                  </td>
+                  <td className="hidden sm:table-cell px-6 py-4 text-gray-600">{g.courtsList}</td>
+                  <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">
                     <span className="font-medium text-gray-900">{g.instances}</span> {g.instances === 1 ? 'booking' : 'weeks'}
                     {g.recurringGroupId && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Series</span>}
-                  </td>
-                  <td className="px-6 py-4 text-right whitespace-nowrap text-primary-600 font-medium">
-                    View &rsaquo;
                   </td>
                 </tr>
               ))}
               {groupedBookings.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                     No bookings found in this date range.
                   </td>
                 </tr>
