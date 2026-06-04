@@ -3,7 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import 'react-quill-new/dist/quill.snow.css';
 
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 type MembershipPlan = {
   id: string;
   name: string;
@@ -40,6 +43,34 @@ const TEMPLATE_VARIABLES: Record<string, string[]> = {
   'INTEREST_CONFIRMATION': ['{{firstName}}', '{{clubName}}', '{{clubShortName}}', '{{registerLink}}'],
   'ADMIN_NEW_REGISTRATION': ['{{memberNames}}', '{{totalDue}}', '{{adminDashboardLink}}'],
   'IMPORT_WELCOME_EMAIL': ['{{firstName}}', '{{clubName}}', '{{resetUrl}}'],
+};
+
+const MOCK_VARIABLES: Record<string, string> = {
+  '{{firstName}}': 'Jane',
+  '{{memberNumber}}': 'MEM-7890',
+  '{{clubName}}': 'Springfield Tennis Club',
+  '{{loginLink}}': 'https://example.com/login',
+  '{{memberNames}}': 'Jane Doe, John Doe, Timmy Doe',
+  '{{totalDue}}': '200.00',
+  '{{paymentEmail}}': 'payments@springfieldtennis.com',
+  '{{editUrl}}': 'https://example.com/register?edit=123',
+  '{{changesHtml}}': '<li>Phone updated to 555-0192</li>',
+  '{{actionTitle}}': 'Confirmed',
+  '{{actionText}}': 'Your court booking has been confirmed.',
+  '{{courtName}}': 'Court 1',
+  '{{formattedStart}}': 'Fri, Jun 5, 9:00 AM',
+  '{{formattedEnd}}': '10:30 AM',
+  '{{type}}': 'MEMBER',
+  '{{title}}': 'Morning Hit',
+  '{{description}}': 'Practice session',
+  '{{participantNames}}': 'Jane Doe, Alice Smith',
+  '{{bookedBy}}': 'Jane Doe',
+  '{{formattedBookedAt}}': 'Thu, Jun 4, 2:00 PM',
+  '{{portalLink}}': 'https://example.com/portal',
+  '{{clubShortName}}': 'STC',
+  '{{registerLink}}': 'https://example.com/register',
+  '{{adminDashboardLink}}': 'https://example.com/admin',
+  '{{resetUrl}}': 'https://example.com/reset-password',
 };
 
 const DEFAULT_TEMPLATES: Record<string, { subject: string, htmlBody: string }> = {
@@ -120,7 +151,22 @@ export default function AdminSettingsPage() {
   const [savingBookingType, setSavingBookingType] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const reactQuillRef = useRef<any>(null);
+  const [editorMode, setEditorMode] = useState<'visual' | 'raw' | 'preview'>('visual');
   const [wiping, setWiping] = useState(false);
+  const [showTopBtn, setShowTopBtn] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowTopBtn(true);
+      } else {
+        setShowTopBtn(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const fetchCourts = async () => {
     try {
@@ -502,6 +548,17 @@ export default function AdminSettingsPage() {
 
   const insertVariable = (variable: string) => {
     if (!variable) return;
+    
+    if (editorMode === 'visual' && reactQuillRef.current) {
+      const editor = reactQuillRef.current.getEditor();
+      const selection = editor.getSelection(true);
+      const cursorPosition = selection ? selection.index : 0;
+      editor.insertText(cursorPosition, variable);
+      editor.setSelection(cursorPosition + variable.length);
+      setEditTemplateForm(prev => ({ ...prev, htmlBody: editor.root.innerHTML }));
+      return;
+    }
+
     const textarea = textareaRef.current;
     if (!textarea) return;
 
@@ -1162,13 +1219,55 @@ export default function AdminSettingsPage() {
                       </select>
                     </div>
                   </div>
-                  <textarea 
-                    ref={textareaRef}
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-primary-500 focus:border-primary-500"
-                    value={editTemplateForm.htmlBody || ''}
-                    onChange={e => setEditTemplateForm({...editTemplateForm, htmlBody: e.target.value})}
-                    placeholder="<p>Write your custom HTML email here...</p>"
-                  />
+                  <div className="flex justify-end gap-4 mb-2">
+                    <button
+                      onClick={() => setEditorMode('visual')}
+                      className={`text-xs font-medium ${editorMode === 'visual' ? 'text-primary-700 font-bold' : 'text-gray-500 hover:text-gray-700 underline'}`}
+                    >
+                      Visual Editor
+                    </button>
+                    <button
+                      onClick={() => setEditorMode('raw')}
+                      className={`text-xs font-medium ${editorMode === 'raw' ? 'text-primary-700 font-bold' : 'text-gray-500 hover:text-gray-700 underline'}`}
+                    >
+                      Raw HTML
+                    </button>
+                    <button
+                      onClick={() => setEditorMode('preview')}
+                      className={`text-xs font-medium ${editorMode === 'preview' ? 'text-primary-700 font-bold' : 'text-gray-500 hover:text-gray-700 underline'}`}
+                    >
+                      Preview
+                    </button>
+                  </div>
+                  {editorMode === 'visual' && (
+                    <div className="bg-white [&_.ql-container]:h-[300px] [&_.ql-editor]:text-sm border border-gray-300 rounded-md overflow-hidden">
+                      <ReactQuill 
+                        ref={reactQuillRef}
+                        theme="snow" 
+                        value={editTemplateForm.htmlBody || ''} 
+                        onChange={(val) => setEditTemplateForm({...editTemplateForm, htmlBody: val})}
+                      />
+                    </div>
+                  )}
+                  {editorMode === 'raw' && (
+                    <textarea 
+                      ref={textareaRef}
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-primary-500 focus:border-primary-500"
+                      value={editTemplateForm.htmlBody || ''}
+                      onChange={e => setEditTemplateForm({...editTemplateForm, htmlBody: e.target.value})}
+                      placeholder="<p>Write your custom HTML email here...</p>"
+                    />
+                  )}
+                  {editorMode === 'preview' && (
+                    <div className="border border-gray-300 rounded-md p-4 bg-white min-h-[300px]">
+                      <div dangerouslySetInnerHTML={{ 
+                        __html: Object.keys(MOCK_VARIABLES).reduce(
+                          (html, key) => html.replaceAll(key, MOCK_VARIABLES[key]), 
+                          editTemplateForm.htmlBody || ''
+                        ) 
+                      }} />
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <button 
@@ -1216,6 +1315,19 @@ export default function AdminSettingsPage() {
         </div>
 
       </div>
+
+      {showTopBtn && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-8 right-8 bg-gray-800 text-white p-3 rounded-full shadow-lg hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-800 z-50"
+          title="Back to top"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
+
     </div>
   );
 }
