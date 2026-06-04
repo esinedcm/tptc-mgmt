@@ -113,6 +113,7 @@ export default function AdminDashboard() {
     paymentRecordedAt: '',
   });
   const [editErrors, setEditErrors] = useState({ phoneNumber: '', postalCode: '' });
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('All');
@@ -898,12 +899,12 @@ export default function AdminDashboard() {
                       scope="col" 
                       className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-200 transition-colors"
                       onClick={() => setSortConfig({ key: 'email', direction: sortConfig.key === 'email' && sortConfig.direction === 'asc' ? 'desc' : 'asc' })}
-                      title="Sort by Contact Info"
+                      title="Sort by Email"
                     >
-                      Contact Info {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                      Email {sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-400">
@@ -1064,62 +1065,74 @@ export default function AdminDashboard() {
                     }
 
                     return (
-                      <tr key={m.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="text-sm font-medium text-gray-900">{m.user.firstName} {m.user.lastName}</div>
-                            {m.user.memberNumber && (
-                              <span className="bg-gray-100 text-gray-600 text-[10px] font-mono px-2 py-0.5 rounded border border-gray-400">#{m.user.memberNumber}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
-                            {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && (
-                              <button onClick={() => setSelectedHouseholdId(m.user.householdId!)} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
-                            )}
-                            {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Lessons</span>}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="font-medium text-gray-900">{m.user.email}</div>
-                          <div className="text-gray-500 mt-1">{m.user.phoneNumber ? formatPhoneNumber(m.user.phoneNumber) : '-'}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <div className="mb-1">
-                            <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] mr-2">{m.membershipType}</span>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                              {m.user.gender && <span>{m.user.gender}</span>}
-                            </div>
-                          {m.archivedAt && (
-                            <div className="text-xs text-red-500 mt-1 font-medium">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</div>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          {activeTab !== 'Archived' && (
-                            <div className="inline-block relative mr-2 text-left">
-                              <button onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)} className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors">
-                                Email ▾
-                              </button>
-                              {activeEmailMenu === m.id && (
-                                <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-                                  <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
-                                  <button onClick={() => handleResendEmail(m.user.id, 'import-welcome')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Import Welcome Email</button>
-                                  <button onClick={() => handleResendEmail(m.user.id, 'pending')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Registration Pending</button>
-                                  <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Renewal Link</button>
+                    const isExpanded = expandedId === m.id;
+                    return (
+                      <React.Fragment key={m.id}>
+                        <tr 
+                          className="hover:bg-gray-50 cursor-pointer transition-colors"
+                          onClick={() => setExpandedId(isExpanded ? null : m.id)}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {m.user.firstName} {m.user.lastName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {m.user.email}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px]">{m.membershipType}</span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {m.user.gender || '-'}
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="bg-gray-50 border-b border-gray-200 shadow-inner">
+                            <td colSpan={4} className="px-6 py-4">
+                              <div className="flex flex-col md:flex-row justify-between gap-6">
+                                <div className="space-y-3">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {m.user.memberNumber && <span className="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-0.5 rounded border border-gray-300">ID: {m.user.memberNumber}</span>}
+                                    {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-xs font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
+                                    {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && (
+                                      <button onClick={(e) => { e.stopPropagation(); setSelectedHouseholdId(m.user.householdId!); }} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
+                                    )}
+                                    {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-xs font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Free Lessons</span>}
+                                  </div>
+                                  <div className="text-sm text-gray-600 space-y-1">
+                                    {m.user.phoneNumber && <div><span className="font-medium text-gray-400 inline-block w-16">Phone:</span> {formatPhoneNumber(m.user.phoneNumber)}</div>}
+                                    <div><span className="font-medium text-gray-400 inline-block w-16">Joined:</span> {new Date(m.createdAt).toLocaleDateString()}</div>
+                                    {m.archivedAt && <div className="text-red-500 font-medium mt-1">Deleted on: {new Date(m.archivedAt).toLocaleDateString()}</div>}
+                                  </div>
                                 </div>
-                              )}
-                            </div>
-                          )}
-                          {activeTab !== 'Archived' && (
-                            <button onClick={() => handleEditClick(m)} className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2">Edit</button>
-                          )}
-                          {activeTab !== 'Archived' && m.status !== 'Active' && (
-                            <button onClick={() => handlePayClick(m)} className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors mr-2">Mark as Paid</button>
-                          )}
-                          {activeTab === 'Archived' && <span className="text-gray-400 text-sm italic">Archived</span>}
-                        </td>
-                      </tr>
+                                <div className="flex flex-wrap gap-2 items-start justify-end shrink-0">
+                                  {activeTab !== 'Archived' && (
+                                    <div className="inline-block relative text-left">
+                                      <button onClick={(e) => { e.stopPropagation(); setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id); }} className="inline-flex items-center justify-center text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors">
+                                        Email ▾
+                                      </button>
+                                      {activeEmailMenu === m.id && (
+                                        <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 py-1">
+                                          <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'welcome'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
+                                          <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'import-welcome'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Import Welcome Email</button>
+                                          <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'pending'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Registration Pending</button>
+                                          <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'renewal'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Renewal Link</button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  {activeTab !== 'Archived' && (
+                                    <button onClick={(e) => { e.stopPropagation(); handleEditClick(m); }} className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>
+                                  )}
+                                  {activeTab !== 'Archived' && m.status !== 'Active' && (
+                                    <button onClick={(e) => { e.stopPropagation(); handlePayClick(m); }} className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors">Mark as Paid</button>
+                                  )}
+                                  {activeTab === 'Archived' && <span className="text-gray-400 text-sm italic py-2">Archived</span>}
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
