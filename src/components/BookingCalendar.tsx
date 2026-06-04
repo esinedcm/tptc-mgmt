@@ -309,7 +309,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
         <table className="w-full text-sm text-left border-collapse min-w-[800px] table-fixed relative">
           <thead className="bg-gray-50 border-b sticky top-0 z-20 shadow-sm">
             <tr>
-              <th className="p-3 w-20 border-r bg-gray-50" rowSpan={2}>Time</th>
+              <th className="p-3 w-20 border-r bg-gray-50 sticky left-0 z-30" rowSpan={2}>Time</th>
               {Array.from({ length: daysToShow }).map((_, dayOffset) => {
                 const d = new Date(currentDate);
                 d.setDate(d.getDate() + dayOffset);
@@ -333,7 +333,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
           <tbody>
             {timeSlots.map(slot => (
               <tr key={`${slot.hour}-${slot.min}`} className={`border-b h-8`}>
-                <td className="p-2 border-r bg-gray-50 font-medium text-gray-500 text-xs relative">
+                <td className="p-2 border-r bg-gray-50 font-medium text-gray-500 text-xs sticky left-0 z-10">
                   {slot.min === 0 && (
                     <span className="absolute -top-3 left-2 bg-gray-50 px-1">
                       {slot.hour === 12 ? '12:00 PM' : slot.hour > 12 ? `${slot.hour - 12}:00 PM` : `${slot.hour}:00 AM`}
