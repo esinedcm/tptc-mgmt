@@ -263,9 +263,10 @@ export async function sendBookingEmail({
 
   const { action, courtName, startTime, endTime, type, title, description, participantNames, bookedBy, bookedAt } = bookingDetails;
   
-  const formattedStart = startTime.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
-  const formattedEnd = endTime.toLocaleString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-  const formattedBookedAt = bookedAt.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  const tzParams = { timeZone: 'America/New_York' };
+  const formattedStart = startTime.toLocaleString('en-US', { ...tzParams, weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+  const formattedEnd = endTime.toLocaleString('en-US', { ...tzParams, hour: 'numeric', minute: '2-digit', hour12: true });
+  const formattedBookedAt = bookedAt.toLocaleString('en-US', { ...tzParams, weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
   
   let actionText = '';
   if (action === 'created') actionText = 'A new court booking has been made.';
