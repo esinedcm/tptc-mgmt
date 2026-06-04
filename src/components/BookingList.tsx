@@ -19,6 +19,7 @@ type Booking = {
 export default function BookingList() {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30); // Default to a month ago to see recent entries
@@ -47,6 +48,14 @@ export default function BookingList() {
   useEffect(() => {
     fetchBookings();
   }, [startDate, endDate]);
+
+  const uniqueTypes = useMemo(() => {
+    return Array.from(new Set(bookings.map(b => b.type))).sort();
+  }, [bookings]);
+
+  useEffect(() => {
+    setSelectedTypes(uniqueTypes);
+  }, [uniqueTypes]);
 
   const groupedBookings = useMemo(() => {
     const groups: Record<string, {
@@ -91,17 +100,19 @@ export default function BookingList() {
       }
     });
 
-    return Object.values(groups).map(g => {
-      // Sort the courts for nice display
-      const sortedCourts = Array.from(g.courts).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-      return {
-        ...g,
-        courtsList: sortedCourts.join(', '),
-        instances: g.uniqueDates.size,
-        startDateObj: new Date(g.startTime)
-      };
+    return Object.values(groups)
+      .filter(g => selectedTypes.includes(g.type))
+      .map(g => {
+        // Sort the courts for nice display
+        const sortedCourts = Array.from(g.courts).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        return {
+          ...g,
+          courtsList: sortedCourts.join(', '),
+          instances: g.uniqueDates.size,
+          startDateObj: new Date(g.startTime)
+        };
     }).sort((a, b) => a.startDateObj.getTime() - b.startDateObj.getTime());
-  }, [bookings]);
+  }, [bookings, selectedTypes]);
 
   const handleDeleteGroup = async (group: any) => {
     const msg = group.recurringGroupId 
@@ -141,6 +152,34 @@ export default function BookingList() {
           <div className="flex-1 sm:flex-none">
             <label className="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">To Date</label>
             <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm p-2 border" />
+          </div>
+        </div>
+        <div className="w-full mt-4 sm:mt-0">
+          <label className="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Filter by Type</label>
+          <div className="flex flex-wrap items-center gap-2">
+            {uniqueTypes.map(t => (
+              <label key={t} className={`inline-flex items-center text-sm border rounded-full px-3 py-1 cursor-pointer transition-colors ${selectedTypes.includes(t) ? 'bg-primary-50 border-primary-300 text-primary-800' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
+                <input 
+                  type="checkbox" 
+                  className="hidden"
+                  checked={selectedTypes.includes(t)}
+                  onChange={(e) => {
+                    if (e.target.checked) setSelectedTypes([...selectedTypes, t]);
+                    else setSelectedTypes(selectedTypes.filter(type => type !== t));
+                  }}
+                />
+                {selectedTypes.includes(t) && (
+                  <svg className="w-3.5 h-3.5 mr-1.5 text-primary-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"></path></svg>
+                )}
+                {t}
+              </label>
+            ))}
+            {uniqueTypes.length > 0 && (
+              <div className="flex gap-2 ml-2">
+                <button onClick={() => setSelectedTypes(uniqueTypes)} className="text-xs text-primary-600 hover:text-primary-800 underline">Select All</button>
+                <button onClick={() => setSelectedTypes([])} className="text-xs text-primary-600 hover:text-primary-800 underline">Clear All</button>
+              </div>
+            )}
           </div>
         </div>
       </div>
