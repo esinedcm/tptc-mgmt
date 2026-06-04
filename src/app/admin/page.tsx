@@ -1063,8 +1063,6 @@ export default function AdminDashboard() {
                         </tr>
                       );
                     }
-
-                    return (
                     const isExpanded = expandedId === m.id;
                     return (
                       <React.Fragment key={m.id}>
