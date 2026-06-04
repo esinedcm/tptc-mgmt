@@ -14,7 +14,7 @@ export function isValidPhoneNumber(phoneNumber?: string): boolean {
 export function formatPhoneNumber(phoneNumber: string): string {
   const match = phoneNumber.match(NA_PHONE_REGEX);
   if (match) {
-    return `(${match[1]})${match[2]}-${match[3]}`;
+    return `(${match[1]}) ${match[2]}-${match[3]}`;
   }
   return phoneNumber;
 }
