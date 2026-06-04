@@ -74,6 +74,28 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate]);
 
+  const editParamId = searchParams.get('edit');
+  
+  useEffect(() => {
+    if (editParamId && bookings.length > 0 && !showModal && !editingBookingId) {
+      const b = bookings.find(x => x.id === editParamId);
+      if (b) {
+        setViewBooking(null);
+        setEditingBookingId(b.id);
+        setSelectedCourtId(b.courtId);
+        setSelectedStartTime(new Date(b.startTime));
+        setSelectedEndTime(new Date(b.endTime));
+        setBookingType(b.type);
+        setBookingTitle(b.title || '');
+        setBookingDescription(b.description || '');
+        setSelectedParticipants(b.participants);
+        setShowModal(true);
+        
+        router.replace(pathname + (initialDateParam ? `?date=${initialDateParam}` : ''), { scroll: false });
+      }
+    }
+  }, [editParamId, bookings, showModal, editingBookingId, router, pathname, initialDateParam]);
+
   const fetchCourtsAndBookings = async () => {
     setLoading(true);
     try {

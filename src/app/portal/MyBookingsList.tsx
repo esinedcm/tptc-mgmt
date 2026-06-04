@@ -112,18 +112,26 @@ export default function MyBookingsList({
                       </td>
                       {isActiveList && (
                         <td className="px-4 py-3 text-right whitespace-nowrap" rowSpan={2}>
-                          <button
-                            onClick={() => handleCancel(b.id)}
-                            disabled={cancelling === b.id || !canCancel}
-                            title={!canCancel ? `Cannot cancel less than ${cutoffMinutes} mins before start.` : ''}
-                            className={`font-medium ${
-                              canCancel 
-                                ? 'text-red-600 hover:text-red-900' 
-                                : 'text-gray-400 cursor-not-allowed'
-                            }`}
-                          >
-                            {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
-                          </button>
+                          <div className="flex flex-col gap-2 justify-center items-end">
+                            <button
+                              onClick={() => window.location.href = `/portal/book?edit=${b.id}&date=${start.toISOString().split('T')[0]}`}
+                              className="font-medium text-primary-600 hover:text-primary-900"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleCancel(b.id)}
+                              disabled={cancelling === b.id || !canCancel}
+                              title={!canCancel ? `Cannot cancel less than ${cutoffMinutes} mins before start.` : ''}
+                              className={`font-medium ${
+                                canCancel 
+                                  ? 'text-red-600 hover:text-red-900' 
+                                  : 'text-gray-400 cursor-not-allowed'
+                              }`}
+                            >
+                              {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
