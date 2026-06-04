@@ -14,12 +14,14 @@ type Booking = {
   recurringGroupId?: string | null;
   court: Court;
   organizer: User;
+  participants: User[];
 };
 
 export default function BookingList({ onEdit }: { onEdit?: (id: string, date: string) => void }) {
   const [loading, setLoading] = useState(true);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [viewGroup, setViewGroup] = useState<any | null>(null);
   const [startDate, setStartDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30); // Default to a month ago to see recent entries
@@ -69,6 +71,7 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
       instances: number;
       uniqueDates: Set<string>;
       organizerName: string;
+      participants: User[];
     }> = {};
 
     bookings.forEach(b => {
@@ -86,7 +89,8 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
           courts: new Set(),
           instances: 0,
           uniqueDates: new Set(),
-          organizerName: b.organizer ? `${b.organizer.firstName} ${b.organizer.lastName}` : 'Unknown'
+          organizerName: b.organizer ? `${b.organizer.firstName} ${b.organizer.lastName}` : 'Unknown',
+          participants: b.participants || []
         };
       }
       
@@ -201,7 +205,7 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {groupedBookings.map((g, i) => (
-                <tr key={i} className="hover:bg-gray-50 transition-colors">
+                <tr key={i} onClick={() => setViewGroup(g)} className="hover:bg-gray-50 transition-colors cursor-pointer">
                   <td className="px-6 py-4 whitespace-nowrap text-gray-700">
                     {g.startDateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                   </td>
@@ -215,16 +219,8 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
                     <span className="font-medium text-gray-900">{g.instances}</span> {g.instances === 1 ? 'booking' : 'weeks'}
                     {g.recurringGroupId && <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">Series</span>}
                   </td>
-                  <td className="px-6 py-4 text-right whitespace-nowrap">
-                    {onEdit && (
-                      <button 
-                        onClick={() => onEdit(g.ids[0], g.startDateObj.toISOString().split('T')[0])} 
-                        className="text-primary-600 hover:text-primary-900 font-medium mr-4"
-                      >
-                        Edit
-                      </button>
-                    )}
-                    <button onClick={() => handleDeleteGroup(g)} className="text-red-600 hover:text-red-900 font-medium">Delete</button>
+                  <td className="px-6 py-4 text-right whitespace-nowrap text-primary-600 font-medium">
+                    View &rsaquo;
                   </td>
                 </tr>
               ))}
@@ -239,6 +235,55 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
           </table>
         )}
       </div>
+
+      {viewGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto relative">
+            <button onClick={() => setViewGroup(null)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 className="text-xl font-bold mb-4">Booking Details</h3>
+            
+            <div className="space-y-3 mb-6 text-sm">
+              <p><strong>Title:</strong> {viewGroup.title}</p>
+              <p><strong>Time:</strong> {new Date(viewGroup.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(viewGroup.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+              <p><strong>Organizer:</strong> {viewGroup.organizerName}</p>
+              {viewGroup.type === 'MEMBER' && viewGroup.participants?.length > 0 && (
+                <p><strong>Partners:</strong> {viewGroup.participants.map((p: any) => `${p.firstName} ${p.lastName}`).join(', ')}</p>
+              )}
+              <p><strong>Courts:</strong> {viewGroup.courtsList}</p>
+              <p><strong>Occurrences:</strong> {viewGroup.instances} {viewGroup.instances === 1 ? 'booking' : 'weeks'} {viewGroup.recurringGroupId ? '(Recurring Series)' : ''}</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-end gap-3 border-t border-gray-200 pt-4">
+              <button onClick={() => setViewGroup(null)} className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+                Close
+              </button>
+              {onEdit && (
+                <button 
+                  onClick={() => {
+                    setViewGroup(null);
+                    onEdit(viewGroup.ids[0], viewGroup.startDateObj.toISOString().split('T')[0]);
+                  }} 
+                  className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none"
+                >
+                  Edit Booking
+                </button>
+              )}
+              <button 
+                onClick={() => {
+                  setViewGroup(null);
+                  handleDeleteGroup(viewGroup);
+                }} 
+                className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+              >
+                Cancel Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
