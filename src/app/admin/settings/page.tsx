@@ -6,7 +6,15 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import 'react-quill-new/dist/quill.snow.css';
 
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+const ReactQuill = dynamic(
+  async () => {
+    const { default: RQ } = await import('react-quill-new');
+    return function ForwardedQuill(props: any) {
+      return <RQ ref={props.forwardedRef} {...props} />;
+    };
+  },
+  { ssr: false }
+);
 type MembershipPlan = {
   id: string;
   name: string;
@@ -1242,10 +1250,10 @@ export default function AdminSettingsPage() {
                   {editorMode === 'visual' && (
                     <div className="bg-white [&_.ql-container]:h-[300px] [&_.ql-editor]:text-sm border border-gray-300 rounded-md overflow-hidden">
                       <ReactQuill 
-                        ref={reactQuillRef}
+                        forwardedRef={reactQuillRef}
                         theme="snow" 
                         value={editTemplateForm.htmlBody || ''} 
-                        onChange={(val) => setEditTemplateForm({...editTemplateForm, htmlBody: val})}
+                        onChange={(val: string) => setEditTemplateForm({...editTemplateForm, htmlBody: val})}
                       />
                     </div>
                   )}
