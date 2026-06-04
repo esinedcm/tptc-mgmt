@@ -245,33 +245,55 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
     const prices: Record<string, number> = {};
     plans.forEach(p => { prices[p.name] = p.cost; });
     
+    const numAdults = members.filter(m => m.membershipType === 'Adult').length;
+    const numJuniors = members.filter(m => m.membershipType === 'Junior').length;
+    const numSeniors = members.filter(m => m.membershipType === 'Senior').length;
+    
+    // Total count of adults including the person who selected Family (if any)
+    const effectiveNumAdults = manuallySelectedFamily ? numAdults + 1 : numAdults;
+
+    const showFamilyDiscount = manuallySelectedFamily || (effectiveNumAdults >= 2 && numJuniors >= 1);
+
     let totalDue = 0;
-    let autoFamilyApplied = false;
 
-    if (manuallySelectedFamily) {
-      totalDue = familyCost; 
+    if (showFamilyDiscount) {
+      totalDue += familyCost; // Covers 2 Adults and up to 2 Juniors
+      
+      const extraAdults = Math.max(0, effectiveNumAdults - 2);
+      const extraJuniors = Math.max(0, numJuniors - 2);
+      
+      totalDue += extraAdults * (prices['Adult'] || 85);
+      totalDue += extraJuniors * (prices['Junior'] || 50);
+      totalDue += numSeniors * (prices['Senior'] || 70);
+      
+      // Add prices for any other unknown types just in case
+      totalDue += members.filter(m => !['Adult', 'Junior', 'Senior', 'Family'].includes(m.membershipType)).reduce((sum, m) => sum + (prices[m.membershipType] || 0), 0);
     } else {
-      const numAdults = members.filter(m => m.membershipType === 'Adult').length;
-      const numJuniors = members.filter(m => m.membershipType === 'Junior').length;
-      const numSeniors = members.filter(m => m.membershipType === 'Senior').length;
-
-      // Automatically apply Family plan if 2 Adults and at least 1 Junior
-      if (numAdults >= 2 && numJuniors >= 1) {
-        autoFamilyApplied = true;
-        totalDue += familyCost; // Covers 2 Adults and up to 2 Juniors
-        
-        const extraAdults = Math.max(0, numAdults - 2);
-        const extraJuniors = Math.max(0, numJuniors - 2);
-        
-        totalDue += extraAdults * (prices['Adult'] || 85);
-        totalDue += extraJuniors * (prices['Junior'] || 50);
-        totalDue += numSeniors * (prices['Senior'] || 70);
-      } else {
-        totalDue = members.reduce((sum, m) => sum + (prices[m.membershipType] || 0), 0);
-      }
+      totalDue = members.reduce((sum, m) => sum + (prices[m.membershipType] || 0), 0);
     }
     
-    const showFamilyDiscount = manuallySelectedFamily || autoFamilyApplied;
+    // Determine which specific members are covered by the Family discount so we can cross out their individual prices
+    const coveredIndexes = new Set<number>();
+    if (showFamilyDiscount) {
+      let adultCount = 0;
+      let juniorCount = 0;
+      members.forEach((m, i) => {
+        if (m.membershipType === 'Family') {
+          adultCount++;
+          coveredIndexes.add(i);
+        } else if (m.membershipType === 'Adult') {
+          if (adultCount < 2) {
+            adultCount++;
+            coveredIndexes.add(i);
+          }
+        } else if (m.membershipType === 'Junior') {
+          if (juniorCount < 2) {
+            juniorCount++;
+            coveredIndexes.add(i);
+          }
+        }
+      });
+    }
 
     return (
       <div className="p-8 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto shadow-sm">
@@ -322,7 +344,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
                       )}
                     </div>
                   </div>
-                  <span className={`font-semibold mt-0.5 ${showFamilyDiscount && member.membershipType !== 'Family' ? 'text-gray-400 line-through text-sm' : 'text-gray-900'}`}>
+                  <span className={`font-semibold mt-0.5 ${coveredIndexes.has(index) && member.membershipType !== 'Family' ? 'text-gray-400 line-through text-sm' : 'text-gray-900'}`}>
                     ${prices[member.membershipType] || 0}
                   </span>
                 </div>
@@ -481,6 +503,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
                   onChange={(e) => handleMemberChange(index, e)} 
                   options={plans
                     .filter(p => !p.isArchived || p.name === member.membershipType)
+                    .filter(p => !(index > 0 && p.name === 'Family'))
                     .map(p => ({ value: p.name, label: `${p.name} ($${p.cost}) - ${p.description || ''}${p.isArchived ? ' (Archived)' : ''}` }))} 
                   required 
                 />
