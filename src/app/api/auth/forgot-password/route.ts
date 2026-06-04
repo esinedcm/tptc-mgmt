@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendEmail } from '@/lib/email';
+import { sendEmail, getBaseUrl } from '@/lib/email';
 import crypto from 'crypto';
 
 export async function POST(req: Request) {
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
     });
 
     // Determine the base URL (for local dev vs Vercel)
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = await getBaseUrl();
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}`;
 
     const emailHtml = `

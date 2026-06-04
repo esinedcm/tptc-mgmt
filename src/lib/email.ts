@@ -4,7 +4,7 @@ import { headers } from 'next/headers';
 
 let transporter: nodemailer.Transporter | null = null;
 
-const getBaseUrl = async () => {
+export const getBaseUrl = async () => {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL;
   }
