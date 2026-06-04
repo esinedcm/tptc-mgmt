@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Papa from 'papaparse';
-import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
+import { isValidPostalCode, isValidPhoneNumber, formatPhoneNumber, formatPostalCode } from '@/lib/validation';
 
 type Membership = {
   id: string;
@@ -383,12 +383,14 @@ export default function AdminDashboard() {
         setEditErrors(prev => ({ ...prev, postalCode: 'Invalid format' }));
       } else {
         setEditErrors(prev => ({ ...prev, postalCode: '' }));
+        if (value) setEditForm(prev => ({ ...prev, postalCode: formatPostalCode(value) }));
       }
     } else if (placeholder === 'Phone Number') {
       if (value && !isValidPhoneNumber(value)) {
         setEditErrors(prev => ({ ...prev, phoneNumber: 'Invalid 10-digit format' }));
       } else {
         setEditErrors(prev => ({ ...prev, phoneNumber: '' }));
+        if (value) setEditForm(prev => ({ ...prev, phoneNumber: formatPhoneNumber(value) }));
       }
     }
   };
@@ -1080,7 +1082,7 @@ export default function AdminDashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="font-medium text-gray-900">{m.user.email}</div>
-                          <div className="text-gray-500 mt-1">{m.user.phoneNumber || '-'}</div>
+                          <div className="text-gray-500 mt-1">{m.user.phoneNumber ? formatPhoneNumber(m.user.phoneNumber) : '-'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <div className="mb-1">
@@ -1281,7 +1283,7 @@ export default function AdminDashboard() {
 
                     <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                       <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.user.email}</div>
-                      {m.user.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.user.phoneNumber}</div>}
+                      {m.user.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {formatPhoneNumber(m.user.phoneNumber)}</div>}
                       {m.user.gender && <div><span className="font-medium text-gray-400 w-16 inline-block">Gender:</span> {m.user.gender}</div>}
                     </div>
 
@@ -1342,7 +1344,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div>{m.email}</div>
-                        {m.phoneNumber && <div className="text-gray-400 mt-1">{m.phoneNumber}</div>}
+                        {m.phoneNumber && <div className="text-gray-400 mt-1">{formatPhoneNumber(m.phoneNumber)}</div>}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <ul className="list-disc pl-4 space-y-1">
@@ -1384,7 +1386,7 @@ export default function AdminDashboard() {
                     
                     <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                       <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {m.email}</div>
-                      {m.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {m.phoneNumber}</div>}
+                      {m.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {formatPhoneNumber(m.phoneNumber)}</div>}
                     </div>
 
                     <div>
@@ -1442,7 +1444,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{lead.email}</div>
-                        {lead.phoneNumber && <div className="text-sm text-gray-500">{lead.phoneNumber}</div>}
+                        {lead.phoneNumber && <div className="text-sm text-gray-500">{formatPhoneNumber(lead.phoneNumber)}</div>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(lead.createdAt).toLocaleDateString()}
@@ -1486,7 +1488,7 @@ export default function AdminDashboard() {
                     
                     <div className="text-sm text-gray-600 space-y-1 mb-4 bg-gray-50 p-3 rounded border border-gray-100">
                       <div><span className="font-medium text-gray-400 w-16 inline-block">Email:</span> {lead.email}</div>
-                      {lead.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {lead.phoneNumber}</div>}
+                      {lead.phoneNumber && <div><span className="font-medium text-gray-400 w-16 inline-block">Phone:</span> {formatPhoneNumber(lead.phoneNumber)}</div>}
                     </div>
                     
                     <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col sm:flex-row gap-2">
@@ -1602,7 +1604,7 @@ export default function AdminDashboard() {
                     <div>
                       <div className="text-sm font-bold text-gray-900">{m.user.firstName} {m.user.lastName}</div>
                       <div className="text-xs text-gray-500">{m.user.email}</div>
-                      {m.user.phoneNumber && <div className="text-xs text-gray-500">{m.user.phoneNumber}</div>}
+                      {m.user.phoneNumber && <div className="text-xs text-gray-500">{formatPhoneNumber(m.user.phoneNumber)}</div>}
                     </div>
                     <div className="flex flex-col sm:items-end gap-1">
                       <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">

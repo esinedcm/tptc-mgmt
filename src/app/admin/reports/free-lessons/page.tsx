@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { PrintButton } from '@/components/PrintButton';
+import { formatPhoneNumber } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -108,7 +109,7 @@ export default async function FreeLessonsReport() {
                                   {user.email}
                                 </td>
                                 <td className="px-6 py-3 whitespace-nowrap print:whitespace-normal text-sm text-gray-500">
-                                  {user.phoneNumber || 'N/A'}
+                                  {user.phoneNumber ? formatPhoneNumber(user.phoneNumber) : 'N/A'}
                                 </td>
                               </tr>
                             ))}

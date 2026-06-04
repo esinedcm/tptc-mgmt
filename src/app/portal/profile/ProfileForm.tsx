@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
+import { isValidPostalCode, isValidPhoneNumber, formatPostalCode, formatPhoneNumber } from '@/lib/validation';
 
 type ProfileData = {
   phoneNumber: string;
@@ -33,12 +33,14 @@ export function ProfileForm({ initialData }: { initialData: ProfileData }) {
         setFieldErrors(prev => ({ ...prev, postalCode: 'Invalid format (e.g. M1M 1M1)' }));
       } else {
         setFieldErrors(prev => ({ ...prev, postalCode: '' }));
+        if (value) setFormData(prev => ({ ...prev, postalCode: formatPostalCode(value) }));
       }
     } else if (name === 'phoneNumber') {
       if (value && !isValidPhoneNumber(value)) {
         setFieldErrors(prev => ({ ...prev, phoneNumber: 'Invalid 10-digit format' }));
       } else {
         setFieldErrors(prev => ({ ...prev, phoneNumber: '' }));
+        if (value) setFormData(prev => ({ ...prev, phoneNumber: formatPhoneNumber(value) }));
       }
     }
   };

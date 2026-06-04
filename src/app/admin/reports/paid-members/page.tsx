@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { PrintButton } from '@/components/PrintButton';
+import { formatPhoneNumber } from '@/lib/validation';
 
 export const dynamic = 'force-dynamic';
 
@@ -83,7 +84,7 @@ export default async function PaidMembersReport() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap print:whitespace-normal">
                         <div className="text-sm text-gray-900">{m.user.email}</div>
-                        <div className="text-sm text-gray-500">{m.user.phoneNumber || 'No phone'}</div>
+                        <div className="text-sm text-gray-500">{m.user.phoneNumber ? formatPhoneNumber(m.user.phoneNumber) : 'No phone'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap print:whitespace-normal">
                         <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">

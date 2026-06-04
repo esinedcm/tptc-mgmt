@@ -14,7 +14,16 @@ export function isValidPhoneNumber(phoneNumber?: string): boolean {
 export function formatPhoneNumber(phoneNumber: string): string {
   const match = phoneNumber.match(NA_PHONE_REGEX);
   if (match) {
-    return `(${match[1]}) ${match[2]}-${match[3]}`;
+    return `(${match[1]})${match[2]}-${match[3]}`;
   }
   return phoneNumber;
+}
+
+export function formatPostalCode(postalCode: string): string {
+  if (!postalCode) return postalCode;
+  const cleaned = postalCode.replace(/[\s-]/g, '').toUpperCase();
+  if (cleaned.length === 6) {
+    return `${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+  }
+  return postalCode;
 }
