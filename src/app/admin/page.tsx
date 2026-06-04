@@ -256,39 +256,49 @@ export default function AdminDashboard() {
   }, []);
 
   const calculateHouseholdTotal = (selectedIds: string[]) => {
-    let adults = 0;
-    let juniors = 0;
-    let total = 0;
-
     const selectedMemberships = memberships.filter(m => selectedIds.includes(m.id));
 
-    selectedMemberships.forEach(m => {
-      const plan = plans.find(p => p.name === m.membershipType);
-      if (m.membershipType === 'Adult') adults++;
-      else if (m.membershipType === 'Junior') juniors++;
-      else if (m.membershipType === 'Family') total += 200; // Fallback
-      else total += (plan?.cost || 0); // e.g. Seniors
-    });
+    const numAdults = selectedMemberships.filter(m => m.membershipType === 'Adult').length;
+    const numJuniors = selectedMemberships.filter(m => m.membershipType === 'Junior').length;
+    const numSeniors = selectedMemberships.filter(m => m.membershipType === 'Senior').length;
+    const manuallySelectedFamily = selectedMemberships.some((m) => m.membershipType === 'Family');
+    
+    const effectiveNumAdults = manuallySelectedFamily ? numAdults + 1 : numAdults;
+    const showFamilyDiscount = manuallySelectedFamily || (effectiveNumAdults >= 2 && numJuniors >= 1);
 
-    // Apply Family Bundle: 2 Adults + 1 or 2 Juniors = $200
-    while (adults >= 2 && juniors >= 1) {
-      total += 200;
-      adults -= 2;
-      const juniorsToConsume = Math.min(juniors, 2);
-      juniors -= juniorsToConsume;
-    }
+    const familyPlan = plans.find(p => p.name === 'Family');
+    const familyCost = familyPlan ? familyPlan.cost : 200;
 
-    // Add remaining adults and juniors
-    if (adults > 0) {
+    let totalDue = 0;
+
+    if (showFamilyDiscount) {
+      totalDue += familyCost;
+      
+      const extraAdults = Math.max(0, effectiveNumAdults - 2);
+      const extraJuniors = Math.max(0, numJuniors - 2);
+      
       const adultPlan = plans.find(p => p.name === 'Adult');
-      total += adults * (adultPlan?.cost || 85);
-    }
-    if (juniors > 0) {
       const juniorPlan = plans.find(p => p.name === 'Junior');
-      total += juniors * (juniorPlan?.cost || 50);
+      const seniorPlan = plans.find(p => p.name === 'Senior');
+
+      totalDue += extraAdults * (adultPlan?.cost || 85);
+      totalDue += extraJuniors * (juniorPlan?.cost || 50);
+      totalDue += numSeniors * (seniorPlan?.cost || 70);
+      
+      totalDue += selectedMemberships
+        .filter(m => !['Adult', 'Junior', 'Senior', 'Family'].includes(m.membershipType))
+        .reduce((sum, m) => {
+          const plan = plans.find(p => p.name === m.membershipType);
+          return sum + (plan?.cost || 0);
+        }, 0);
+    } else {
+      totalDue = selectedMemberships.reduce((sum, m) => {
+        const plan = plans.find(p => p.name === m.membershipType);
+        return sum + (plan?.cost || 0);
+      }, 0);
     }
 
-    return total;
+    return totalDue;
   };
 
   const handlePayClick = (m: Membership) => {
