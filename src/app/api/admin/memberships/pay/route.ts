@@ -59,13 +59,26 @@ export async function POST(request: Request) {
       return updatedPrimary;
     });
 
-    // Send welcome email to the primary member
-    if (membership.user && membership.user.email) {
-      await sendWelcomeEmail({
-        to: membership.user.email,
-        firstName: membership.user.firstName,
-        memberNumber: membership.user.memberNumber,
-      });
+    // Send welcome emails to all members included in this payment
+    const allIdsToWelcome = [membershipId, ...(Array.isArray(coveredMembershipIds) ? coveredMembershipIds : [])];
+    
+    const membershipsToWelcome = await prisma.membership.findMany({
+      where: { id: { in: allIdsToWelcome } },
+      include: { user: true }
+    });
+
+    for (const m of membershipsToWelcome) {
+      if (m.user && m.user.email) {
+        try {
+          await sendWelcomeEmail({
+            to: m.user.email,
+            firstName: m.user.firstName,
+            memberNumber: m.user.memberNumber,
+          });
+        } catch (e) {
+          console.error(`Failed to send welcome email to ${m.user.email}:`, e);
+        }
+      }
     }
 
     return NextResponse.json({ success: true, membership: updatedMemberships }, { status: 200 });
