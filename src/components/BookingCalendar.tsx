@@ -314,7 +314,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                 const d = new Date(currentDate);
                 d.setDate(d.getDate() + dayOffset);
                 return (
-                  <th key={dayOffset} colSpan={courts.length} className={`p-2 text-center border-r border-b font-semibold bg-gray-100 ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
+                  <th key={dayOffset} colSpan={courts.length} className={`p-2 text-center border-r-2 border-gray-400 border-b font-semibold bg-gray-100 ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
                     {d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                   </th>
                 );
@@ -322,8 +322,8 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
             </tr>
             <tr>
               {Array.from({ length: daysToShow }).map((_, dayOffset) => (
-                courts.map(court => (
-                  <th key={`${dayOffset}-${court.id}`} className={`p-1 text-center border-r font-medium text-xs text-gray-600 bg-gray-50 ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
+                courts.map((court, courtIndex) => (
+                  <th key={`${dayOffset}-${court.id}`} className={`p-1 text-center font-medium text-xs text-gray-600 bg-gray-50 ${courtIndex === courts.length - 1 ? 'border-r-2 border-gray-400' : 'border-r'} ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
                     {court.name}
                   </th>
                 ))
@@ -344,7 +344,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                   const cellDate = new Date(currentDate);
                   cellDate.setDate(cellDate.getDate() + dayOffset);
                   
-                  return courts.map(court => {
+                  return courts.map((court, courtIndex) => {
                     const booking = getBookingForSlot(court.id, cellDate, slot.hour, slot.min);
                     
                     if (booking) {
@@ -364,7 +364,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                       const myBookingBorder = isMyBooking ? 'border-gray-800 border-2 shadow-sm' : 'border-black/10';
                       
                       return (
-                        <td key={`${dayOffset}-${court.id}`} rowSpan={rowSpanValue} className={`border-r align-top relative p-0 ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
+                        <td key={`${dayOffset}-${court.id}`} rowSpan={rowSpanValue} className={`align-top relative p-0 ${courtIndex === courts.length - 1 ? 'border-r-2 border-gray-400' : 'border-r'} ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
                           <div 
                             onClick={() => setViewBooking(booking)}
                             className={`absolute inset-0 m-1 rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden ${myBookingBorder}`}
@@ -380,7 +380,7 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     return (
                       <td 
                         key={`${dayOffset}-${court.id}`} 
-                        className={`border-r hover:bg-green-50 cursor-pointer transition-colors ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}
+                        className={`hover:bg-green-50 cursor-pointer transition-colors ${courtIndex === courts.length - 1 ? 'border-r-2 border-gray-400' : 'border-r'} ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}
                         onClick={() => {
                           setSelectedCourtId(court.id);
                           const start = new Date(cellDate);
