@@ -1037,6 +1037,13 @@ export default function AdminDashboard() {
                                 )}
                               </div>
                               <div>
+                                <label className="block text-xs font-semibold text-gray-700 mb-1">System Role</label>
+                                <select className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })}>
+                                  <option value="MEMBER">Member</option>
+                                  <option value="ADMIN">Admin</option>
+                                </select>
+                              </div>
+                              <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
                                 <input type="number" className="border border-gray-300 rounded px-2 py-1 text-sm w-full" value={editForm.amountPaid} onChange={e => setEditForm({...editForm, amountPaid: parseFloat(e.target.value) || 0})} />
                               </div>
@@ -1250,6 +1257,11 @@ export default function AdminDashboard() {
                             <option value="Senior">Senior</option>
                           </select>
                         )}
+                        <label className="text-xs font-semibold text-gray-700 mt-2">System Role</label>
+                        <select className="border border-gray-300 rounded px-3 py-2 text-sm w-full" value={editForm.role} onChange={e => setEditForm({ ...editForm, role: e.target.value })}>
+                          <option value="MEMBER">Member</option>
+                          <option value="ADMIN">Admin</option>
+                        </select>
                         
                         <div className="flex items-center mt-3 mb-1">
                           <input type="checkbox" id="mobileFreeLessons" className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" checked={editForm.wantsFreeLessons} onChange={e => setEditForm({ ...editForm, wantsFreeLessons: e.target.checked })} />
