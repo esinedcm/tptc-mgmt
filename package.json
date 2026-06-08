@@ -12,15 +12,23 @@
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
+    "@tiptap/extension-link": "^3.26.0",
+    "@tiptap/extension-table": "^3.26.0",
+    "@tiptap/extension-table-cell": "^3.26.0",
+    "@tiptap/extension-table-header": "^3.26.0",
+    "@tiptap/extension-table-row": "^3.26.0",
+    "@tiptap/pm": "^3.26.0",
+    "@tiptap/react": "^3.26.0",
+    "@tiptap/starter-kit": "^3.26.0",
     "@types/papaparse": "^5.5.2",
     "bcryptjs": "^3.0.3",
     "jose": "^6.2.3",
+    "lucide-react": "^1.17.0",
     "next": "16.2.4",
     "nodemailer": "^8.0.7",
     "papaparse": "^5.5.3",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "react-quill-new": "^3.8.3"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

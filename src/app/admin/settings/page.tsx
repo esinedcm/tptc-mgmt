@@ -3,18 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import 'react-quill-new/dist/quill.snow.css';
-
-const ReactQuill = dynamic(
-  async () => {
-    const { default: RQ } = await import('react-quill-new');
-    return function ForwardedQuill(props: any) {
-      return <RQ ref={props.forwardedRef} {...props} />;
-    };
-  },
-  { ssr: false }
-);
+import TipTapEditor from '@/components/TipTapEditor';
 type MembershipPlan = {
   id: string;
   name: string;
@@ -159,7 +148,7 @@ export default function AdminSettingsPage() {
   const [savingBookingType, setSavingBookingType] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const reactQuillRef = useRef<any>(null);
+  const [editorInstance, setEditorInstance] = useState<any>(null);
   const [editorMode, setEditorMode] = useState<'visual' | 'raw' | 'preview'>('visual');
   const [wiping, setWiping] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
@@ -557,13 +546,9 @@ export default function AdminSettingsPage() {
   const insertVariable = (variable: string) => {
     if (!variable) return;
     
-    if (editorMode === 'visual' && reactQuillRef.current) {
-      const editor = reactQuillRef.current.getEditor();
-      const selection = editor.getSelection(true);
-      const cursorPosition = selection ? selection.index : 0;
-      editor.insertText(cursorPosition, variable);
-      editor.setSelection(cursorPosition + variable.length);
-      setEditTemplateForm(prev => ({ ...prev, htmlBody: editor.root.innerHTML }));
+    if (editorMode === 'visual' && editorInstance) {
+      editorInstance.commands.insertContent(variable);
+      setEditTemplateForm(prev => ({ ...prev, htmlBody: editorInstance.getHTML() }));
       return;
     }
 
@@ -1248,12 +1233,11 @@ export default function AdminSettingsPage() {
                     </button>
                   </div>
                   {editorMode === 'visual' && (
-                    <div className="bg-white [&_.ql-container]:h-[300px] [&_.ql-editor]:text-sm border border-gray-300 rounded-md overflow-hidden">
-                      <ReactQuill 
-                        forwardedRef={reactQuillRef}
-                        theme="snow" 
+                    <div className="bg-white">
+                      <TipTapEditor 
                         value={editTemplateForm.htmlBody || ''} 
                         onChange={(val: string) => setEditTemplateForm({...editTemplateForm, htmlBody: val})}
+                        onEditorReady={setEditorInstance}
                       />
                     </div>
                   )}
@@ -1267,7 +1251,7 @@ export default function AdminSettingsPage() {
                     />
                   )}
                   {editorMode === 'preview' && (
-                    <div className="border border-gray-300 rounded-md p-4 bg-white min-h-[300px]">
+                    <div className="border border-gray-300 rounded-md p-4 bg-white min-h-[300px] overflow-x-auto break-words">
                       <div dangerouslySetInnerHTML={{ 
                         __html: Object.keys(MOCK_VARIABLES).reduce(
                           (html, key) => html.replaceAll(key, MOCK_VARIABLES[key]), 
