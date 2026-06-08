@@ -24,6 +24,7 @@ RUN npx prisma generate
 
 # We bypass the 'npm run build' script because it contains 'prisma db push'
 # which requires a database connection. Instead, we run next build directly.
+ENV STANDALONE_BUILD=true
 RUN npx next build
 
 # Production image, copy all the files and run next
