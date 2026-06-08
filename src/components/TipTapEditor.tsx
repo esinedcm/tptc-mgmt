@@ -191,7 +191,7 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
   // Handle external value changes (like when a different template is selected)
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value, false);
+      editor.commands.setContent(value, { emitUpdate: false });
     }
   }, [value, editor]);
 
