@@ -13,6 +13,13 @@ type ClubEvent = {
   cost: number | null;
   maxParticipants: number | null;
   _count: { registrations: number };
+  registrations?: Array<{
+    status: string;
+    user: {
+      firstName: string;
+      lastName: string;
+    };
+  }>;
 };
 
 type User = {
@@ -26,10 +33,12 @@ type Props = {
   events: any[];
   currentUser: User;
   householdMembers: any[];
+  hasActiveMembership: boolean;
 };
 
-export default function EventsListClient({ events, currentUser, householdMembers }: Props) {
+export default function EventsListClient({ events, currentUser, householdMembers, hasActiveMembership }: Props) {
   const [selectedEvent, setSelectedEvent] = useState<ClubEvent | null>(null);
+  const [viewAttendeesEvent, setViewAttendeesEvent] = useState<ClubEvent | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([currentUser.id]);
   const [loading, setLoading] = useState(false);
 
@@ -101,11 +110,15 @@ export default function EventsListClient({ events, currentUser, householdMembers
                     {event.cost !== null && (
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md font-medium">Cost: ${event.cost.toFixed(2)}</span>
                     )}
-                    {event.maxParticipants !== null && (
-                      <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-md font-medium">
-                        Capacity: {event._count.registrations} / {event.maxParticipants}
-                      </span>
-                    )}
+                    <button 
+                      onClick={() => setViewAttendeesEvent(event)}
+                      className="bg-gray-100 text-gray-800 hover:bg-gray-200 px-2 py-1 rounded-md font-medium transition-colors cursor-pointer"
+                    >
+                      {event.maxParticipants !== null 
+                        ? `Capacity: ${event._count.registrations} / ${event.maxParticipants}`
+                        : `${event._count.registrations} Attending`
+                      }
+                    </button>
                   </div>
                 </div>
                 
@@ -117,9 +130,11 @@ export default function EventsListClient({ events, currentUser, householdMembers
                   ) : (
                     <button
                       onClick={() => handleRegisterClick(event)}
-                      className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-sm"
+                      disabled={!hasActiveMembership}
+                      title={!hasActiveMembership ? "You must have a paid membership to register" : ""}
+                      className={`px-4 py-2 rounded-md font-medium text-sm transition-colors shadow-sm ${!hasActiveMembership ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700 text-white'}`}
                     >
-                      Register Now
+                      {hasActiveMembership ? 'Register Now' : 'Membership Payment Required'}
                     </button>
                   )}
                 </div>
@@ -181,6 +196,39 @@ export default function EventsListClient({ events, currentUser, householdMembers
                 className="flex-1 py-2 px-4 bg-primary-600 text-white rounded-md font-medium hover:bg-primary-700 disabled:opacity-50"
               >
                 {loading ? 'Processing...' : 'Confirm Registration'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {viewAttendeesEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 relative max-h-[80vh] flex flex-col">
+            <button onClick={() => setViewAttendeesEvent(null)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 className="text-xl font-bold mb-4 pr-6">Attendees for {viewAttendeesEvent.title}</h2>
+            <div className="overflow-y-auto flex-1 pr-2">
+              {viewAttendeesEvent.registrations && viewAttendeesEvent.registrations.length > 0 ? (
+                <ul className="divide-y divide-gray-200 border-t border-b border-gray-200">
+                  {viewAttendeesEvent.registrations.map((reg, idx) => (
+                    <li key={idx} className="py-3 flex justify-between items-center">
+                      <span className="font-medium text-gray-900">{reg.user.firstName} {reg.user.lastName}</span>
+                      {reg.status === 'WAITLISTED' && <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Waitlist</span>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 italic text-center py-4">No one has registered yet.</p>
+              )}
+            </div>
+            <div className="mt-6">
+              <button
+                onClick={() => setViewAttendeesEvent(null)}
+                className="w-full py-2 px-4 border border-gray-300 rounded-md text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

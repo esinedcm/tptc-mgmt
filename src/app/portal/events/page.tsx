@@ -22,7 +22,8 @@ export default async function PortalEventsPage() {
   const user = await prisma.user.findUnique({
     where: { id: payload.userId as string },
     include: {
-      eventRegistrations: true
+      eventRegistrations: true,
+      memberships: true
     }
   });
 
@@ -52,6 +53,13 @@ export default async function PortalEventsPage() {
     include: {
       _count: {
         select: { registrations: true }
+      },
+      registrations: {
+        include: {
+          user: {
+            select: { firstName: true, lastName: true }
+          }
+        }
       }
     },
     orderBy: { startDate: 'asc' }
@@ -66,8 +74,9 @@ export default async function PortalEventsPage() {
 
       <EventsListClient 
         events={upcomingEvents} 
-        currentUser={user} 
+        currentUser={user as any} 
         householdMembers={householdMembers} 
+        hasActiveMembership={user?.memberships?.some((m: any) => m.status === 'Active') || false}
       />
     </div>
   );

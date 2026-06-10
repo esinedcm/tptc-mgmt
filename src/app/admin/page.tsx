@@ -1088,6 +1088,9 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {m.user.gender || '-'}
+                            {m.status !== 'Active' && activeTab !== 'Archived' && (
+                              <button onClick={(e) => { e.stopPropagation(); handlePayClick(m); }} className="float-right text-white bg-green-600 hover:bg-green-700 font-medium rounded text-[10px] px-2 py-0.5 transition-colors shadow-sm">Mark as Paid</button>
+                            )}
                           </td>
                         </tr>
                         {isExpanded && (
@@ -1124,9 +1127,6 @@ export default function AdminDashboard() {
                                   )}
                                   {activeTab !== 'Archived' && (
                                     <button onClick={(e) => { e.stopPropagation(); handleEditClick(m); }} className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>
-                                  )}
-                                  {activeTab !== 'Archived' && m.status !== 'Active' && (
-                                    <button onClick={(e) => { e.stopPropagation(); handlePayClick(m); }} className="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors">Mark as Paid</button>
                                   )}
                                   {activeTab === 'Archived' && <span className="text-gray-400 text-sm italic py-2">Archived</span>}
                                 </div>
@@ -1287,6 +1287,9 @@ export default function AdminDashboard() {
                         <div className="text-base font-semibold text-gray-900">{m.user.firstName} {m.user.lastName}</div>
                         <div className="text-xs text-gray-500 mt-1">
                           <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mr-2">{m.membershipType}</span>
+                          {m.status !== 'Active' && activeTab !== 'Archived' && (
+                            <button onClick={(e) => { e.stopPropagation(); handlePayClick(m); }} className="text-white bg-green-600 hover:bg-green-700 font-medium rounded text-[10px] px-2 py-0.5 transition-colors shadow-sm mr-2">Mark as Paid</button>
+                          )}
                           {new Date(m.createdAt).toLocaleDateString()}
                         </div>
                       </div>
@@ -1320,7 +1323,6 @@ export default function AdminDashboard() {
                       
                       <div className="flex gap-2">
                         {activeTab !== 'Archived' && <button onClick={() => handleEditClick(m)} className="flex-1 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>}
-                        {activeTab !== 'Archived' && m.status !== 'Active' && <button onClick={() => handlePayClick(m)} className="flex-1 text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-2 transition-colors">Mark as Paid</button>}
                       </div>
                       
                       {activeTab === 'Archived' && <div className="text-center w-full text-gray-400 text-sm italic mt-2">Archived on {new Date(m.archivedAt!).toLocaleDateString()}</div>}

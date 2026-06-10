@@ -13,6 +13,16 @@ export async function POST(request: Request) {
     const payload = await verifyJwt(token);
     if (!payload || !payload.userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+    const userWithMemberships = await prisma.user.findUnique({
+      where: { id: payload.userId as string },
+      include: { memberships: true }
+    });
+
+    const hasActiveMembership = userWithMemberships?.memberships?.some(m => m.status === 'Active');
+    if (!hasActiveMembership) {
+      return NextResponse.json({ error: 'You must have an active, paid membership to register for events.' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { eventId, userIds } = body;
 
