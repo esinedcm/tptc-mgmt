@@ -5,11 +5,15 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, description, startDate, endDate, isAllDay, colorHex, cost, maxParticipants } = body;
+    const { title, description, startDate, endDate, isAllDay, colorHex, cost, maxParticipants, validCouponIds } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Event ID is required' }, { status: 400 });
     }
+
+    const couponConnections = Array.isArray(validCouponIds)
+      ? validCouponIds.map((cId: string) => ({ id: cId }))
+      : [];
 
     const updatedEvent = await prisma.clubEvent.update({
       where: { id },
@@ -21,8 +25,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         isAllDay,
         colorHex,
         cost: cost !== undefined ? (cost === null || cost === '' ? null : parseFloat(cost)) : undefined,
-        maxParticipants: maxParticipants !== undefined ? (maxParticipants === null || maxParticipants === '' ? null : parseInt(maxParticipants, 10)) : undefined
-      }
+        maxParticipants: maxParticipants !== undefined ? (maxParticipants === null || maxParticipants === '' ? null : parseInt(maxParticipants, 10)) : undefined,
+        validCoupons: {
+          set: couponConnections
+        }
+      },
+      include: { validCoupons: true }
     });
 
     return NextResponse.json({ event: updatedEvent }, { status: 200 });

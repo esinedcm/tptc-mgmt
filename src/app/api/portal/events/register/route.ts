@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { eventId, userIds } = body;
+    const { eventId, userIds, couponCode } = body;
 
     if (!eventId || !userIds || !Array.isArray(userIds) || userIds.length === 0) {
       return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
@@ -47,6 +47,43 @@ export async function POST(request: Request) {
     const currentCount = event._count.registrations;
     const max = event.maxParticipants;
     
+    // Validate coupon if provided
+    let appliedCouponId = null;
+    let discountAmount = null;
+
+    if (couponCode && event.cost) {
+      const coupon = await prisma.couponCode.findUnique({
+        where: { code: couponCode },
+        include: { validEvents: { select: { id: true } } }
+      });
+
+      if (!coupon) {
+        return NextResponse.json({ error: 'Invalid coupon code' }, { status: 400 });
+      }
+      if (coupon.expiryDate && new Date() > new Date(coupon.expiryDate)) {
+        return NextResponse.json({ error: 'This coupon code has expired' }, { status: 400 });
+      }
+      if (coupon.maxUses !== null && coupon.currentUses >= coupon.maxUses) {
+        return NextResponse.json({ error: 'This coupon code has reached its usage limit' }, { status: 400 });
+      }
+      const isValidForEvent = coupon.validEvents.some((e: any) => e.id === eventId);
+      if (!isValidForEvent) {
+        return NextResponse.json({ error: 'This coupon code is not valid for this event' }, { status: 400 });
+      }
+
+      appliedCouponId = coupon.id;
+      if (coupon.discountType === 'FIXED') {
+        discountAmount = coupon.discountAmount;
+      } else if (coupon.discountType === 'PERCENT') {
+        discountAmount = event.cost * (coupon.discountAmount / 100);
+      }
+      
+      // Ensure discount isn't more than cost
+      if (discountAmount && discountAmount > event.cost) {
+        discountAmount = event.cost;
+      }
+    }
+
     // Create registrations
     const newRegistrations = [];
     let slotsTaken = 0;
@@ -67,20 +104,29 @@ export async function POST(request: Request) {
         status = 'WAITLISTED';
       }
 
-      const reg = await prisma.eventRegistration.create({
-        data: {
-          eventId,
-          userId: uId,
-          status,
-          hasPaid: false
-        },
-        include: {
-          user: true
-        }
-      });
+        const reg = await prisma.eventRegistration.create({
+          data: {
+            eventId,
+            userId: uId,
+            status,
+            hasPaid: (event.cost && discountAmount && discountAmount >= event.cost) ? true : false,
+            appliedCouponId: appliedCouponId,
+            discountAmount: discountAmount
+          },
+          include: {
+            user: true
+          }
+        });
 
       newRegistrations.push(reg);
       slotsTaken++;
+    }
+
+    if (appliedCouponId && newRegistrations.length > 0) {
+      await prisma.couponCode.update({
+        where: { id: appliedCouponId },
+        data: { currentUses: { increment: 1 } }
+      });
     }
 
     if (newRegistrations.length > 0) {

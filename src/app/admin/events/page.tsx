@@ -14,6 +14,14 @@ type ClubEvent = {
   cost?: number | null;
   maxParticipants?: number | null;
   _count?: { registrations: number };
+  validCoupons?: { id: string; code: string }[];
+};
+
+type Coupon = {
+  id: string;
+  code: string;
+  discountAmount: number;
+  discountType: string;
 };
 
 const getLocalDatetimeString = (isoString: string | undefined, isAllDay: boolean) => {
@@ -36,9 +44,22 @@ export default function AdminEventsPage() {
   const [viewingRegistrationsEvent, setViewingRegistrationsEvent] = useState<ClubEvent | null>(null);
   const [registrations, setRegistrations] = useState<any[]>([]);
 
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+
   useEffect(() => {
     fetchEvents();
+    fetchCoupons();
   }, []);
+
+  const fetchCoupons = async () => {
+    try {
+      const res = await fetch('/api/admin/coupons');
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableCoupons(data.coupons || []);
+      }
+    } catch (err) {}
+  };
 
   const fetchEvents = async () => {
     try {
@@ -67,7 +88,8 @@ export default function AdminEventsPage() {
         isAllDay: currentEvent.isAllDay || false,
         colorHex: currentEvent.colorHex || '#8b5cf6',
         cost: currentEvent.cost,
-        maxParticipants: currentEvent.maxParticipants
+        maxParticipants: currentEvent.maxParticipants,
+        validCouponIds: currentEvent.validCoupons?.map(c => c.id) || []
       };
 
       const res = await fetch(url, {
@@ -131,7 +153,8 @@ export default function AdminEventsPage() {
       isAllDay: false,
       colorHex: '#8b5cf6',
       cost: null,
-      maxParticipants: null
+      maxParticipants: null,
+      validCoupons: []
     });
     setIsEditing(true);
   };
@@ -265,6 +288,37 @@ export default function AdminEventsPage() {
                 onChange={e => setCurrentEvent({...currentEvent, description: e.target.value})}
               />
             </div>
+
+            {availableCoupons.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Valid Coupon Codes</label>
+                <div className="grid grid-cols-2 gap-2 mt-1 border border-gray-300 rounded-md p-3 max-h-32 overflow-y-auto bg-gray-50">
+                  {availableCoupons.map(coupon => {
+                    const isSelected = currentEvent.validCoupons?.some(c => c.id === coupon.id);
+                    return (
+                      <label key={coupon.id} className="flex items-center space-x-2 text-sm text-gray-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isSelected || false}
+                          onChange={(e) => {
+                            const newCoupons = currentEvent.validCoupons ? [...currentEvent.validCoupons] : [];
+                            if (e.target.checked) {
+                              newCoupons.push({ id: coupon.id, code: coupon.code });
+                            } else {
+                              const idx = newCoupons.findIndex(c => c.id === coupon.id);
+                              if (idx > -1) newCoupons.splice(idx, 1);
+                            }
+                            setCurrentEvent({...currentEvent, validCoupons: newCoupons});
+                          }}
+                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
+                        <span>{coupon.code} (-{coupon.discountType === 'FIXED' ? '$' : ''}{coupon.discountAmount}{coupon.discountType === 'PERCENT' ? '%' : ''})</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700">Calendar Color</label>

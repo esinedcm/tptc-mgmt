@@ -12,6 +12,15 @@ export default async function TreasurerReport() {
   });
   
   const amountCollected = paidMemberships.reduce((sum, m) => sum + (m.amountPaid || 0), 0);
+  const totalMembershipDiscounts = paidMemberships.reduce((sum, m) => sum + (m.discountAmount || 0), 0);
+
+  // Fetch Paid Event Registrations for event revenue and discounts
+  const paidEvents = await prisma.eventRegistration.findMany({
+    where: { hasPaid: true }
+  });
+  const eventDiscounts = paidEvents.reduce((sum, r) => sum + (r.discountAmount || 0), 0);
+
+  const totalCouponsDiscount = totalMembershipDiscounts + eventDiscounts;
 
   // 2. Fetch Pending Memberships to calculate Amount Outstanding
   const pendingUsers = await prisma.user.findMany({
@@ -109,11 +118,17 @@ export default async function TreasurerReport() {
         </div>
 
         {/* Financial Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-400">
             <div className="px-4 py-5 sm:p-6 text-center">
               <dt className="text-sm font-medium text-gray-500 truncate">Total Collected</dt>
               <dd className="mt-1 text-3xl font-bold text-green-600">${amountCollected.toFixed(2)}</dd>
+            </div>
+          </div>
+          <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-400">
+            <div className="px-4 py-5 sm:p-6 text-center">
+              <dt className="text-sm font-medium text-gray-500 truncate">Coupon Discounts</dt>
+              <dd className="mt-1 text-3xl font-bold text-purple-600">${totalCouponsDiscount.toFixed(2)}</dd>
             </div>
           </div>
           <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-400">

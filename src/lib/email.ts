@@ -117,15 +117,34 @@ export async function sendWelcomeEmail({
   to,
   firstName,
   memberNumber,
+  paymentSummary
 }: {
   to: string;
   firstName: string;
   memberNumber?: string | null;
+  paymentSummary?: {
+    totalMembershipCost: number;
+    discountAmount: number;
+    amountPaid: number;
+    couponCode?: string;
+  };
 }) {
   const baseUrl = await getBaseUrl();
   const loginLink = `${baseUrl}/login?email=${encodeURIComponent(to)}`;
 
   const memberNumberText = memberNumber ? `<p>Your official Member Number is: <strong>${memberNumber}</strong></p>` : '';
+
+  let paymentSummaryHtml = '';
+  if (paymentSummary && paymentSummary.discountAmount > 0) {
+    paymentSummaryHtml = `
+      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <h3 style="margin-top: 0;">Payment Summary</h3>
+        <p style="margin: 5px 0;"><strong>Membership Total:</strong> $${paymentSummary.totalMembershipCost.toFixed(2)}</p>
+        <p style="margin: 5px 0; color: #16a34a;"><strong>Coupon Discount ${paymentSummary.couponCode ? `(${paymentSummary.couponCode})` : ''}:</strong> -$${paymentSummary.discountAmount.toFixed(2)}</p>
+        <p style="margin: 5px 0; font-weight: bold; border-top: 1px solid #e5e7eb; padding-top: 10px;"><strong>Amount Paid:</strong> $${paymentSummary.amountPaid.toFixed(2)}</p>
+      </div>
+    `;
+  }
 
   const defaultHtml = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -133,6 +152,7 @@ export async function sendWelcomeEmail({
       <p>Hi {{firstName}},</p>
       <p>Great news! Your club membership has been approved and activated.</p>
       ${memberNumberText}
+      ${paymentSummaryHtml}
       <p>You can now log into the Member Portal to view your status, update your contact details, and book tennis courts!</p>
       <a href="{{loginLink}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Log In to Member Portal</a>
       <p>If you haven't set a password yet, simply click the "Forgot your password?" link on the login page.</p>

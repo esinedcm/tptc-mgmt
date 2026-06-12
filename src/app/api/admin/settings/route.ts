@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { verifyJwt } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { checkAdmin } from '@/lib/check-admin';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
-    const payload = await verifyJwt(token);
-    if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const adminCheck = await checkAdmin('MANAGE_SETTINGS');
+    if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
     let settings = await prisma.systemSetting.findUnique({
       where: { id: 'global' }
@@ -33,12 +28,8 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
-    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
-    const payload = await verifyJwt(token);
-    if (!payload || payload.role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const adminCheck = await checkAdmin('MANAGE_SETTINGS');
+    if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
     const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails } = await req.json();
 

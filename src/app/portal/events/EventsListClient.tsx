@@ -41,10 +41,12 @@ export default function EventsListClient({ events, currentUser, householdMembers
   const [viewAttendeesEvent, setViewAttendeesEvent] = useState<ClubEvent | null>(null);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([currentUser.id]);
   const [loading, setLoading] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
 
   const handleRegisterClick = (event: ClubEvent) => {
     setSelectedEvent(event);
     setSelectedUsers([currentUser.id]); // Default to self
+    setCouponCode(''); // Reset coupon code
   };
 
   const handleToggleUser = (id: string) => {
@@ -65,7 +67,8 @@ export default function EventsListClient({ events, currentUser, householdMembers
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           eventId: selectedEvent.id,
-          userIds: selectedUsers
+          userIds: selectedUsers,
+          couponCode: couponCode.trim() || undefined
         })
       });
 
@@ -182,6 +185,19 @@ export default function EventsListClient({ events, currentUser, householdMembers
                 </label>
               ))}
             </div>
+
+            {selectedEvent.cost ? (
+              <div className="mb-6 border-t pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Promo Code (Optional)</label>
+                <input 
+                  type="text" 
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter code if you have one"
+                  className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm py-2 px-3 border"
+                />
+              </div>
+            ) : null}
 
             <div className="flex gap-3">
               <button

@@ -63,6 +63,15 @@ type MembershipPlan = {
   cost: number;
 };
 
+type CouponCode = {
+  id: string;
+  code: string;
+  discountType: string;
+  discountAmount: number;
+  maxUses: number | null;
+  currentUses: number;
+};
+
 export default function AdminDashboard() {
   const [memberships, setMemberships] = useState<Membership[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -71,9 +80,12 @@ export default function AdminDashboard() {
   const [activeSeason, setActiveSeason] = useState<string>('');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
+  const [activeCoupons, setActiveCoupons] = useState<CouponCode[]>([]);
   const [pendingWelcomeCount, setPendingWelcomeCount] = useState(0);
   const [enableCsvImport, setEnableCsvImport] = useState(true);
   const [enableWelcomeEmails, setEnableWelcomeEmails] = useState(true);
+  const [currentUserPermissions, setCurrentUserPermissions] = useState<string[]>([]);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number, skipped: number, skippedRecords: { email: string, name: string, reason: string }[] } | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -87,10 +99,14 @@ export default function AdminDashboard() {
   const [activeEmailMenu, setActiveEmailMenu] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [payingId, setPayingId] = useState<string | null>(null);
-  const [payForm, setPayForm] = useState<{ amountPaid: number, paymentNotes: string, coveredMembershipIds: string[] }>({
+  const [payForm, setPayForm] = useState({
     amountPaid: 0,
     paymentNotes: '',
-    coveredMembershipIds: [],
+    coveredMembershipIds: [] as string[],
+    couponCode: '',
+    couponCodeId: null as string | null,
+    discountAmount: 0,
+    totalMembershipCost: 0
   });
   const [editForm, setEditForm] = useState({
     firstName: '',
@@ -235,9 +251,12 @@ export default function AdminDashboard() {
       if (memData.activeSeason) setActiveSeason(memData.activeSeason);
       if (memData.enableCsvImport !== undefined) setEnableCsvImport(memData.enableCsvImport);
       if (memData.enableWelcomeEmails !== undefined) setEnableWelcomeEmails(memData.enableWelcomeEmails);
+      if (memData.currentUserPermissions) setCurrentUserPermissions(memData.currentUserPermissions);
+      if (memData.isSuperAdmin !== undefined) setIsSuperAdmin(memData.isSuperAdmin);
       if (archData.archived) setArchived(archData.archived);
       if (leadsData.leads) setLeads(leadsData.leads);
       if (plansData.plans) setPlans(plansData.plans);
+      if (memData.activeCoupons) setActiveCoupons(memData.activeCoupons);
       if (pastData.pastMembers) setPastMembers(pastData.pastMembers);
       if (typeof welcomeData.count === 'number') setPendingWelcomeCount(welcomeData.count);
       
@@ -318,6 +337,10 @@ export default function AdminDashboard() {
       amountPaid: amount,
       paymentNotes: '',
       coveredMembershipIds: selectedIds,
+      couponCode: '',
+      couponCodeId: null,
+      discountAmount: 0,
+      totalMembershipCost: amount
     });
   };
 
@@ -327,15 +350,20 @@ export default function AdminDashboard() {
 
   const handleSavePayment = async (membershipId: string) => {
     try {
+      const payload = {
+        membershipId: payingId,
+        amountPaid: payForm.amountPaid,
+        paymentNotes: payForm.paymentNotes,
+        coveredMembershipIds: payForm.coveredMembershipIds,
+        couponCodeId: payForm.couponCodeId,
+        discountAmount: payForm.discountAmount,
+        totalMembershipCost: payForm.totalMembershipCost
+      };
+
       const res = await fetch('/api/admin/memberships/pay', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          membershipId, 
-          amountPaid: payForm.amountPaid, 
-          paymentNotes: payForm.paymentNotes,
-          coveredMembershipIds: payForm.coveredMembershipIds
-        }),
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -635,35 +663,53 @@ export default function AdminDashboard() {
               </svg>
               Manage Bookings
             </Link>
-            <Link
-              href="/admin/events"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Social Events
-            </Link>
-            <Link
-              href="/admin/reports"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Reports
-            </Link>
-            <Link
-              href="/admin/settings"
-              className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-            >
-              <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              Settings
-            </Link>
-            {enableCsvImport && (
+            {(isSuperAdmin || currentUserPermissions.includes('MANAGE_EVENTS')) && (
+              <Link
+                href="/admin/events"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Social Events
+              </Link>
+            )}
+            {(isSuperAdmin || currentUserPermissions.includes('VIEW_REPORTS')) && (
+              <Link
+                href="/admin/reports"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Reports
+              </Link>
+            )}
+            {(isSuperAdmin || currentUserPermissions.includes('MANAGE_SETTINGS')) && (
+              <Link
+                href="/admin/settings"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Settings
+              </Link>
+            )}
+            {isSuperAdmin && (
+              <Link
+                href="/admin/staff"
+                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
+              >
+                <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Staff / Admins
+              </Link>
+            )}
+
+            {(isSuperAdmin || currentUserPermissions.includes('EDIT_MEMBERS')) && enableCsvImport && (
               <>
                 <input 
                   type="file" 
@@ -919,6 +965,83 @@ export default function AdminDashboard() {
                             <div className="mb-3 text-sm font-medium text-green-900 bg-green-100 p-2 rounded inline-block">
                               Applying payment for: {m.user.firstName} {m.user.lastName} ({m.user.email})
                             </div>
+                            <div className="mb-4">
+                              <label className="block text-xs font-semibold text-gray-700 mb-1">Apply Discount Code (Optional)</label>
+                              <div className="flex gap-2">
+                                <select
+                                  className="border border-gray-300 rounded px-3 py-1.5 text-sm flex-1 focus:ring-green-500 focus:border-green-500"
+                                  value={payForm.couponCode}
+                                  onChange={e => setPayForm({ ...payForm, couponCode: e.target.value })}
+                                  disabled={!!payForm.couponCodeId}
+                                >
+                                  <option value="">Select a Coupon Code</option>
+                                  {activeCoupons.map(c => {
+                                    const disabled = c.maxUses !== null && c.currentUses >= c.maxUses;
+                                    return (
+                                      <option key={c.id} value={c.code} disabled={disabled}>
+                                        {c.code} ({c.discountType === 'FIXED' ? '$' : ''}{c.discountAmount}{c.discountType === 'PERCENT' ? '%' : ''} off) {disabled ? '(Max Uses Reached)' : ''}
+                                      </option>
+                                    );
+                                  })}
+                                </select>
+                                {!payForm.couponCodeId ? (
+                                  <button 
+                                    type="button"
+                                    className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded text-sm font-medium border border-gray-300 hover:bg-gray-200"
+                                    onClick={async () => {
+                                      if (!payForm.couponCode) return;
+                                      try {
+                                        const res = await fetch(`/api/coupons/validate?code=${payForm.couponCode}&type=MEMBERSHIP`);
+                                        const data = await res.json();
+                                        if (!res.ok) throw new Error(data.error);
+                                        
+                                        const c = data.coupon;
+                                        let discount = 0;
+                                        if (c.discountType === 'FIXED') {
+                                          discount = c.discountAmount;
+                                        } else {
+                                          discount = payForm.totalMembershipCost * (c.discountAmount / 100);
+                                        }
+                                        
+                                        if (discount > payForm.totalMembershipCost) discount = payForm.totalMembershipCost;
+                                        
+                                        setPayForm({
+                                          ...payForm,
+                                          couponCodeId: c.id,
+                                          discountAmount: discount,
+                                          amountPaid: payForm.totalMembershipCost - discount
+                                        });
+                                      } catch(e: any) {
+                                        alert(e.message);
+                                      }
+                                    }}
+                                  >
+                                    Apply
+                                  </button>
+                                ) : (
+                                  <button 
+                                    type="button"
+                                    className="text-red-600 text-sm font-medium px-2 hover:underline"
+                                    onClick={() => {
+                                      setPayForm({
+                                        ...payForm,
+                                        couponCode: '',
+                                        couponCodeId: null,
+                                        discountAmount: 0,
+                                        amountPaid: payForm.totalMembershipCost
+                                      });
+                                    }}
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
+                              {payForm.couponCodeId && (
+                                <div className="text-xs text-green-700 mt-1 font-medium">
+                                  Discount applied: -${payForm.discountAmount.toFixed(2)}
+                                </div>
+                              )}
+                            </div>
                             <div className="flex gap-4 items-center">
                               <div>
                                 <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
@@ -1088,7 +1211,7 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {m.user.gender || '-'}
-                            {m.status !== 'Active' && activeTab !== 'Archived' && (
+                            {m.status !== 'Active' && activeTab !== 'Archived' && (isSuperAdmin || currentUserPermissions.includes('EDIT_MEMBERS')) && (
                               <button onClick={(e) => { e.stopPropagation(); handlePayClick(m); }} className="float-right text-white bg-green-600 hover:bg-green-700 font-medium rounded text-[10px] px-2 py-0.5 transition-colors shadow-sm">Mark as Paid</button>
                             )}
                           </td>
@@ -1125,7 +1248,7 @@ export default function AdminDashboard() {
                                       )}
                                     </div>
                                   )}
-                                  {activeTab !== 'Archived' && (
+                                  {activeTab !== 'Archived' && (isSuperAdmin || currentUserPermissions.includes('EDIT_MEMBERS')) && (
                                     <button onClick={(e) => { e.stopPropagation(); handleEditClick(m); }} className="text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>
                                   )}
                                   {activeTab === 'Archived' && <span className="text-gray-400 text-sm italic py-2">Archived</span>}
@@ -1152,6 +1275,83 @@ export default function AdminDashboard() {
                         <div className="font-semibold text-green-900 text-sm">Applying payment for:</div>
                         <div className="text-sm text-green-800">{m.user.firstName} {m.user.lastName}</div>
                         <div className="text-xs text-green-700">{m.user.email}</div>
+                      </div>
+                      <div className="mb-4">
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Apply Discount Code (Optional)</label>
+                        <div className="flex gap-2">
+                          <select
+                            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 focus:ring-green-500 focus:border-green-500"
+                            value={payForm.couponCode}
+                            onChange={e => setPayForm({ ...payForm, couponCode: e.target.value })}
+                            disabled={!!payForm.couponCodeId}
+                          >
+                            <option value="">Select a Coupon Code</option>
+                            {activeCoupons.map(c => {
+                              const disabled = c.maxUses !== null && c.currentUses >= c.maxUses;
+                              return (
+                                <option key={c.id} value={c.code} disabled={disabled}>
+                                  {c.code} ({c.discountType === 'FIXED' ? '$' : ''}{c.discountAmount}{c.discountType === 'PERCENT' ? '%' : ''} off) {disabled ? '(Max Uses Reached)' : ''}
+                                </option>
+                              );
+                            })}
+                          </select>
+                          {!payForm.couponCodeId ? (
+                            <button 
+                              type="button"
+                              className="bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm font-medium border border-gray-300 hover:bg-gray-200"
+                              onClick={async () => {
+                                if (!payForm.couponCode) return;
+                                try {
+                                  const res = await fetch(`/api/coupons/validate?code=${payForm.couponCode}&type=MEMBERSHIP`);
+                                  const data = await res.json();
+                                  if (!res.ok) throw new Error(data.error);
+                                  
+                                  const c = data.coupon;
+                                  let discount = 0;
+                                  if (c.discountType === 'FIXED') {
+                                    discount = c.discountAmount;
+                                  } else {
+                                    discount = payForm.totalMembershipCost * (c.discountAmount / 100);
+                                  }
+                                  
+                                  if (discount > payForm.totalMembershipCost) discount = payForm.totalMembershipCost;
+                                  
+                                  setPayForm({
+                                    ...payForm,
+                                    couponCodeId: c.id,
+                                    discountAmount: discount,
+                                    amountPaid: payForm.totalMembershipCost - discount
+                                  });
+                                } catch(e: any) {
+                                  alert(e.message);
+                                }
+                              }}
+                            >
+                              Apply
+                            </button>
+                          ) : (
+                            <button 
+                              type="button"
+                              className="text-red-600 text-sm font-medium px-2 hover:underline"
+                              onClick={() => {
+                                setPayForm({
+                                  ...payForm,
+                                  couponCode: '',
+                                  couponCodeId: null,
+                                  discountAmount: 0,
+                                  amountPaid: payForm.totalMembershipCost
+                                });
+                              }}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        {payForm.couponCodeId && (
+                          <div className="text-xs text-green-700 mt-1 font-medium">
+                            Discount applied: -${payForm.discountAmount.toFixed(2)}
+                          </div>
+                        )}
                       </div>
                       <div className="mb-4">
                         <label className="block text-xs font-semibold text-gray-700 mb-1">Amount Paid ($)</label>
@@ -1287,7 +1487,7 @@ export default function AdminDashboard() {
                         <div className="text-base font-semibold text-gray-900">{m.user.firstName} {m.user.lastName}</div>
                         <div className="text-xs text-gray-500 mt-1">
                           <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mr-2">{m.membershipType}</span>
-                          {m.status !== 'Active' && activeTab !== 'Archived' && (
+                          {m.status !== 'Active' && activeTab !== 'Archived' && (isSuperAdmin || currentUserPermissions.includes('EDIT_MEMBERS')) && (
                             <button onClick={(e) => { e.stopPropagation(); handlePayClick(m); }} className="text-white bg-green-600 hover:bg-green-700 font-medium rounded text-[10px] px-2 py-0.5 transition-colors shadow-sm mr-2">Mark as Paid</button>
                           )}
                           {new Date(m.createdAt).toLocaleDateString()}
@@ -1322,7 +1522,7 @@ export default function AdminDashboard() {
                       )}
                       
                       <div className="flex gap-2">
-                        {activeTab !== 'Archived' && <button onClick={() => handleEditClick(m)} className="flex-1 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>}
+                        {activeTab !== 'Archived' && (isSuperAdmin || currentUserPermissions.includes('EDIT_MEMBERS')) && <button onClick={() => handleEditClick(m)} className="flex-1 text-gray-700 bg-white hover:bg-gray-50 border border-gray-300 shadow-sm font-medium rounded-md text-sm px-4 py-2 transition-colors">Edit</button>}
                       </div>
                       
                       {activeTab === 'Archived' && <div className="text-center w-full text-gray-400 text-sm italic mt-2">Archived on {new Date(m.archivedAt!).toLocaleDateString()}</div>}

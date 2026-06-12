@@ -48,6 +48,7 @@ model User {
   tagNumber    String?
   memberNumber String?      @unique
   role             String       @default("MEMBER")
+  adminPermissions String[]     @default([])
   editToken        String?
   resetToken       String?      @unique
   resetTokenExpiry DateTime?
@@ -70,6 +71,11 @@ model Membership {
   amountPaid        Float?
   paymentNotes      String?
   paymentRecordedAt DateTime?
+  
+  appliedCouponId   String?
+  appliedCoupon     CouponCode? @relation("MembershipCoupons", fields: [appliedCouponId], references: [id])
+  discountAmount    Float?
+
   createdAt         DateTime  @default(now())
 }
 
@@ -174,6 +180,7 @@ model ClubEvent {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   registrations EventRegistration[]
+  validCoupons  CouponCode[] @relation("EventCoupons")
 }
 
 model EventRegistration {
@@ -186,5 +193,29 @@ model EventRegistration {
   hasPaid      Boolean   @default(false)
   registeredAt DateTime  @default(now())
   
+  appliedCouponId String?
+  appliedCoupon   CouponCode? @relation("EventRegistrationCoupons", fields: [appliedCouponId], references: [id])
+  discountAmount  Float?
+
   @@unique([eventId, userId])
+}
+
+model CouponCode {
+  id                  String   @id @default(cuid())
+  code                String   @unique
+  discountType        String   // "PERCENT" or "FIXED"
+  discountAmount      Float
+  description         String?
+  maxUses             Int?     // null means unlimited
+  currentUses         Int      @default(0)
+  expiryDate          DateTime?
+  validForMemberships Boolean  @default(false)
+  
+  validEvents         ClubEvent[] @relation("EventCoupons")
+  
+  membershipsUsed     Membership[] @relation("MembershipCoupons")
+  eventRegistrationsUsed EventRegistration[] @relation("EventRegistrationCoupons")
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }

@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendWelcomeEmail } from '@/lib/email';
+import { checkAdmin } from '@/lib/check-admin';
 
 export async function POST(request: Request) {
   try {
+    const adminCheck = await checkAdmin('EDIT_MEMBERS');
+    if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
+
     const body = await request.json();
-    const { membershipId, amountPaid, paymentNotes, coveredMembershipIds } = body;
+    const { membershipId, amountPaid, paymentNotes, coveredMembershipIds, couponCodeId, discountAmount, totalMembershipCost } = body;
 
     if (!membershipId) {
       return NextResponse.json({ error: 'Missing membershipId' }, { status: 400 });
@@ -32,8 +36,17 @@ export async function POST(request: Request) {
           amountPaid: amountPaid ? parseFloat(amountPaid) : 0,
           paymentNotes: paymentNotes || null,
           paymentRecordedAt: now,
+          appliedCouponId: couponCodeId || null,
+          discountAmount: discountAmount ? parseFloat(discountAmount) : null
         },
       });
+
+      if (couponCodeId) {
+        await tx.couponCode.update({
+          where: { id: couponCodeId },
+          data: { currentUses: { increment: 1 } }
+        });
+      }
 
       // 2. Process other explicitly covered household members
       if (Array.isArray(coveredMembershipIds) && coveredMembershipIds.length > 0) {
@@ -70,10 +83,22 @@ export async function POST(request: Request) {
     for (const m of membershipsToWelcome) {
       if (m.user && m.user.email) {
         try {
+          const isPrimary = m.id === membershipId;
+          let paymentSummary;
+          
+          if (isPrimary && discountAmount > 0) {
+            paymentSummary = {
+              totalMembershipCost: totalMembershipCost ? parseFloat(totalMembershipCost) : 0,
+              discountAmount: parseFloat(discountAmount),
+              amountPaid: amountPaid ? parseFloat(amountPaid) : 0
+            };
+          }
+
           await sendWelcomeEmail({
             to: m.user.email,
             firstName: m.user.firstName,
             memberNumber: m.user.memberNumber,
+            paymentSummary
           });
         } catch (e) {
           console.error(`Failed to send welcome email to ${m.user.email}:`, e);

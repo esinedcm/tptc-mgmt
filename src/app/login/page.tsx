@@ -88,11 +88,6 @@ export default function Login() {
                 <label className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <div className="text-sm">
-                  <Link href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                    Forgot your password?
-                  </Link>
-                </div>
               </div>
               <div className="mt-1 relative">
                 <input
@@ -115,6 +110,13 @@ export default function Login() {
                     )}
                   </svg>
                 </button>
+              </div>
+              <div className="mt-2 flex items-center justify-end">
+                <div className="text-sm">
+                  <Link href="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                    Forgot your password?
+                  </Link>
+                </div>
               </div>
             </div>
 
