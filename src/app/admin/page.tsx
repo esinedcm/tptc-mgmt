@@ -1202,6 +1202,9 @@ export default function AdminDashboard() {
                         >
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             {m.user.firstName} {m.user.lastName}
+                            {(m.user.role === 'ADMIN' || m.user.role === 'SUPER_ADMIN') && (
+                              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200" title="Administrator">Admin</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {m.user.email}
@@ -1484,7 +1487,12 @@ export default function AdminDashboard() {
                   <div key={m.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <div className="text-base font-semibold text-gray-900">{m.user.firstName} {m.user.lastName}</div>
+                        <div className="text-base font-semibold text-gray-900 flex items-center">
+                          {m.user.firstName} {m.user.lastName}
+                          {(m.user.role === 'ADMIN' || m.user.role === 'SUPER_ADMIN') && (
+                            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200" title="Administrator">Admin</span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-500 mt-1">
                           <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mr-2">{m.membershipType}</span>
                           {m.status !== 'Active' && activeTab !== 'Archived' && (isSuperAdmin || currentUserPermissions.includes('EDIT_MEMBERS')) && (

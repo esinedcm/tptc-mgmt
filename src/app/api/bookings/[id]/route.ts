@@ -107,7 +107,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     if (!id) return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
 
-    const { courtId, startTime, endTime, type, title, description, participantIds, notes, applyToFuture } = await request.json();
+    const { courtId, startTime, endTime, type, title, description, participantIds, notes, applyToFuture, minParticipants, maxParticipants, cost, organizerId, coOrganizerId, internalNotes } = await request.json();
 
     const start = new Date(startTime);
     const end = new Date(endTime);
@@ -250,6 +250,12 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
             title: isAdmin ? (title || null) : undefined,
             description: isAdmin ? (description || null) : undefined,
             notes,
+            minParticipants: isAdmin && minParticipants !== undefined ? minParticipants : undefined,
+            maxParticipants: isAdmin && maxParticipants !== undefined ? maxParticipants : undefined,
+            cost: isAdmin && cost !== undefined ? cost : undefined,
+            organizerId: isAdmin && organizerId !== undefined ? organizerId : undefined,
+            coOrganizerId: isAdmin && coOrganizerId !== undefined ? coOrganizerId : undefined,
+            internalNotes: isAdmin && internalNotes !== undefined ? internalNotes : undefined,
             participants: {
               set: finalParticipantIds.map((pid: string) => ({ id: pid }))
             }

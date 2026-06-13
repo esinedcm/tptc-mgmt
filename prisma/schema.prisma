@@ -57,7 +57,9 @@ model User {
   updatedAt             DateTime     @updatedAt
   memberships           Membership[]
   organizedBookings     Booking[]    @relation("BookingOrganizer")
+  coOrganizedBookings   Booking[]    @relation("BookingCoOrganizer")
   participatingBookings Booking[]    @relation("BookingParticipants")
+  waitlistedBookings    Booking[]    @relation("BookingWaitlist")
   eventRegistrations    EventRegistration[]
 }
 
@@ -146,7 +148,17 @@ model Booking {
   organizerId String?
   organizer   User?    @relation("BookingOrganizer", fields: [organizerId], references: [id])
   
+  coOrganizerId String?
+  coOrganizer   User?  @relation("BookingCoOrganizer", fields: [coOrganizerId], references: [id])
+  
+  internalNotes String?
+  
   participants User[]  @relation("BookingParticipants")
+  waitlistedUsers User[] @relation("BookingWaitlist")
+  
+  minParticipants Int?
+  maxParticipants Int?
+  cost            Float?
   
   recurringGroupId String?
 }
@@ -163,6 +175,12 @@ model BookingType {
   name      String   @unique
   color     String   @default("#3b82f6") // Hex color for the calendar
   isBuiltIn Boolean  @default(false)     // True for 'MEMBER' so it can't be deleted
+  
+  allowMemberRegistration Boolean @default(false)
+  minParticipants Int?
+  maxParticipants Int?
+  defaultCost     Float?
+  
   createdAt DateTime @default(now())
 }
 

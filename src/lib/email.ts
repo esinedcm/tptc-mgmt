@@ -262,9 +262,11 @@ export async function sendBookingEmail({
   to,
   subject,
   bookingDetails,
+  customHtml
 }: {
   to: string;
   subject: string;
+  customHtml?: string;
   bookingDetails: {
     action: 'created' | 'updated' | 'cancelled';
     courtName: string;
@@ -293,7 +295,7 @@ export async function sendBookingEmail({
   if (action === 'updated') actionText = 'An existing court booking has been updated.';
   if (action === 'cancelled') actionText = 'A court booking has been CANCELLED.';
 
-  const defaultHtml = `
+  const defaultHtml = customHtml ? customHtml : `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h2 style="color: #4f46e5;">Court Booking {{actionTitle}}</h2>
       <p>{{actionText}}</p>

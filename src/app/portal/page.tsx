@@ -94,7 +94,8 @@ export default async function MemberDashboard() {
           <div className="flex-1 overflow-y-auto max-h-[500px] pr-2">
             <MyBookingsList 
               initialBookings={user.participatingBookings as any} 
-              cutoffMinutes={cutoffMinutes} 
+              cutoffMinutes={cutoffMinutes}
+              currentUserId={user.id}
             />
           </div>
         </div>

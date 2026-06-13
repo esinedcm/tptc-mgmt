@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, color } = body;
+    const { name, color, allowMemberRegistration, minParticipants, maxParticipants, defaultCost } = body;
 
     if (!name) {
       return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -26,7 +26,11 @@ export async function POST(request: Request) {
       data: {
         name: name.toUpperCase().trim(),
         color: color || '#3b82f6',
-        isBuiltIn: false
+        isBuiltIn: false,
+        allowMemberRegistration: !!allowMemberRegistration,
+        minParticipants: minParticipants ? parseInt(minParticipants) : null,
+        maxParticipants: maxParticipants ? parseInt(maxParticipants) : null,
+        defaultCost: defaultCost !== undefined && defaultCost !== '' ? parseFloat(defaultCost) : null
       }
     });
 

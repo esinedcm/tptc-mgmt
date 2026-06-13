@@ -30,6 +30,10 @@ type BookingType = {
   name: string;
   color: string;
   isBuiltIn: boolean;
+  allowMemberRegistration: boolean;
+  minParticipants: number | null;
+  maxParticipants: number | null;
+  defaultCost: number | null;
 };
 
 type CouponCode = {
@@ -210,16 +214,25 @@ export default function AdminSettingsPage() {
 
   const [bookingTypes, setBookingTypes] = useState<BookingType[]>([]);
   const [bookingTypesLoading, setBookingTypesLoading] = useState(true);
-  const [newBookingType, setNewBookingType] = useState({
-    name: "",
-    color: "#3b82f6",
+  const [newBookingType, setNewBookingType] = useState({ 
+    name: "", 
+    color: "#8b5cf6",
+    allowMemberRegistration: false,
+    minParticipants: "",
+    maxParticipants: "",
+    defaultCost: ""
   });
-  const [editingBookingTypeId, setEditingBookingTypeId] = useState<
-    string | null
-  >(null);
-  const [editBookingTypeForm, setEditBookingTypeForm] = useState<
-    Partial<BookingType>
-  >({});
+  const [editingBookingTypeId, setEditingBookingTypeId] = useState<string | null>(null);
+  const [editBookingTypeForm, setEditBookingTypeForm] = useState<{
+    id?: string;
+    name?: string;
+    color?: string;
+    isBuiltIn?: boolean;
+    allowMemberRegistration?: boolean;
+    minParticipants?: string;
+    maxParticipants?: string;
+    defaultCost?: string;
+  }>({});
   const [savingBookingType, setSavingBookingType] = useState(false);
 
   const [coupons, setCoupons] = useState<CouponCode[]>([]);
@@ -360,7 +373,7 @@ export default function AdminSettingsPage() {
       if (res.ok) {
         const data = await res.json();
         setBookingTypes([...bookingTypes, data.bookingType]);
-        setNewBookingType({ name: "", color: "#3b82f6" });
+        setNewBookingType({ name: "", color: "#8b5cf6", allowMemberRegistration: false, minParticipants: "", maxParticipants: "", defaultCost: "" });
       } else {
         const data = await res.json();
         alert(`Failed to save new booking type: ${data.error}`);
@@ -373,7 +386,16 @@ export default function AdminSettingsPage() {
 
   const handleStartEditBookingType = (bt: BookingType) => {
     setEditingBookingTypeId(bt.id);
-    setEditBookingTypeForm(bt);
+    setEditBookingTypeForm({
+      id: bt.id,
+      name: bt.name,
+      color: bt.color,
+      isBuiltIn: bt.isBuiltIn,
+      allowMemberRegistration: bt.allowMemberRegistration,
+      minParticipants: bt.minParticipants ? bt.minParticipants.toString() : "",
+      maxParticipants: bt.maxParticipants ? bt.maxParticipants.toString() : "",
+      defaultCost: bt.defaultCost ? bt.defaultCost.toString() : ""
+    });
   };
 
   const handleSaveEditBookingType = async () => {
@@ -1707,6 +1729,28 @@ export default function AdminSettingsPage() {
                           }
                         />
                       </div>
+                      <div className="flex flex-col space-y-2 mt-2 bg-white p-3 rounded border border-gray-200">
+                        <label className="flex items-center space-x-2 text-sm text-gray-700">
+                          <input type="checkbox" checked={editBookingTypeForm.allowMemberRegistration || false} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, allowMemberRegistration: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                          <span>Allow Member Registration (Block Bookings)</span>
+                        </label>
+                        {editBookingTypeForm.allowMemberRegistration && (
+                          <div className="grid grid-cols-3 gap-3 pt-2">
+                            <div>
+                              <label className="block text-xs text-gray-500 mb-1">Min Participants</label>
+                              <input type="number" value={editBookingTypeForm.minParticipants || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, minParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No min" />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-500 mb-1">Max Participants</label>
+                              <input type="number" value={editBookingTypeForm.maxParticipants || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, maxParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No max" />
+                            </div>
+                            <div>
+                              <label className="block text-xs text-gray-500 mb-1">Default Offline Fee ($)</label>
+                              <input type="number" step="0.01" value={editBookingTypeForm.defaultCost || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, defaultCost: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="0.00" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex space-x-2 pt-2">
                         <button
                           onClick={handleSaveEditBookingType}
@@ -1804,6 +1848,28 @@ export default function AdminSettingsPage() {
                     }
                     title="Calendar Color"
                   />
+                </div>
+                <div className="flex flex-col space-y-2 mt-2 bg-white p-3 rounded border border-gray-200">
+                  <label className="flex items-center space-x-2 text-sm text-gray-700">
+                    <input type="checkbox" checked={newBookingType.allowMemberRegistration || false} onChange={e => setNewBookingType({...newBookingType, allowMemberRegistration: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                    <span>Allow Member Registration (Block Bookings)</span>
+                  </label>
+                  {newBookingType.allowMemberRegistration && (
+                    <div className="grid grid-cols-3 gap-3 pt-2">
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Min Participants</label>
+                        <input type="number" value={newBookingType.minParticipants || ""} onChange={e => setNewBookingType({...newBookingType, minParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No min" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Max Participants</label>
+                        <input type="number" value={newBookingType.maxParticipants || ""} onChange={e => setNewBookingType({...newBookingType, maxParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No max" />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-500 mb-1">Default Offline Fee ($)</label>
+                        <input type="number" step="0.01" value={newBookingType.defaultCost || ""} onChange={e => setNewBookingType({...newBookingType, defaultCost: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="0.00" />
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex justify-end pt-1">
                   <button

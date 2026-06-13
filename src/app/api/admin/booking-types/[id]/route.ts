@@ -5,7 +5,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, color } = body;
+    const { name, color, allowMemberRegistration, minParticipants, maxParticipants, defaultCost } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Booking Type ID is required' }, { status: 400 });
@@ -16,7 +16,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Booking Type not found' }, { status: 404 });
     }
 
-    const dataToUpdate: any = { color };
+    const dataToUpdate: any = { 
+      color,
+      allowMemberRegistration: !!allowMemberRegistration,
+      minParticipants: minParticipants ? parseInt(minParticipants) : null,
+      maxParticipants: maxParticipants ? parseInt(maxParticipants) : null,
+      defaultCost: defaultCost !== undefined && defaultCost !== '' ? parseFloat(defaultCost) : null
+    };
     
     // Only allow name change if it's not built-in
     if (!existingType.isBuiltIn && name) {

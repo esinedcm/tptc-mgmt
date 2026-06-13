@@ -28,7 +28,13 @@ export async function GET(req: Request) {
         participants: {
           select: { id: true, firstName: true, lastName: true, email: true }
         },
+        waitlistedUsers: {
+          select: { id: true, firstName: true, lastName: true, email: true }
+        },
         organizer: {
+          select: { id: true, firstName: true, lastName: true }
+        },
+        coOrganizer: {
           select: { id: true, firstName: true, lastName: true }
         }
       },
@@ -51,7 +57,7 @@ export async function POST(req: Request) {
     const payload = await verifyJwt(token);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { courtId, startTime, endTime, type, title, description, participantIds, notes, bookAllCourts, recurrence } = await req.json();
+    const { courtId, startTime, endTime, type, title, description, participantIds, notes, bookAllCourts, recurrence, minParticipants, maxParticipants, cost, organizerId, coOrganizerId, internalNotes } = await req.json();
 
     if ((!courtId && !bookAllCourts) || !startTime || !endTime) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -83,6 +89,20 @@ export async function POST(req: Request) {
     // Role-based constraints
     const isAdmin = payload.role === 'ADMIN';
     const bookingType = isAdmin && type ? type : 'MEMBER';
+    
+    // Resolve block booking constraints
+    let finalMin = minParticipants;
+    let finalMax = maxParticipants;
+    let finalCost = cost;
+    
+    if (bookingType) {
+      const bt = await prisma.bookingType.findUnique({ where: { name: bookingType } });
+      if (bt) {
+        if (finalMin === undefined) finalMin = bt.minParticipants;
+        if (finalMax === undefined) finalMax = bt.maxParticipants;
+        if (finalCost === undefined) finalCost = bt.defaultCost;
+      }
+    }
     
     // Always include the organizer in the participants list
     const finalParticipantIds = Array.from(new Set([...(participantIds || []), payload.userId]));
@@ -219,8 +239,13 @@ export async function POST(req: Request) {
           title: isAdmin ? title : null,
           description: isAdmin ? description : null,
           notes,
+          minParticipants: finalMin,
+          maxParticipants: finalMax,
+          cost: finalCost,
           recurringGroupId: slot.recurringGroupId,
-          organizerId: payload.userId as string,
+          organizerId: isAdmin && organizerId ? organizerId : (payload.userId as string),
+          coOrganizerId: isAdmin && coOrganizerId ? coOrganizerId : undefined,
+          internalNotes: isAdmin && internalNotes ? internalNotes : undefined,
           participants: {
             connect: finalParticipantIds.map((id: string) => ({ id }))
           }

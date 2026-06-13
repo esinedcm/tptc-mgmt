@@ -10,14 +10,17 @@ type Booking = {
   type: string;
   status: string;
   recurringGroupId?: string | null;
+  organizerId: string;
 };
 
 export default function MyBookingsList({ 
   initialBookings, 
-  cutoffMinutes 
+  cutoffMinutes,
+  currentUserId
 }: { 
   initialBookings: Booking[], 
-  cutoffMinutes: number 
+  cutoffMinutes: number,
+  currentUserId: string
 }) {
   const [bookings, setBookings] = useState(initialBookings);
   const [cancelling, setCancelling] = useState<string | null>(null);
@@ -85,10 +88,9 @@ export default function MyBookingsList({
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left font-semibold text-gray-900">Date</th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-900">Time</th>
-                <th className="px-4 py-3 text-left font-semibold text-gray-900">Court</th>
-                {isActiveList && <th className="px-4 py-3"></th>}
+                <th className="px-3 py-2 text-left font-semibold text-gray-900">When</th>
+                <th className="px-3 py-2 text-left font-semibold text-gray-900">Court</th>
+                {isActiveList && <th className="px-3 py-2"></th>}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -101,42 +103,51 @@ export default function MyBookingsList({
                 return (
                   <React.Fragment key={b.id}>
                     <tr className="hover:bg-gray-50 transition-colors border-b-0">
-                      <td className="px-4 pt-3 pb-1 whitespace-nowrap text-gray-700">
-                        {start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                      <td className="px-3 pt-2 pb-1 text-gray-700 align-top">
+                        <div className="font-medium">{start.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                        <div className="text-xs text-gray-500">{start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                       </td>
-                      <td className="px-4 pt-3 pb-1 whitespace-nowrap text-gray-700">
-                        {start.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {end.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </td>
-                      <td className="px-4 pt-3 pb-1 text-gray-900 font-medium">
+                      <td className="px-3 pt-2 pb-1 text-gray-900 font-medium align-top">
                         {b.courts && b.courts.size > 1 ? 'All' : b.court.name.replace(/^Court\s+/i, '')}
                       </td>
                       {isActiveList && (
-                        <td className="px-4 py-3 text-right whitespace-nowrap" rowSpan={2}>
+                        <td className="px-3 py-2 text-right align-top" rowSpan={2}>
                           <div className="flex flex-col gap-2 justify-center items-end">
-                            <button
-                              onClick={() => window.location.href = `/portal/book?edit=${b.id}&date=${start.toISOString().split('T')[0]}`}
-                              className="font-medium text-primary-600 hover:text-primary-900"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleCancel(b.id)}
-                              disabled={cancelling === b.id || !canCancel}
-                              title={!canCancel ? `Cannot cancel less than ${cutoffMinutes} mins before start.` : ''}
-                              className={`font-medium ${
-                                canCancel 
-                                  ? 'text-red-600 hover:text-red-900' 
-                                  : 'text-gray-400 cursor-not-allowed'
-                              }`}
-                            >
-                              {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
-                            </button>
+                            {b.organizerId === currentUserId ? (
+                              <>
+                                <button
+                                  onClick={() => window.location.href = `/portal/book?edit=${b.id}&date=${start.toISOString().split('T')[0]}`}
+                                  className="font-medium text-primary-600 hover:text-primary-900"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleCancel(b.id)}
+                                  disabled={cancelling === b.id || !canCancel}
+                                  title={!canCancel ? `Cannot cancel less than ${cutoffMinutes} mins before start.` : ''}
+                                  className={`font-medium ${
+                                    canCancel 
+                                      ? 'text-red-600 hover:text-red-900' 
+                                      : 'text-gray-400 cursor-not-allowed'
+                                  }`}
+                                >
+                                  {cancelling === b.id ? 'Cancelling...' : 'Cancel'}
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => window.location.href = `/portal/book?view=${b.id}&date=${start.toISOString().split('T')[0]}`}
+                                className="font-medium text-primary-600 hover:text-primary-900 bg-primary-50 px-3 py-1 rounded"
+                              >
+                                Manage
+                              </button>
+                            )}
                           </div>
                         </td>
                       )}
                     </tr>
                     <tr className="hover:bg-gray-50 transition-colors">
-                      <td colSpan={3} className="px-4 pb-3 pt-0 border-t-0 text-xs text-gray-500">
+                      <td colSpan={2} className="px-3 pb-2 pt-0 border-t-0 text-xs text-gray-500">
                         {b.type} {b.dates && b.dates.size > 1 && <span className="ml-1 text-indigo-600 font-medium">({b.dates.size} instances total)</span>}
                       </td>
                     </tr>

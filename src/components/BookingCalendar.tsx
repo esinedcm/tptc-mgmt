@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 type Court = { id: string; name: string; openTime: number | null; closeTime: number | null };
-type User = { id: string; firstName: string; lastName: string; email: string };
-type BookingTypeItem = { id: string; name: string; color: string; isBuiltIn: boolean };
+type User = { id: string; firstName: string; lastName: string; email: string; role?: string; };
+type BookingTypeItem = { id: string; name: string; color: string; isBuiltIn: boolean; allowMemberRegistration: boolean; minParticipants: number | null; maxParticipants: number | null; defaultCost: number | null; };
 
 type Booking = {
   id: string;
@@ -18,7 +18,13 @@ type Booking = {
   notes?: string;
   participants: User[];
   organizer: { id: string; firstName: string; lastName: string };
+  coOrganizer?: { id: string; firstName: string; lastName: string } | null;
+  internalNotes?: string | null;
   recurringGroupId?: string;
+  minParticipants?: number | null;
+  maxParticipants?: number | null;
+  cost?: number | null;
+  waitlistedUsers?: User[];
 };
 
 export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, closeTime = 23, daysToShow = 3, skipDays = 1 }: { isAdmin: boolean; currentUserId: string; openTime?: number; closeTime?: number; daysToShow?: number; skipDays?: number }) {
@@ -45,6 +51,19 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
   const [bookingTitle, setBookingTitle] = useState('');
   const [bookingDescription, setBookingDescription] = useState('');
   const [availableTypes, setAvailableTypes] = useState<BookingTypeItem[]>([]);
+  
+  // Overrides for Admin Create Modal
+  const [minParticipantsOverride, setMinParticipantsOverride] = useState<string>('');
+  const [maxParticipantsOverride, setMaxParticipantsOverride] = useState<string>('');
+  const [costOverride, setCostOverride] = useState<string>('');
+  const [organizerId, setOrganizerId] = useState<string>('');
+  const [coOrganizerId, setCoOrganizerId] = useState<string>('');
+  const [internalNotes, setInternalNotes] = useState<string>('');
+  const [allActiveMembers, setAllActiveMembers] = useState<User[]>([]);
+  
+  // Member Registration State
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinRegisterSeries, setJoinRegisterSeries] = useState(true);
   
   // Advanced Admin Block Booking State
   const [bookAllCourts, setBookAllCourts] = useState(false);
@@ -74,22 +93,53 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDate]);
 
+  useEffect(() => {
+    if (isAdmin) {
+      fetch('/api/admin/users/all-active').then(res => res.json()).then(data => {
+        if (data.users) setAllActiveMembers(data.users);
+      });
+    }
+  }, [isAdmin]);
+
   const editParamId = searchParams.get('edit');
+  const viewParamId = searchParams.get('view');
   
   useEffect(() => {
     if (editParamId && bookings.length > 0 && !showModal && !editingBookingId) {
       const b = bookings.find(x => x.id === editParamId);
       if (b) {
-        setViewBooking(null);
-        setEditingBookingId(b.id);
+        if (isAdmin || b.organizer.id === currentUserId) {
+          setViewBooking(null);
+          setEditingBookingId(b.id);
         setSelectedCourtId(b.courtId);
         setSelectedStartTime(new Date(b.startTime));
         setSelectedEndTime(new Date(b.endTime));
         setBookingType(b.type);
         setBookingTitle(b.title || '');
         setBookingDescription(b.description || '');
+        setMinParticipantsOverride(b.minParticipants !== null && b.minParticipants !== undefined ? b.minParticipants.toString() : '');
+        setMaxParticipantsOverride(b.maxParticipants !== null && b.maxParticipants !== undefined ? b.maxParticipants.toString() : '');
+        setCostOverride(b.cost !== null && b.cost !== undefined ? b.cost.toString() : '');
+        setOrganizerId(b.organizer.id);
+        setCoOrganizerId(b.coOrganizer?.id || '');
+        setInternalNotes(b.internalNotes || '');
         setSelectedParticipants(b.participants);
         setShowModal(true);
+        } else {
+          setViewBooking(b);
+          setEditingBookingId(null);
+          setShowModal(false);
+        }
+        router.replace(pathname + (initialDateParam ? `?date=${initialDateParam}` : ''), { scroll: false });
+      }
+    }
+
+    if (viewParamId && bookings.length > 0 && !viewBooking) {
+      const b = bookings.find(x => x.id === viewParamId);
+      if (b) {
+        setViewBooking(b);
+        setEditingBookingId(null);
+        setShowModal(false);
         router.replace(pathname + (initialDateParam ? `?date=${initialDateParam}` : ''), { scroll: false });
       }
     }
@@ -112,12 +162,18 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       setBookingType('MEMBER');
       setBookingTitle('');
       setBookingDescription('');
+      setMinParticipantsOverride('');
+      setMaxParticipantsOverride('');
+      setCostOverride('');
+      setOrganizerId(currentUserId);
+      setCoOrganizerId('');
+      setInternalNotes('');
       setSelectedParticipants([]);
       setShowModal(true);
       
       router.replace(pathname + (initialDateParam ? `?date=${initialDateParam}` : ''), { scroll: false });
     }
-  }, [editParamId, searchParams, bookings, showModal, editingBookingId, router, pathname, initialDateParam, courts, openTime]);
+  }, [editParamId, viewParamId, viewBooking, searchParams, bookings, showModal, editingBookingId, router, pathname, initialDateParam, courts, openTime, isAdmin, currentUserId]);
 
   const fetchCourtsAndBookings = async () => {
     setLoading(true);
@@ -189,6 +245,12 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
           participantIds: selectedParticipants.map(p => p.id),
           bookAllCourts: isAdmin ? bookAllCourts : undefined,
           applyToFuture: (isAdmin && editingBookingId) ? applyToFuture : undefined,
+          organizerId: isAdmin ? organizerId : undefined,
+          coOrganizerId: isAdmin ? (coOrganizerId || null) : undefined,
+          internalNotes: isAdmin ? internalNotes : undefined,
+          minParticipants: isAdmin && minParticipantsOverride ? parseInt(minParticipantsOverride) : undefined,
+          maxParticipants: isAdmin && maxParticipantsOverride ? parseInt(maxParticipantsOverride) : undefined,
+          cost: isAdmin && costOverride ? parseFloat(costOverride) : undefined,
           recurrence: (isAdmin && isRecurring && !editingBookingId) ? {
             daysOfWeek: recurrenceDays,
             weeks: recurrenceWeeks
@@ -567,6 +629,71 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Organizer 1</label>
+                      <select 
+                        value={organizerId}
+                        onChange={(e) => setOrganizerId(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
+                      >
+                        <option value="">System Default</option>
+                        {allActiveMembers.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.firstName} {m.lastName} {m.role === 'SUPER_ADMIN' || m.role === 'ADMIN' ? '(Admin)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Organizer 2 (Optional)</label>
+                      <select 
+                        value={coOrganizerId}
+                        onChange={(e) => setCoOrganizerId(e.target.value)}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white"
+                      >
+                        <option value="">None</option>
+                        {allActiveMembers.map(m => (
+                          <option key={m.id} value={m.id}>
+                            {m.firstName} {m.lastName} {m.role === 'SUPER_ADMIN' || m.role === 'ADMIN' ? '(Admin)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Internal Notes</label>
+                    <textarea 
+                      value={internalNotes} 
+                      onChange={(e) => setInternalNotes(e.target.value)}
+                      placeholder="Only visible to Admins..."
+                      rows={2}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-gray-50"
+                    />
+                  </div>
+
+                  {(() => {
+                    const selectedType = availableTypes.find(t => t.name === bookingType);
+                    if (selectedType && selectedType.allowMemberRegistration) {
+                      return (
+                        <div className="grid grid-cols-3 gap-4 pt-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700">Min Participants</label>
+                            <input type="number" value={minParticipantsOverride} onChange={e => setMinParticipantsOverride(e.target.value)} placeholder={selectedType.minParticipants ? String(selectedType.minParticipants) : 'No min'} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700">Max Participants</label>
+                            <input type="number" value={maxParticipantsOverride} onChange={e => setMaxParticipantsOverride(e.target.value)} placeholder={selectedType.maxParticipants ? String(selectedType.maxParticipants) : 'No max'} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700">Cost / Fee ($)</label>
+                            <input type="number" step="0.01" value={costOverride} onChange={e => setCostOverride(e.target.value)} placeholder={selectedType.defaultCost ? String(selectedType.defaultCost) : '0.00'} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border bg-white" />
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
 
                   {!editingBookingId && (
                     <div className="space-y-4">
@@ -744,9 +871,128 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                 </div>
               )}
               <p><strong>Time:</strong> {new Date(viewBooking.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(viewBooking.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-              <p><strong>Organizer:</strong> {viewBooking.organizer.firstName} {viewBooking.organizer.lastName}</p>
-              <p><strong>Participants:</strong> {viewBooking.participants.map(p => `${p.firstName} ${p.lastName}`).join(', ')}</p>
+              <p><strong>Organizer 1:</strong> {viewBooking.organizer.firstName} {viewBooking.organizer.lastName}</p>
+              {viewBooking.coOrganizer && <p><strong>Organizer 2:</strong> {viewBooking.coOrganizer.firstName} {viewBooking.coOrganizer.lastName}</p>}
+              <p><strong>Participants:</strong> {viewBooking.participants.length > 0 ? viewBooking.participants.map(p => `${p.firstName} ${p.lastName}`).join(', ') : 'None'}</p>
               {viewBooking.notes && <p><strong>Notes:</strong> {viewBooking.notes}</p>}
+              {isAdmin && viewBooking.internalNotes && <p className="text-gray-700 bg-gray-50 border p-2 mt-2 rounded text-xs"><strong>Internal Notes (Admin only):</strong> {viewBooking.internalNotes}</p>}
+              {(() => {
+                const bType = availableTypes.find(t => t.name === viewBooking.type);
+                if (bType && bType.allowMemberRegistration) {
+                  const maxP = viewBooking.maxParticipants ?? bType.maxParticipants;
+                  const currentP = viewBooking.participants.length;
+                  const cost = viewBooking.cost ?? bType.defaultCost ?? 0;
+                  const isRegistered = viewBooking.participants.some(p => p.id === currentUserId) || viewBooking.waitlistedUsers?.some(p => p.id === currentUserId);
+                  return (
+                    <div className="mt-4 p-4 bg-primary-50 rounded-md border border-primary-100">
+                      <h4 className="font-semibold text-primary-900 mb-2">Registration</h4>
+                      <p className="mb-1"><strong>Status:</strong> {maxP ? `${currentP} / ${maxP} spots filled` : `${currentP} registered`}</p>
+                      {viewBooking.waitlistedUsers && viewBooking.waitlistedUsers.length > 0 && <p className="mb-1 text-orange-600"><strong>Waitlist:</strong> {viewBooking.waitlistedUsers.length} waiting</p>}
+                      {cost > 0 && <p className="mb-3"><strong>Cost:</strong> ${cost.toFixed(2)} (collected offline)</p>}
+                      
+                      {!isAdmin && (
+                        <div className="flex flex-col space-y-3 mt-4">
+                          {viewBooking.recurringGroupId && !isRegistered && (
+                            <label className="flex items-center space-x-2 text-sm text-gray-700">
+                              <input type="checkbox" checked={joinRegisterSeries} onChange={e => setJoinRegisterSeries(e.target.checked)} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                              <span>Apply to all future sessions in this series</span>
+                            </label>
+                          )}
+                          {!isRegistered ? (
+                            <button 
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`/api/bookings/${viewBooking.id}/join`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                      userIds: [currentUserId],
+                                      registerSeries: joinRegisterSeries
+                                    })
+                                  });
+                                  if (res.ok) {
+                                    setViewBooking(null);
+                                    fetchCourtsAndBookings();
+                                  } else {
+                                    const data = await res.json();
+                                    alert(data.error || 'Registration failed');
+                                  }
+                                } catch (err) {
+                                  alert('Registration error');
+                                }
+                              }}
+                              className="w-full px-4 py-2 bg-primary-600 text-white rounded font-medium hover:bg-primary-700 shadow-sm"
+                            >
+                              Join Session
+                            </button>
+                          ) : (
+                            <div className="flex flex-col space-y-2">
+                              <button 
+                                onClick={async () => {
+                                  if (!confirm("Are you sure you want to cancel your registration for THIS session?")) return;
+                                  try {
+                                    const res = await fetch(`/api/bookings/${viewBooking.id}/leave`, {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({
+                                        userIds: [currentUserId],
+                                        unregisterSeries: false
+                                      })
+                                    });
+                                    if (res.ok) {
+                                      setViewBooking(null);
+                                      fetchCourtsAndBookings();
+                                    } else {
+                                      const data = await res.json();
+                                      alert(data.error || 'Cancellation failed');
+                                    }
+                                  } catch (err) {
+                                    alert('Cancellation error');
+                                  }
+                                }}
+                                className="w-full px-4 py-2 bg-red-50 text-red-700 border border-red-200 rounded font-medium hover:bg-red-100"
+                              >
+                                {viewBooking.recurringGroupId ? "Cancel This Session Only" : "Cancel Registration"}
+                              </button>
+                              {viewBooking.recurringGroupId && (
+                                <button 
+                                  onClick={async () => {
+                                    if (!confirm("Are you sure you want to cancel your registration for this session AND all future sessions in this series?")) return;
+                                    try {
+                                      const res = await fetch(`/api/bookings/${viewBooking.id}/leave`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                          userIds: [currentUserId],
+                                          unregisterSeries: true
+                                        })
+                                      });
+                                      if (res.ok) {
+                                        setViewBooking(null);
+                                        fetchCourtsAndBookings();
+                                      } else {
+                                        const data = await res.json();
+                                        alert(data.error || 'Cancellation failed');
+                                      }
+                                    } catch (err) {
+                                      alert('Cancellation error');
+                                    }
+                                  }}
+                                  className="w-full px-4 py-2 bg-red-600 text-white rounded font-medium hover:bg-red-700 shadow-sm"
+                                >
+                                  Cancel Entire Series
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t">
