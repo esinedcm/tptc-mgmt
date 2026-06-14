@@ -13,7 +13,7 @@ export default async function PublicNavbar() {
     <nav className="fixed w-full z-50 top-0 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             {process.env.NEXT_PUBLIC_CLUB_LOGO_URL ? (
               <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Logo" className="h-10 w-auto" />
             ) : (
@@ -22,7 +22,7 @@ export default async function PublicNavbar() {
               </div>
             )}
             <span className="font-extrabold text-xl tracking-tight text-gray-900">{clubName}</span>
-          </div>
+          </Link>
           <div className="hidden md:flex space-x-8 items-center">
             <Link href="/#facilities" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">Facilities</Link>
             {customPages.map((p: any) => (

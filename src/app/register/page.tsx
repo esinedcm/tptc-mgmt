@@ -10,8 +10,8 @@ export default async function RegisterPage({ searchParams }: { searchParams: { [
   const genderOptions = settings?.genderOptions || ['Male', 'Female', 'Prefer not to say'];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="w-full flex flex-col justify-center items-center">
+      <div className="sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           {editToken ? 'Edit Registration' : `Join ${process.env.NEXT_PUBLIC_CLUB_NAME || "Tennis Club"}`}
         </h2>

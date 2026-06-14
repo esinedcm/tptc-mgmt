@@ -216,28 +216,6 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
     }
   };
 
-  const handleSendRenewalLink = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await fetch('/api/register/renewal-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: members[0].email }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to send renewal link');
-      
-      setSuccess(true);
-      if (data.emailPreviewUrl) setEmailPreviewUrl(data.emailPreviewUrl);
-      setError('RENEWAL_SENT');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (success) {
     // Create a dictionary of prices from the DB
     const prices: Record<string, number> = {};
@@ -363,27 +341,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
         {editToken ? 'Edit Club Registration' : 'Club Registration'}
       </h2>
       
-      {error && error !== 'EMAIL_EXISTS' && error !== 'RENEWAL_SENT' && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">
-          {error}
-        </div>
-      )}
 
-      {error === 'EMAIL_EXISTS' && (
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-          <p className="text-blue-800 mb-4 font-medium">
-            This email is already registered from a previous season. Would you like to renew your membership instead?
-          </p>
-          <button
-            type="button"
-            onClick={handleSendRenewalLink}
-            disabled={loading}
-            className="px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Sending...' : 'Send Renewal Link'}
-          </button>
-        </div>
-      )}
 
       {/* Address Section */}
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-400">
@@ -482,9 +440,16 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
       </div>
 
       <div className="mt-6">
-        {error && (
+        {error && error !== 'EMAIL_EXISTS' && error !== 'RENEWAL_SENT' && (
           <div className="p-3 mb-4 bg-red-50 border border-red-200 text-red-700 rounded text-sm text-center">
             {error}
+          </div>
+        )}
+        {error === 'EMAIL_EXISTS' && (
+          <div className="p-4 mb-4 bg-red-50 border border-red-200 rounded-lg text-center">
+            <p className="text-red-800 font-medium">
+              This email address is already in use.<br />Please <Link href="/login" className="underline font-bold hover:text-red-900">log in</Link> to continue.
+            </p>
           </div>
         )}
         <button 
