@@ -89,6 +89,7 @@ export default function AdminDashboard() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ imported: number, skipped: number, skippedRecords: { email: string, name: string, reason: string }[] } | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [importMarkAsPaid, setImportMarkAsPaid] = useState(false);
   const [csvData, setCsvData] = useState<any[]>([]);
   const [csvHeaders, setCsvHeaders] = useState<string[]>([]);
   const [fieldMapping, setFieldMapping] = useState<Record<string, string>>({});
@@ -134,6 +135,8 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Active' | 'Archived' | 'Past Members'>('All');
   const [genderFilter, setGenderFilter] = useState<string | null>(null);
+  const [lessonsFilter, setLessonsFilter] = useState(false);
+  const [staffFilter, setStaffFilter] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'email' | null, direction: 'asc' | 'desc' }>({ key: null, direction: 'asc' });
 
   // Stats calculation
@@ -178,6 +181,8 @@ export default function AdminDashboard() {
   }) as Membership) : memberships).filter(m => {
     if (activeTab !== 'All' && activeTab !== 'Archived' && activeTab !== 'Past Members' && m.status !== activeTab) return false;
     if (genderFilter && m.user.gender !== genderFilter && (m as any).gender !== genderFilter) return false;
+    if (lessonsFilter && !m.user.wantsFreeLessons && !(m as any).wantsFreeLessons) return false;
+    if (staffFilter && m.user?.role !== 'ADMIN' && m.user?.role !== 'SUPER_ADMIN' && m.user?.role !== 'PRO') return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = m.user.firstName.toLowerCase();
@@ -218,6 +223,8 @@ export default function AdminDashboard() {
 
   const filteredPastMembers = pastMembers.filter(m => {
     if (genderFilter && (m as any).gender !== genderFilter) return false;
+    if (lessonsFilter && !(m as any).wantsFreeLessons) return false;
+    if (staffFilter && m.role !== 'ADMIN' && m.role !== 'SUPER_ADMIN' && m.role !== 'PRO') return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = m.firstName.toLowerCase();
@@ -521,6 +528,12 @@ export default function AdminDashboard() {
           standardObj[field.key] = row[csvHeader];
         }
       });
+      if (importMarkAsPaid) {
+        standardObj.status = 'Active';
+        if (!standardObj.paymentNotes) {
+          standardObj.paymentNotes = 'Marked as paid during import';
+        }
+      }
       return standardObj;
     });
 
@@ -890,6 +903,20 @@ export default function AdminDashboard() {
             ))}
           </nav>
           <div className="flex gap-4 items-center">
+            <button
+              onClick={() => setStaffFilter(!staffFilter)}
+              className={`px-3 py-2 text-sm font-medium rounded-md border ${staffFilter ? 'bg-indigo-100 border-indigo-300 text-indigo-800' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              title="Filter by Staff (Admins, Club Pros)"
+            >
+              🛡️ Staff
+            </button>
+            <button
+              onClick={() => setLessonsFilter(!lessonsFilter)}
+              className={`px-3 py-2 text-sm font-medium rounded-md border ${lessonsFilter ? 'bg-orange-100 border-orange-300 text-orange-800' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+              title="Filter by members wanting free lessons"
+            >
+              🎾 Lessons
+            </button>
             <div className="w-full md:w-64 relative">
               <input
                 type="text"
@@ -1205,6 +1232,9 @@ export default function AdminDashboard() {
                             {(m.user.role === 'ADMIN' || m.user.role === 'SUPER_ADMIN') && (
                               <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200" title="Administrator">Admin</span>
                             )}
+                            {m.user.role === 'PRO' && (
+                              <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200" title="Club Pro">Club Pro</span>
+                            )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {m.user.email}
@@ -1227,7 +1257,7 @@ export default function AdminDashboard() {
                                   {m.user.memberNumber && <span className="bg-gray-100 text-gray-600 text-xs font-mono px-2 py-0.5 rounded border border-gray-300">ID: {m.user.memberNumber}</span>}
                                   {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-xs font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
                                   {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && (
-                                    <button onClick={(e) => { e.stopPropagation(); setSelectedHouseholdId(m.user.householdId!); }} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors">Group: {m.user.householdId.substring(0, 6).toUpperCase()}</button>
+                                    <button onClick={(e) => { e.stopPropagation(); setSelectedHouseholdId(m.user.householdId!); }} className="bg-purple-50 text-purple-700 hover:bg-purple-100 text-xs font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer transition-colors">Household {memberships.find(x => x.user.householdId === m.user.householdId)?.user.lastName}</button>
                                   )}
                                   {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-xs font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Free Lessons</span>}
                                   
@@ -1242,7 +1272,7 @@ export default function AdminDashboard() {
                                         Email ▾
                                       </button>
                                       {activeEmailMenu === m.id && (
-                                        <div className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 py-1">
+                                        <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-md shadow-lg z-50 py-1">
                                           <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'welcome'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Welcome Email</button>
                                           <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'import-welcome'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Import Welcome Email</button>
                                           <button onClick={(e) => { e.stopPropagation(); handleResendEmail(m.user.id, 'pending'); }} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Resend Registration Pending</button>
@@ -1492,6 +1522,9 @@ export default function AdminDashboard() {
                           {(m.user.role === 'ADMIN' || m.user.role === 'SUPER_ADMIN') && (
                             <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-100 text-indigo-800 border border-indigo-200" title="Administrator">Admin</span>
                           )}
+                          {m.user.role === 'PRO' && (
+                            <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200" title="Club Pro">Club Pro</span>
+                          )}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           <span className="font-medium text-gray-700 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full mr-2">{m.membershipType}</span>
@@ -1508,7 +1541,7 @@ export default function AdminDashboard() {
                     
                     <div className="flex flex-wrap gap-1 mb-3">
                       {m.user.tagNumber && <span className="bg-green-50 text-green-700 text-[10px] font-mono px-2 py-0.5 rounded border border-green-200">Tag: {m.user.tagNumber}</span>}
-                      {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer" onClick={() => setSelectedHouseholdId(m.user.householdId!)}>Group: {m.user.householdId.substring(0, 6).toUpperCase()}</span>}
+                      {m.user.householdId && memberships.filter(x => x.user.householdId === m.user.householdId).length > 1 && <span className="bg-purple-50 text-purple-700 text-[10px] font-mono px-2 py-0.5 rounded border border-purple-200 cursor-pointer" onClick={() => setSelectedHouseholdId(m.user.householdId!)}>Household {memberships.find(x => x.user.householdId === m.user.householdId)?.user.lastName}</span>}
                       {m.user.wantsFreeLessons && <span className="bg-orange-50 text-orange-700 text-[10px] font-mono px-2 py-0.5 rounded border border-orange-200">🎾 Lessons</span>}
                     </div>
 
@@ -1520,12 +1553,14 @@ export default function AdminDashboard() {
 
                     <div className="mt-auto border-t border-gray-100 pt-3 flex flex-col gap-2">
                       {activeTab !== 'Archived' && (
-                        <button onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)} className="w-full text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors">Email ▾</button>
-                      )}
-                      {activeEmailMenu === m.id && (
-                        <div className="flex flex-col gap-1 w-full bg-gray-50 border border-gray-200 rounded-md p-1">
-                          <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded">Resend Welcome</button>
-                          <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-200 rounded">Resend Renewal</button>
+                        <div className="relative w-full">
+                          <button onClick={() => setActiveEmailMenu(activeEmailMenu === m.id ? null : m.id)} className="w-full text-white bg-gray-800 hover:bg-gray-900 shadow-sm rounded-md px-3 py-2 text-sm font-medium transition-colors">Email ▾</button>
+                          {activeEmailMenu === m.id && (
+                            <div className="absolute bottom-full mb-1 left-0 flex flex-col gap-1 w-full bg-white border border-gray-200 rounded-md p-1 shadow-lg z-50">
+                              <button onClick={() => handleResendEmail(m.user.id, 'welcome')} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors">Resend Welcome</button>
+                              <button onClick={() => handleResendEmail(m.user.id, 'renewal')} className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors">Resend Renewal</button>
+                            </div>
+                          )}
                         </div>
                       )}
                       
@@ -1794,19 +1829,33 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 rounded-b-lg">
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={executeImport}
-                className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
-              >
-                Confirm & Import {csvData.length} Records
-              </button>
+            <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-center gap-4 rounded-b-lg">
+              <div className="flex items-center self-start sm:self-auto">
+                <input
+                  id="importMarkAsPaid"
+                  type="checkbox"
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  checked={importMarkAsPaid}
+                  onChange={(e) => setImportMarkAsPaid(e.target.checked)}
+                />
+                <label htmlFor="importMarkAsPaid" className="ml-2 block text-sm font-medium text-gray-900">
+                  Mark all as Paid (Active)
+                </label>
+              </div>
+              <div className="flex justify-end gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => setShowImportModal(false)}
+                  className="px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={executeImport}
+                  className="px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700"
+                >
+                  Confirm & Import {csvData.length} Records
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1817,7 +1866,7 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-lg">
               <h3 className="text-lg font-bold text-gray-900">
-                Household Group: {selectedHouseholdId.substring(0, 6).toUpperCase()}
+                Household {memberships.find(x => x.user.householdId === selectedHouseholdId)?.user.lastName}
               </h3>
               <button
                 onClick={() => setSelectedHouseholdId(null)}

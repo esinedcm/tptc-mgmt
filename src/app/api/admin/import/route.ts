@@ -46,6 +46,13 @@ export async function POST(request: Request) {
 
     const householdMap = new Map<string, string>();
 
+    // Fetch plans to map default costs
+    const allPlans = await prisma.membershipPlan.findMany({ select: { name: true, cost: true } });
+    const plansMap = new Map<string, number>();
+    for (const plan of allPlans) {
+      plansMap.set(plan.name.toLowerCase(), plan.cost);
+    }
+
     await prisma.$transaction(async (tx) => {
       for (const record of records) {
         const email = (record.email || '').toString().toLowerCase().trim();
@@ -67,7 +74,7 @@ export async function POST(request: Request) {
         
         // Payment fields
         const finalStatus = (record.status || 'Pending').toString().trim();
-        const amountPaid = record.amountPaid !== undefined && record.amountPaid !== null && record.amountPaid !== '' ? parseFloat(record.amountPaid) : null;
+        let amountPaid = record.amountPaid !== undefined && record.amountPaid !== null && record.amountPaid !== '' ? parseFloat(record.amountPaid) : null;
         const paymentNotes = (record.paymentNotes || '').toString().trim();
         
         let paymentRecordedAt = null;
@@ -75,6 +82,15 @@ export async function POST(request: Request) {
           const parsedDate = new Date(record.paymentRecordedAt);
           if (!isNaN(parsedDate.getTime())) {
             paymentRecordedAt = parsedDate;
+          }
+        }
+
+        // Dynamically populate missing amountPaid for Active memberships
+        if (finalStatus.toLowerCase() === 'active' && amountPaid === null) {
+          const defaultCost = plansMap.get(membershipType.toLowerCase());
+          if (defaultCost !== undefined) {
+            amountPaid = defaultCost;
+            if (!paymentRecordedAt) paymentRecordedAt = new Date();
           }
         }
         

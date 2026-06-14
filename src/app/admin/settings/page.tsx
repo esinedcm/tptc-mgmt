@@ -175,6 +175,8 @@ export default function AdminSettingsPage() {
   );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [wiping, setWiping] = useState(false);
+  const [wipingSystem, setWipingSystem] = useState(false);
   const [message, setMessage] = useState("");
 
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
@@ -254,7 +256,6 @@ export default function AdminSettingsPage() {
   const [editorMode, setEditorMode] = useState<"visual" | "raw" | "preview">(
     "visual",
   );
-  const [wiping, setWiping] = useState(false);
   const [showTopBtn, setShowTopBtn] = useState(false);
 
   useEffect(() => {
@@ -753,7 +754,40 @@ export default function AdminSettingsPage() {
     } catch (err) {
       alert("Error resetting template");
     }
-    setSavingTemplate(false);
+    setWiping(false);
+  };
+
+  const handleWipeSystem = async () => {
+    if (
+      !confirm(
+        "WARNING: This will permanently delete ALL users, memberships, member court bookings, and event registrations from the database. Only the Super Admin account, settings, coupons, club events, and non-member bookings will remain. This action CANNOT be undone.\n\nAre you absolutely sure you want to proceed?",
+      )
+    )
+      return;
+    
+    // Double confirmation for extreme safety
+    const confirmWord = window.prompt("Type 'WIPE' to confirm deleting all database records:");
+    if (confirmWord !== "WIPE") {
+      alert("System wipe cancelled.");
+      return;
+    }
+
+    setWipingSystem(true);
+    try {
+      const res = await fetch("/api/admin/system-wipe", {
+        method: "POST",
+      });
+      if (res.ok) {
+        alert("System successfully wiped. Logging out...");
+        window.location.href = "/login"; // Force them to login again
+      } else {
+        const data = await res.json();
+        alert(`Failed to wipe system: ${data.error}`);
+      }
+    } catch (err) {
+      alert("Error wiping system");
+    }
+    setWipingSystem(false);
   };
 
   const handleSaveTemplate = async () => {
@@ -2145,7 +2179,7 @@ export default function AdminSettingsPage() {
             Danger Zone
           </h3>
           <div className="bg-red-50 p-4 border border-red-200 rounded-md shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-red-200 pb-4 mb-4">
               <div>
                 <h4 className="text-sm font-bold text-red-900">
                   Wipe All Bookings
@@ -2157,10 +2191,29 @@ export default function AdminSettingsPage() {
               </div>
               <button
                 onClick={handleWipeBookings}
-                disabled={wiping}
+                disabled={wiping || wipingSystem}
                 className="mt-4 sm:mt-0 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 whitespace-nowrap"
               >
                 {wiping ? "Wiping..." : "Wipe Bookings"}
+              </button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-red-900">
+                  Total System Wipe
+                </h4>
+                <p className="text-sm text-red-700 mt-1">
+                  Permanently delete ALL users, members, leads, and member bookings. 
+                  Only your Super Admin account, settings, coupons, events, and non-member bookings will survive.
+                </p>
+              </div>
+              <button
+                onClick={handleWipeSystem}
+                disabled={wiping || wipingSystem}
+                className="mt-4 sm:mt-0 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-900 disabled:opacity-50 whitespace-nowrap"
+              >
+                {wipingSystem ? "Wiping System..." : "WIPE SYSTEM"}
               </button>
             </div>
           </div>
