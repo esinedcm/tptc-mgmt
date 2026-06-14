@@ -265,14 +265,21 @@ export async function POST(request: Request) {
     const memberNames = members.map(m => `${m.firstName} ${m.lastName}`);
     const emailPreviewUrl = await sendEditLinkEmail(memberOneEmail, finalEditToken, memberNames, totalDue);
 
-    // Notify all admins of the new registration (only if this is a NEW registration, not an edit)
+    // Notify subscribed admins of the new registration (only if this is a NEW registration, not an edit)
     if (!editToken) {
-      const admins = await prisma.user.findMany({
-        where: { role: 'ADMIN' },
-        select: { email: true }
+      const allAdmins = await prisma.user.findMany({
+        where: { role: { in: ['ADMIN', 'PRO'] } },
+        select: { email: true, adminNotifications: true, adminPermissions: true }
       });
       
-      for (const admin of admins) {
+      let notifyAdmins = allAdmins.filter(a => a.adminNotifications.includes('NOTIFY_NEW_REGISTRATIONS'));
+      
+      // Fallback: if no admin explicitly opted in, notify super admins
+      if (notifyAdmins.length === 0) {
+        notifyAdmins = allAdmins.filter(a => a.adminPermissions.includes('SUPER_ADMIN') || a.adminPermissions.length === 0);
+      }
+
+      for (const admin of notifyAdmins) {
         if (admin.email) {
           await sendAdminNewRegistrationEmail({
             to: admin.email,

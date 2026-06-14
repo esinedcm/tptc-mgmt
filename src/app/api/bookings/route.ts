@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     }
 
     // Role-based constraints
-    const isAdmin = payload.role === 'ADMIN';
+    const isAdmin = payload.role === 'ADMIN' || payload.role === 'PRO' || payload.role === 'SUPER_ADMIN';
     const bookingType = isAdmin && type ? type : 'MEMBER';
     
     // Resolve block booking constraints

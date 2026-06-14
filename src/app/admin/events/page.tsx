@@ -392,21 +392,25 @@ export default function AdminEventsPage() {
                   >
                     View Registrations
                   </button>
-                  <button
-                    onClick={() => {
-                      setCurrentEvent(event);
-                      setIsEditing(true);
-                    }}
-                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(event.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+                  {new Date(event.endDate) > new Date() && (
+                    <>
+                      <button
+                        onClick={() => {
+                          setCurrentEvent(event);
+                          setIsEditing(true);
+                        }}
+                        className="text-indigo-600 hover:text-indigo-900 mr-4"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(event.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

@@ -37,6 +37,8 @@ export default async function BookCourtPage() {
   const daysToShow = settings?.calendarDaysToShow ?? 3;
   const skipDays = settings?.calendarSkipDays ?? 1;
 
+  const isAdminOrPro = payload.role === 'ADMIN' || payload.role === 'SUPER_ADMIN' || payload.role === 'PRO';
+
   return (
     <div>
       <div className="mb-6">
@@ -46,7 +48,7 @@ export default async function BookCourtPage() {
         </p>
       </div>
 
-      <BookingCalendar isAdmin={false} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} daysToShow={daysToShow} skipDays={skipDays} />
+      <BookingCalendar isAdmin={isAdminOrPro} currentUserId={payload.userId as string} openTime={openTime} closeTime={closeTime} daysToShow={daysToShow} skipDays={skipDays} />
     </div>
   );
 }

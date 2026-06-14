@@ -37,7 +37,7 @@ export default function Login() {
         throw new Error(data.error || 'Login failed');
       }
 
-      if (data.role === 'ADMIN') {
+      if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN' || data.role === 'PRO') {
         window.location.href = '/admin';
       } else {
         window.location.href = '/portal';

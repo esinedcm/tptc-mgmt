@@ -9,7 +9,7 @@ export async function checkAdmin(requiredPermission?: string) {
   if (!token) return { error: 'Unauthorized', status: 401 };
 
   const payload = await verifyJwt(token);
-  if (!payload || payload.role !== 'ADMIN') return { error: 'Unauthorized', status: 401 };
+  if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'PRO')) return { error: 'Unauthorized', status: 401 };
 
   const user = await prisma.user.findUnique({
     where: { id: payload.userId as string },

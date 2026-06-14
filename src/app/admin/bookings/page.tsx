@@ -12,7 +12,7 @@ export default async function AdminBookingsPage() {
   if (!token) redirect('/login');
 
   const payload = await verifyJwt(token);
-  if (!payload || payload.role !== 'ADMIN') redirect('/login');
+  if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPER_ADMIN' && payload.role !== 'PRO')) redirect('/login');
 
   const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
   const openTime = settings?.courtOpenTime ?? 6;

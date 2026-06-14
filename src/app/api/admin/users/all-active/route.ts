@@ -12,7 +12,7 @@ export async function GET() {
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     
     const payload = await verifyJwt(token);
-    if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPER_ADMIN')) {
+    if (!payload || (payload.role !== 'ADMIN' && payload.role !== 'SUPER_ADMIN' && payload.role !== 'PRO')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -31,11 +31,12 @@ export async function GET() {
         email: true,
         role: true,
         memberNumber: true,
+        managementRole: true,
       }
     });
 
-    // Sort: SUPER_ADMIN > ADMIN > MEMBER, then alphabetically by firstName
-    const roleRank = { 'SUPER_ADMIN': 1, 'ADMIN': 2, 'MEMBER': 3 } as Record<string, number>;
+    // Sort: SUPER_ADMIN > ADMIN > PRO > MEMBER, then alphabetically by firstName
+    const roleRank = { 'SUPER_ADMIN': 1, 'ADMIN': 2, 'PRO': 3, 'MEMBER': 4 } as Record<string, number>;
 
     users.sort((a, b) => {
       const rankA = roleRank[a.role] || 4;

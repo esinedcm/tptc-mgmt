@@ -10,14 +10,16 @@ export async function GET() {
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
     const staff = await prisma.user.findMany({
-      where: { role: 'ADMIN' },
+      where: { role: { in: ['ADMIN', 'PRO'] } },
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
         role: true,
-        adminPermissions: true
+        adminPermissions: true,
+        adminNotifications: true,
+        managementRole: true
       },
       orderBy: { firstName: 'asc' }
     });
@@ -35,14 +37,14 @@ export async function POST(request: Request) {
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
     const body = await request.json();
-    const { userId, permissions } = body;
+    const { userId, permissions, role = 'ADMIN', managementRole, notifications } = body;
 
     if (!userId) return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
 
     const targetUser = await prisma.user.findUnique({ where: { id: userId } });
     if (!targetUser) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const isCurrentlySuperAdmin = targetUser.role === 'ADMIN' && 
+    const isCurrentlySuperAdmin = (targetUser.role === 'ADMIN' || targetUser.role === 'PRO') && 
       (targetUser.adminPermissions.includes('SUPER_ADMIN') || targetUser.adminPermissions.length === 0);
 
     const newPermissions = Array.isArray(permissions) ? permissions : [];
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     if (isCurrentlySuperAdmin && !newPermissions.includes('SUPER_ADMIN')) {
-      const allAdmins = await prisma.user.findMany({ where: { role: 'ADMIN' } });
+      const allAdmins = await prisma.user.findMany({ where: { role: { in: ['ADMIN', 'PRO'] } } });
       const superAdmins = allAdmins.filter(u => u.adminPermissions.includes('SUPER_ADMIN') || u.adminPermissions.length === 0);
       if (superAdmins.length <= 1) {
         return NextResponse.json({ error: 'Cannot remove Super Admin privileges from the only Super Admin.' }, { status: 400 });
@@ -61,8 +63,10 @@ export async function POST(request: Request) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        role: 'ADMIN',
-        adminPermissions: Array.isArray(permissions) ? permissions : []
+        role: role === 'PRO' ? 'PRO' : 'ADMIN',
+        adminPermissions: Array.isArray(permissions) ? permissions : [],
+        adminNotifications: Array.isArray(notifications) ? notifications : [],
+        managementRole: managementRole || null
       },
       select: {
         id: true,
@@ -70,7 +74,9 @@ export async function POST(request: Request) {
         lastName: true,
         email: true,
         role: true,
-        adminPermissions: true
+        adminPermissions: true,
+        adminNotifications: true,
+        managementRole: true
       }
     });
 
@@ -80,6 +86,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export const PUT = POST;
 
 export async function DELETE(request: Request) {
   try {

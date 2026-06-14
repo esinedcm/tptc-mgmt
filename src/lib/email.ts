@@ -416,6 +416,119 @@ export async function sendAdminNewRegistrationEmail({
   });
 }
 
+export async function sendAdminEventRegistrationEmail({
+  to,
+  memberNames,
+  eventName,
+  eventDate,
+  status
+}: {
+  to: string;
+  memberNames: string[];
+  eventName: string;
+  eventDate: string;
+  status: string;
+}) {
+  const baseUrl = await getBaseUrl();
+  const adminDashboardLink = `${baseUrl}/admin/events`;
+
+  const defaultHtml = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">New Event Registration!</h2>
+      <p>Someone has registered for the event: <strong>{{eventName}}</strong></p>
+      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 5px 0;"><strong>Registered Members:</strong> {{memberNames}}</p>
+        <p style="margin: 5px 0;"><strong>Event Date:</strong> {{eventDate}}</p>
+        <p style="margin: 5px 0;"><strong>Status:</strong> {{status}}</p>
+      </div>
+      <p>You can view and manage event registrations in the Admin Dashboard:</p>
+      <a href="{{adminDashboardLink}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Manage Events</a>
+    </div>
+  `;
+
+  const defaultSubject = `New Registration: ${eventName}`;
+
+  const { subject, html } = await fetchTemplate('ADMIN_EVENT_REGISTRATION', defaultSubject, defaultHtml, {
+    memberNames: memberNames.join(', '),
+    eventName,
+    eventDate,
+    status,
+    adminDashboardLink,
+  });
+
+  return sendEmail({
+    to,
+    subject,
+    html
+  });
+}
+
+export async function sendBookingUpdatedEmail({
+  to,
+  memberName,
+  bookingDetails,
+  isAdminNotification = false
+}: {
+  to: string;
+  memberName: string;
+  bookingDetails: string;
+  isAdminNotification?: boolean;
+}) {
+  const baseUrl = await getBaseUrl();
+  const link = isAdminNotification ? `${baseUrl}/admin/bookings` : `${baseUrl}/portal/book`;
+
+  const defaultHtml = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #4f46e5;">Court Booking Updated</h2>
+      <p>Hi ${memberName},</p>
+      <p>${isAdminNotification ? 'A court booking has been updated:' : 'Your court booking has been updated. Here are the new details:'}</p>
+      <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 5px 0;">${bookingDetails}</p>
+      </div>
+      <a href="${link}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">View Booking</a>
+    </div>
+  `;
+
+  const subject = "Court Booking Updated";
+
+  return sendEmail({
+    to,
+    subject,
+    html: defaultHtml
+  });
+}
+
+export async function sendBookingCancelledEmail({
+  to,
+  memberName,
+  bookingDetails,
+  isAdminNotification = false
+}: {
+  to: string;
+  memberName: string;
+  bookingDetails: string;
+  isAdminNotification?: boolean;
+}) {
+  const defaultHtml = `
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #ef4444;">Court Booking Cancelled</h2>
+      <p>Hi ${memberName},</p>
+      <p>${isAdminNotification ? 'A court booking has been cancelled:' : 'Your court booking has been cancelled. The following reservation is no longer active:'}</p>
+      <div style="background-color: #fef2f2; padding: 15px; border-radius: 6px; margin: 20px 0; border: 1px solid #fee2e2;">
+        <p style="margin: 5px 0;">${bookingDetails}</p>
+      </div>
+    </div>
+  `;
+
+  const subject = "Court Booking Cancelled";
+
+  return sendEmail({
+    to,
+    subject,
+    html: defaultHtml
+  });
+}
+
 export async function sendRenewalLinkEmail(recipientEmail: string, resetToken: string) {
   const mailer = await getTransporter();
   const baseUrl = await getBaseUrl();

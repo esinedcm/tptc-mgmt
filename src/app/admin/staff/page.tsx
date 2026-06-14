@@ -10,6 +10,8 @@ type StaffMember = {
   email: string;
   role: string;
   adminPermissions: string[];
+  adminNotifications: string[];
+  managementRole: string | null;
 };
 
 type Membership = {
@@ -31,6 +33,12 @@ const PERMISSIONS = [
   { id: 'MANAGE_COUPONS', label: 'Manage Coupons' }
 ];
 
+const NOTIFICATIONS = [
+  { id: 'NOTIFY_NEW_REGISTRATIONS', label: 'Receive New Registration Emails' },
+  { id: 'NOTIFY_EVENT_REGISTRATIONS', label: 'Receive Event Registration Emails' },
+  { id: 'NOTIFY_BOOKING_CHANGES', label: 'Receive Court Booking Emails (Updates/Cancellations)' }
+];
+
 export default function StaffManagementPage() {
   const [staff, setStaff] = useState<StaffMember[]>([]);
   const [allMembers, setAllMembers] = useState<Membership[]>([]);
@@ -38,7 +46,10 @@ export default function StaffManagementPage() {
   const [error, setError] = useState('');
   
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedRole, setSelectedRole] = useState('ADMIN');
+  const [selectedManagementRole, setSelectedManagementRole] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [selectedNotifications, setSelectedNotifications] = useState<string[]>([]);
   const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
 
   const fetchData = async () => {
@@ -81,13 +92,25 @@ export default function StaffManagementPage() {
     );
   };
 
+  const handleToggleNotification = (notifId: string) => {
+    setSelectedNotifications(prev => 
+      prev.includes(notifId) ? prev.filter(n => n !== notifId) : [...prev, notifId]
+    );
+  };
+
   const handleSave = async () => {
     if (!selectedUserId) return;
     try {
       const res = await fetch('/api/admin/staff', {
-        method: 'POST',
+        method: editingStaffId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: selectedUserId, permissions: selectedPermissions })
+        body: JSON.stringify({ 
+          userId: selectedUserId, 
+          permissions: selectedPermissions,
+          role: selectedRole,
+          managementRole: selectedManagementRole,
+          notifications: selectedNotifications
+        })
       });
       if (!res.ok) throw new Error('Failed to update staff member');
       
@@ -120,13 +143,19 @@ export default function StaffManagementPage() {
   const startEdit = (s: StaffMember) => {
     setEditingStaffId(s.id);
     setSelectedUserId(s.id);
+    setSelectedRole(s.role || 'ADMIN');
+    setSelectedManagementRole(s.managementRole || '');
     setSelectedPermissions(s.adminPermissions || []);
+    setSelectedNotifications(s.adminNotifications || []);
   };
 
   const cancelEdit = () => {
     setEditingStaffId(null);
     setSelectedUserId('');
+    setSelectedRole('ADMIN');
+    setSelectedManagementRole('');
     setSelectedPermissions([]);
+    setSelectedNotifications([]);
   };
 
   if (loading) return <div className="p-8 text-center">Loading staff data...</div>;
@@ -168,9 +197,49 @@ export default function StaffManagementPage() {
             )}
             
             {(selectedUserId || editingStaffId) && (
-              <div className="space-y-2 mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
-                {PERMISSIONS.map(p => (
+              <div className="space-y-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Role Type</label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="role"
+                        value="ADMIN"
+                        checked={selectedRole === 'ADMIN'}
+                        onChange={() => setSelectedRole('ADMIN')}
+                        className="text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-gray-900">Administrator</span>
+                    </label>
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input 
+                        type="radio" 
+                        name="role"
+                        value="PRO"
+                        checked={selectedRole === 'PRO'}
+                        onChange={() => setSelectedRole('PRO')}
+                        className="text-primary-600 focus:ring-primary-500"
+                      />
+                      <span className="text-sm text-gray-900">Club Pro</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Management Title (Optional)</label>
+                  <input
+                    type="text"
+                    value={selectedManagementRole}
+                    onChange={(e) => setSelectedManagementRole(e.target.value)}
+                    placeholder="e.g. Membership Director"
+                    className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
+                  {PERMISSIONS.map(p => (
                   <label key={p.id} className="flex items-center space-x-3 cursor-pointer">
                     <input 
                       type="checkbox" 
@@ -182,6 +251,22 @@ export default function StaffManagementPage() {
                     <span className="text-sm text-gray-900">{p.label}</span>
                   </label>
                 ))}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Email Notifications</label>
+                  {NOTIFICATIONS.map(n => (
+                  <label key={n.id} className="flex items-center space-x-3 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
+                      checked={selectedNotifications.includes(n.id)}
+                      onChange={() => handleToggleNotification(n.id)}
+                    />
+                    <span className="text-sm text-gray-900">{n.label}</span>
+                  </label>
+                ))}
+                </div>
                 
                 <div className="pt-4 flex gap-3">
                   <button 
@@ -189,7 +274,7 @@ export default function StaffManagementPage() {
                     disabled={!selectedUserId}
                     className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition-colors disabled:opacity-50"
                   >
-                    {editingStaffId ? 'Save Changes' : 'Promote to Admin'}
+                    {editingStaffId ? 'Save Changes' : `Promote to ${selectedRole === 'PRO' ? 'Club Pro' : 'Admin'}`}
                   </button>
                   {editingStaffId && (
                     <button 
@@ -216,9 +301,19 @@ export default function StaffManagementPage() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {staff.map((s) => (
-                <tr key={s.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{s.firstName} {s.lastName}</div>
+                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {s.firstName} {s.lastName}
+                    {s.role === 'PRO' && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                        Club Pro
+                      </span>
+                    )}
+                    {s.managementRole && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                        {s.managementRole}
+                      </span>
+                    )}
                     <div className="text-sm text-gray-500">{s.email}</div>
                   </td>
                   <td className="px-6 py-4">

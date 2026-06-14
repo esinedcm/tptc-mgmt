@@ -404,6 +404,11 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
               setAddress({ streetAddress: '', city: '', postalCode: '' });
               setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', wantsFreeLessons: false, membershipType: '' }]);
               setSuccess(false);
+              setEditToken(undefined);
+              setError('');
+              setMemberErrors({});
+              setPostalError('');
+              setEmailPreviewUrl('');
             }}
             className="px-6 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition-colors"
           >

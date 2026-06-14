@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { cookies } from 'next/headers';
 import { verifyJwt } from '@/lib/auth';
-import { sendEventRegistrationEmail } from '@/lib/email';
+import { sendEventRegistrationEmail, sendAdminEventRegistrationEmail } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -136,6 +136,32 @@ export async function POST(request: Request) {
       if (primaryUser) {
         // We'll pass the list of newly registered users to the email function
         await sendEventRegistrationEmail(primaryUser, event, newRegistrations);
+        
+        // Notify admins
+        const allAdmins = await prisma.user.findMany({
+          where: { role: { in: ['ADMIN', 'PRO'] } },
+          select: { email: true, adminNotifications: true, adminPermissions: true }
+        });
+        
+        let notifyAdmins = allAdmins.filter(a => a.adminNotifications.includes('NOTIFY_EVENT_REGISTRATIONS'));
+        if (notifyAdmins.length === 0) {
+          notifyAdmins = allAdmins.filter(a => a.adminPermissions.includes('SUPER_ADMIN') || a.adminPermissions.length === 0);
+        }
+
+        const memberNames = newRegistrations.map(r => `${r.user.firstName} ${r.user.lastName}`);
+        const eventDateStr = event.startDate.toLocaleString();
+        
+        for (const admin of notifyAdmins) {
+          if (admin.email) {
+            await sendAdminEventRegistrationEmail({
+              to: admin.email,
+              memberNames,
+              eventName: event.title || 'Club Event',
+              eventDate: eventDateStr,
+              status: newRegistrations[0].status
+            });
+          }
+        }
       }
     }
 

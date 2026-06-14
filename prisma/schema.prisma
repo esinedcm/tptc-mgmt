@@ -49,6 +49,8 @@ model User {
   memberNumber String?      @unique
   role             String       @default("MEMBER")
   adminPermissions String[]     @default([])
+  adminNotifications String[]   @default([])
+  managementRole   String?
   editToken        String?
   resetToken       String?      @unique
   resetTokenExpiry DateTime?

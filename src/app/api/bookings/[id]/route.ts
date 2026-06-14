@@ -25,12 +25,14 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
 
     if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
 
-    // Only Admin or Organizer can delete
-    if (payload.role !== 'ADMIN' && booking.organizerId !== payload.userId) {
+    // Only Admin/Pro or Organizer can delete
+    const isAdminOrPro = payload.role === 'ADMIN' || payload.role === 'SUPER_ADMIN' || payload.role === 'PRO';
+
+    if (!isAdminOrPro && booking.organizerId !== payload.userId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    if (payload.role !== 'ADMIN') {
+    if (!isAdminOrPro) {
       const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
       const cutoffMinutes = settings?.cancellationCutoffMinutes ?? 90;
       
@@ -43,7 +45,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     }
 
     let bookingsToCancel = [booking];
-    if (applyToFuture && booking.recurringGroupId && payload.role === 'ADMIN') {
+    if (applyToFuture && booking.recurringGroupId && isAdminOrPro) {
       const futureGroupBookings = await prisma.booking.findMany({
         where: {
           recurringGroupId: booking.recurringGroupId,
@@ -60,19 +62,43 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
       data: { status: 'CANCELLED' }
     });
 
-    // Send emails
+    // Notify Organizer
     const emailedAddresses = new Set<string>();
+    
+    // Fetch subscribed admins
+    const allAdmins = await prisma.user.findMany({
+      where: { role: { in: ['ADMIN', 'PRO'] } },
+      select: { email: true, adminNotifications: true }
+    });
+    const notifyAdmins = allAdmins.filter(a => a.adminNotifications.includes('NOTIFY_BOOKING_CHANGES'));
     
     for (const b of bookingsToCancel) {
       const participantNames = b.participants.map(p => `${p.firstName} ${p.lastName}`);
-      for (const participant of b.participants) {
-        if (participant.email) {
-          if (emailedAddresses.has(participant.email)) continue;
-          emailedAddresses.add(participant.email);
-          
+      if (b.organizer && b.organizer.email) {
+        emailedAddresses.add(b.organizer.email);
+        await sendBookingEmail({
+          to: b.organizer.email,
+          subject: 'Court Booking Cancelled',
+          bookingDetails: {
+            action: 'cancelled',
+            courtName: b.court.name,
+            startTime: b.startTime,
+            endTime: b.endTime,
+            type: b.type,
+            participantNames,
+            bookedBy: `${b.organizer.firstName} ${b.organizer.lastName}`,
+            bookedAt: b.createdAt
+          }
+        });
+      }
+      
+      // Notify admins
+      for (const admin of notifyAdmins) {
+        if (admin.email && !emailedAddresses.has(admin.email)) {
+          emailedAddresses.add(admin.email);
           await sendBookingEmail({
-            to: participant.email,
-            subject: 'Court Booking Cancelled',
+            to: admin.email,
+            subject: 'Admin Alert: Court Booking Cancelled',
             bookingDetails: {
               action: 'cancelled',
               courtName: b.court.name,
@@ -102,7 +128,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const payload = await verifyJwt(token);
     if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const isAdmin = payload.role === 'ADMIN';
+    const isAdmin = payload.role === 'ADMIN' || payload.role === 'SUPER_ADMIN' || payload.role === 'PRO';
 
     const { id } = await params;
     if (!id) return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
@@ -268,13 +294,41 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const results = await prisma.$transaction(transactionOperations);
 
     // Send emails
+    const emailedAddresses = new Set<string>();
+    
+    // Fetch subscribed admins
+    const allAdmins = await prisma.user.findMany({
+      where: { role: { in: ['ADMIN', 'PRO'] } },
+      select: { email: true, adminNotifications: true }
+    });
+    const notifyAdmins = allAdmins.filter(a => a.adminNotifications.includes('NOTIFY_BOOKING_CHANGES'));
+
     for (const updatedBooking of results) {
       const participantNames = updatedBooking.participants.map(p => `${p.firstName} ${p.lastName}`);
-      for (const participant of updatedBooking.participants) {
-        if (participant.email) {
+      if (updatedBooking.organizer && updatedBooking.organizer.email) {
+        emailedAddresses.add(updatedBooking.organizer.email);
+        await sendBookingEmail({
+          to: updatedBooking.organizer.email,
+          subject: 'Court Booking Updated',
+          bookingDetails: {
+            action: 'updated',
+            courtName: updatedBooking.court.name,
+            startTime: updatedBooking.startTime,
+            endTime: updatedBooking.endTime,
+            type: updatedBooking.type,
+            participantNames,
+            bookedBy: `${updatedBooking.organizer.firstName} ${updatedBooking.organizer.lastName}`,
+            bookedAt: updatedBooking.createdAt
+          }
+        });
+      }
+
+      for (const admin of notifyAdmins) {
+        if (admin.email && !emailedAddresses.has(admin.email)) {
+          emailedAddresses.add(admin.email);
           await sendBookingEmail({
-            to: participant.email,
-            subject: 'Court Booking Updated',
+            to: admin.email,
+            subject: 'Admin Alert: Court Booking Updated',
             bookingDetails: {
               action: 'updated',
               courtName: updatedBooking.court.name,
