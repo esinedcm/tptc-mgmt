@@ -224,7 +224,7 @@ export default function AdminDashboard() {
   const filteredPastMembers = pastMembers.filter(m => {
     if (genderFilter && (m as any).gender !== genderFilter) return false;
     if (lessonsFilter && !(m as any).wantsFreeLessons) return false;
-    if (staffFilter && m.role !== 'ADMIN' && m.role !== 'SUPER_ADMIN' && m.role !== 'PRO') return false;
+    if (staffFilter && (m as any).role !== 'ADMIN' && (m as any).role !== 'SUPER_ADMIN' && (m as any).role !== 'PRO') return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const fn = m.firstName.toLowerCase();
