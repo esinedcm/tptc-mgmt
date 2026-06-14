@@ -85,7 +85,7 @@ export default async function MemberDashboard() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-400 flex flex-col h-full">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-semibold text-gray-900">My Court Bookings</h2>
-            {latestMembership?.status === 'Active' && (
+            {latestMembership?.status === 'Active' && settings?.enableMemberCourtBooking !== false && (
               <Link href="/portal/book" className="px-3 py-1.5 bg-primary-600 text-white text-sm font-medium rounded hover:bg-primary-700 transition-colors shadow-sm">
                 Book a Court
               </Link>

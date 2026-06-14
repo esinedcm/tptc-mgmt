@@ -39,6 +39,15 @@ export default async function BookCourtPage() {
 
   const isAdminOrPro = payload.role === 'ADMIN' || payload.role === 'SUPER_ADMIN' || payload.role === 'PRO';
 
+  if (!settings?.enableMemberCourtBooking && !isAdminOrPro) {
+    return (
+      <div className="max-w-4xl mx-auto mt-12 p-8 text-center bg-gray-50 rounded-lg border border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Bookings Disabled</h2>
+        <p className="text-gray-600">Court booking is currently disabled by administrators. Please check back later.</p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-6">

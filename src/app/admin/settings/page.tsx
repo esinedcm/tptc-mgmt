@@ -179,6 +179,7 @@ export default function AdminSettingsPage() {
   const [activeSeason, setActiveSeason] = useState("2026");
   const [enableCsvImport, setEnableCsvImport] = useState(true);
   const [enableWelcomeEmails, setEnableWelcomeEmails] = useState(true);
+  const [enableMemberCourtBooking, setEnableMemberCourtBooking] = useState(true);
   const [genderOptions, setGenderOptions] = useState(
     "Male, Female, Prefer not to say",
   );
@@ -353,6 +354,7 @@ export default function AdminSettingsPage() {
           setActiveSeason(data.settings.activeSeason ?? "2026");
           setEnableCsvImport(data.settings.enableCsvImport ?? true);
           setEnableWelcomeEmails(data.settings.enableWelcomeEmails ?? true);
+          setEnableMemberCourtBooking(data.settings.enableMemberCourtBooking ?? true);
           if (
             data.settings.genderOptions &&
             Array.isArray(data.settings.genderOptions)
@@ -625,6 +627,7 @@ export default function AdminSettingsPage() {
           activeSeason,
           enableCsvImport,
           enableWelcomeEmails,
+          enableMemberCourtBooking,
           courtOpenTime,
           courtCloseTime,
           genderOptions: genderOptions
@@ -1041,6 +1044,50 @@ export default function AdminSettingsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Court Settings
           </h3>
+
+          <div className="flex items-center justify-between mb-6 border border-gray-200 rounded-md p-4 bg-gray-50">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Enable Member Court Bookings</p>
+              <p className="text-sm text-gray-500">Allow standard members to book courts. Disable this for phased rollouts.</p>
+            </div>
+            <button
+              onClick={() => {
+                setEnableMemberCourtBooking(!enableMemberCourtBooking);
+                setIsDirty(true);
+              }}
+              className={`${
+                enableMemberCourtBooking ? 'bg-primary-600' : 'bg-gray-200'
+              } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
+            >
+              <span className="sr-only">Use setting</span>
+              <span
+                className={`${
+                  enableMemberCourtBooking ? 'translate-x-5' : 'translate-x-0'
+                } pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+              >
+                <span
+                  className={`${
+                    enableMemberCourtBooking ? 'opacity-0 duration-100 ease-out' : 'opacity-100 duration-200 ease-in'
+                  } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
+                  aria-hidden="true"
+                >
+                  <svg className="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
+                    <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <span
+                  className={`${
+                    enableMemberCourtBooking ? 'opacity-100 duration-200 ease-in' : 'opacity-0 duration-100 ease-out'
+                  } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
+                  aria-hidden="true"
+                >
+                  <svg className="h-3 w-3 text-primary-600" fill="currentColor" viewBox="0 0 12 12">
+                    <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
+                  </svg>
+                </span>
+              </span>
+            </button>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col space-y-2">

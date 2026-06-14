@@ -6,6 +6,7 @@ import { SignOutButton } from '@/components/SignOutButton';
 import { MobileNav } from '@/components/MobileNav';
 
 import { verifyJwt } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export default async function PortalLayout({
   children,
@@ -21,6 +22,16 @@ export default async function PortalLayout({
     if (payload && payload.role === 'ADMIN') {
       isAdmin = true;
     }
+  }
+
+  let enableMemberCourtBooking = true;
+  try {
+    const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
+    if (settings) {
+      enableMemberCourtBooking = settings.enableMemberCourtBooking;
+    }
+  } catch (e) {
+    console.error('Error fetching settings for layout:', e);
   }
 
   if (!token) {
@@ -41,7 +52,9 @@ export default async function PortalLayout({
               </div>
               <div className="hidden md:flex gap-4">
                 <Link href="/portal" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Dashboard</Link>
-                <Link href="/portal/book" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Book a Court</Link>
+                {(enableMemberCourtBooking || isAdmin) && (
+                  <Link href="/portal/book" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Book a Court</Link>
+                )}
                 <Link href="/portal/calendar" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Calendar</Link>
                 <Link href="/portal/events" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">Events</Link>
                 <Link href="/portal/profile" className="text-primary-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">My Profile</Link>
@@ -56,7 +69,7 @@ export default async function PortalLayout({
               <div className="hidden md:block">
                 <SignOutButton />
               </div>
-              <MobileNav isAdmin={isAdmin} />
+              <MobileNav isAdmin={isAdmin} enableMemberCourtBooking={enableMemberCourtBooking} />
             </div>
           </div>
         </div>

@@ -81,6 +81,12 @@ export async function POST(req: Request) {
     let openHour = settings?.courtOpenTime ?? 6;
     let closeHour = settings?.courtCloseTime ?? 23;
 
+    const isAdmin = payload.role === 'ADMIN' || payload.role === 'PRO' || payload.role === 'SUPER_ADMIN';
+
+    if (settings?.enableMemberCourtBooking === false && !isAdmin) {
+      return NextResponse.json({ error: 'Court booking is currently disabled for standard members.' }, { status: 403 });
+    }
+
     if (courtId) {
       const courtInfo = await prisma.court.findUnique({ where: { id: courtId } });
       if (courtInfo) {
@@ -93,8 +99,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `This court is only open from ${openHour}:00 to ${closeHour}:00.` }, { status: 400 });
     }
 
-    // Role-based constraints
-    const isAdmin = payload.role === 'ADMIN' || payload.role === 'PRO' || payload.role === 'SUPER_ADMIN';
     const bookingType = isAdmin && type ? type : 'MEMBER';
     
     // Resolve block booking constraints

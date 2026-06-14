@@ -31,7 +31,7 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -45,6 +45,7 @@ export async function PUT(req: Request) {
     if (typeof activeSeason === 'string') updateData.activeSeason = activeSeason;
     if (typeof enableCsvImport === 'boolean') updateData.enableCsvImport = enableCsvImport;
     if (typeof enableWelcomeEmails === 'boolean') updateData.enableWelcomeEmails = enableWelcomeEmails;
+    if (typeof enableMemberCourtBooking === 'boolean') updateData.enableMemberCourtBooking = enableMemberCourtBooking;
     if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
 
     const settings = await prisma.systemSetting.upsert({
@@ -63,6 +64,7 @@ export async function PUT(req: Request) {
         activeSeason: typeof activeSeason === 'string' ? activeSeason : '2026',
         enableCsvImport: typeof enableCsvImport === 'boolean' ? enableCsvImport : true,
         enableWelcomeEmails: typeof enableWelcomeEmails === 'boolean' ? enableWelcomeEmails : true,
+        enableMemberCourtBooking: typeof enableMemberCourtBooking === 'boolean' ? enableMemberCourtBooking : true,
         genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say']
       }
     });

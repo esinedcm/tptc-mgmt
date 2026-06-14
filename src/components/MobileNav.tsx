@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { SignOutButton } from './SignOutButton';
 
-export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
+export function MobileNav({ isAdmin, enableMemberCourtBooking = true }: { isAdmin: boolean; enableMemberCourtBooking?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -27,7 +27,9 @@ export function MobileNav({ isAdmin }: { isAdmin: boolean }) {
         <div className="absolute top-16 left-0 right-0 bg-primary-600 shadow-xl border-t border-primary-500 z-50">
           <div className="flex flex-col px-4 py-3 space-y-2">
             <Link href="/portal" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Dashboard</Link>
-            <Link href="/portal/book" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Book a Court</Link>
+            {(enableMemberCourtBooking || isAdmin) && (
+              <Link href="/portal/book" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Book a Court</Link>
+            )}
             <Link href="/portal/calendar" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Calendar</Link>
             <Link href="/portal/events" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">Events</Link>
             <Link href="/portal/profile" onClick={() => setIsOpen(false)} className="text-white hover:bg-primary-700 px-3 py-2 rounded-md font-medium">My Profile</Link>
