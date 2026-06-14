@@ -228,6 +228,17 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
       return;
     }
 
+    if (selectedStartTime.getMinutes() !== 0 && selectedStartTime.getMinutes() !== 30) {
+      setError('Start time must be at the top or bottom of the hour (:00 or :30).');
+      setIsSubmitting(false);
+      return;
+    }
+    if (selectedEndTime.getMinutes() !== 0 && selectedEndTime.getMinutes() !== 30) {
+      setError('End time must be at the top or bottom of the hour (:00 or :30).');
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const url = editingBookingId ? `/api/bookings/${editingBookingId}` : '/api/bookings';
       const method = editingBookingId ? 'PUT' : 'POST';
@@ -534,17 +545,20 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     const selectedCourtInfo = courts.find(c => c.id === selectedCourtId);
                     const dynamicOpenHour = selectedCourtInfo?.openTime ?? openTime;
                     const dynamicCloseHour = selectedCourtInfo?.closeTime ?? closeTime;
-                    const minTime = `${String(dynamicOpenHour).padStart(2, '0')}:00`;
-                    const maxTime = `${String(dynamicCloseHour).padStart(2, '0')}:00`;
+                    
+                    const timeOptions = [];
+                    for (let h = dynamicOpenHour; h <= dynamicCloseHour; h++) {
+                      timeOptions.push(`${String(h).padStart(2, '0')}:00`);
+                      if (h !== dynamicCloseHour) {
+                        timeOptions.push(`${String(h).padStart(2, '0')}:30`);
+                      }
+                    }
                     
                     return (
                       <>
                         <label className="block text-sm font-medium text-gray-700">Start Time</label>
-                        <input 
-                          type="time" 
+                        <select 
                           required
-                          min={minTime}
-                          max={maxTime}
                           value={selectedStartTime ? `${String(selectedStartTime.getHours()).padStart(2, '0')}:${String(selectedStartTime.getMinutes()).padStart(2, '0')}` : ''}
                           onChange={(e) => {
                             if (!selectedStartTime || !e.target.value) return;
@@ -556,7 +570,16 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                             setSelectedStartTime(d);
                           }}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                        />
+                        >
+                          <option value="" disabled>Select Time</option>
+                          {timeOptions.map(time => {
+                            const [hStr, mStr] = time.split(':');
+                            const h = parseInt(hStr);
+                            const ampm = h >= 12 ? 'PM' : 'AM';
+                            const displayH = h % 12 || 12;
+                            return <option key={time} value={time}>{`${displayH}:${mStr} ${ampm}`}</option>;
+                          })}
+                        </select>
                       </>
                     );
                   })()}
@@ -566,17 +589,20 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                     const selectedCourtInfo = courts.find(c => c.id === selectedCourtId);
                     const dynamicOpenHour = selectedCourtInfo?.openTime ?? openTime;
                     const dynamicCloseHour = selectedCourtInfo?.closeTime ?? closeTime;
-                    const minTime = `${String(dynamicOpenHour).padStart(2, '0')}:00`;
-                    const maxTime = `${String(dynamicCloseHour).padStart(2, '0')}:00`;
+
+                    const timeOptions = [];
+                    for (let h = dynamicOpenHour; h <= dynamicCloseHour; h++) {
+                      timeOptions.push(`${String(h).padStart(2, '0')}:00`);
+                      if (h !== dynamicCloseHour) {
+                        timeOptions.push(`${String(h).padStart(2, '0')}:30`);
+                      }
+                    }
 
                     return (
                       <>
                         <label className="block text-sm font-medium text-gray-700">End Time</label>
-                        <input 
-                          type="time" 
+                        <select 
                           required
-                          min={minTime}
-                          max={maxTime}
                           value={selectedEndTime ? `${String(selectedEndTime.getHours()).padStart(2, '0')}:${String(selectedEndTime.getMinutes()).padStart(2, '0')}` : ''}
                           onChange={(e) => {
                             if (!selectedEndTime || !e.target.value) return;
@@ -588,7 +614,16 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                             setSelectedEndTime(d);
                           }}
                           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                        />
+                        >
+                          <option value="" disabled>Select Time</option>
+                          {timeOptions.map(time => {
+                            const [hStr, mStr] = time.split(':');
+                            const h = parseInt(hStr);
+                            const ampm = h >= 12 ? 'PM' : 'AM';
+                            const displayH = h % 12 || 12;
+                            return <option key={time} value={time}>{`${displayH}:${mStr} ${ampm}`}</option>;
+                          })}
+                        </select>
                       </>
                     );
                   })()}

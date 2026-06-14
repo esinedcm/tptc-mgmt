@@ -142,6 +142,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'End time must be after start time' }, { status: 400 });
     }
 
+    if (start.getMinutes() !== 0 && start.getMinutes() !== 30) {
+      return NextResponse.json({ error: 'Booking start times must be at the top or bottom of the hour (:00 or :30)' }, { status: 400 });
+    }
+    if (end.getMinutes() !== 0 && end.getMinutes() !== 30) {
+      return NextResponse.json({ error: 'Booking end times must be at the top or bottom of the hour (:00 or :30)' }, { status: 400 });
+    }
+
     const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
     let openHour = settings?.courtOpenTime ?? 6;
     let closeHour = settings?.courtCloseTime ?? 23;
