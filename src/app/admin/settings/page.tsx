@@ -282,6 +282,8 @@ export default function AdminSettingsPage() {
     "visual",
   );
   const [showTopBtn, setShowTopBtn] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [showDangerZone, setShowDangerZone] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -641,6 +643,7 @@ export default function AdminSettingsPage() {
       });
       if (res.ok) {
         setMessage("Settings saved successfully!");
+        setIsDirty(false);
       } else {
         setMessage("Failed to save settings.");
       }
@@ -994,31 +997,45 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6 max-w-2xl mx-auto mt-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <h2 className="text-2xl font-bold text-gray-800">System Settings</h2>
-        <Link
-          href="/admin"
-          className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-        >
-          <svg
-            className="-ml-1 mr-2 h-5 w-5 text-gray-500"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 whitespace-nowrap"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-          Back to Dashboard
-        </Link>
+            {saving ? "Saving..." : "Save Settings"}
+          </button>
+          <Link
+            href="/admin"
+            onClick={(e) => {
+              if (isDirty && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+                e.preventDefault();
+              }
+            }}
+            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors whitespace-nowrap"
+          >
+            <svg
+              className="-ml-1 mr-2 h-5 w-5 text-gray-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back to Dashboard
+          </Link>
+        </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6" onChange={() => setIsDirty(true)}>
 
         <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -2376,7 +2393,7 @@ export default function AdminSettingsPage() {
         <div className="flex items-center space-x-4">
           <button
             onClick={handleSave}
-            disabled={saving}
+            disabled={!isDirty || saving}
             className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save Settings"}
@@ -2395,24 +2412,33 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="border-t border-red-200 pt-6 mt-6">
-          <h3 className="text-lg font-medium text-red-700 mb-4 flex items-center">
-            <svg
-              className="w-5 h-5 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-medium text-red-700 flex items-center">
+              <svg
+                className="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              Danger Zone
+            </h3>
+            <button
+              onClick={() => setShowDangerZone(!showDangerZone)}
+              className="px-3 py-1 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            Danger Zone
-          </h3>
-          <div className="bg-red-50 p-4 border border-red-200 rounded-md shadow-sm">
+              {showDangerZone ? "Hide Danger Zone" : "Show Danger Zone"}
+            </button>
+          </div>
+          {showDangerZone && (
+            <div className="bg-red-50 p-4 border border-red-200 rounded-md shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-red-200 pb-4 mb-4">
               <div>
                 <h4 className="text-sm font-bold text-red-900">
@@ -2451,6 +2477,7 @@ export default function AdminSettingsPage() {
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
 

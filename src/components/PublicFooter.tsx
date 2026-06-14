@@ -21,6 +21,8 @@ export default async function PublicFooter() {
             </>
           )}
           <span>&copy; {new Date().getFullYear()} {clubName}. All rights reserved.</span>
+          <span className="hidden md:inline">&bull;</span>
+          <span>Powered by Ace TCM</span>
         </div>
       </div>
     </footer>

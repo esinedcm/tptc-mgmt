@@ -73,6 +73,8 @@ export default async function RootLayout({
             Build v{process.env.NEXT_PUBLIC_BUILD_VERSION || "0.1.0"} 
             <span className="mx-1">•</span> 
             {process.env.NEXT_PUBLIC_BUILD_DATE || new Date().toISOString().split('T')[0]}
+            <span className="mx-1">•</span> 
+            Powered by Ace TCM
           </p>
         </footer>
       </body>
