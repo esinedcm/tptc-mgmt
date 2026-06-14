@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Input } from './ui/Input';
 import { Select } from './ui/Select';
 import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
+import { calculateHouseholdTotal } from '@/lib/pricing';
 import Link from 'next/link';
 
 type MembershipPlan = {
@@ -238,63 +239,11 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
   };
 
   if (success) {
-    const manuallySelectedFamily = members.some((m) => m.membershipType === 'Family');
-    const familyPlan = plans.find(p => p.name === 'Family');
-    const familyCost = familyPlan ? familyPlan.cost : 200;
-    
     // Create a dictionary of prices from the DB
     const prices: Record<string, number> = {};
     plans.forEach(p => { prices[p.name] = p.cost; });
     
-    const numAdults = members.filter(m => m.membershipType === 'Adult').length;
-    const numJuniors = members.filter(m => m.membershipType === 'Junior').length;
-    const numSeniors = members.filter(m => m.membershipType === 'Senior').length;
-    
-    // Total count of adults including the person who selected Family (if any)
-    const effectiveNumAdults = manuallySelectedFamily ? numAdults + 1 : numAdults;
-
-    const showFamilyDiscount = manuallySelectedFamily || (effectiveNumAdults >= 2 && numJuniors >= 1);
-
-    let totalDue = 0;
-
-    if (showFamilyDiscount) {
-      totalDue += familyCost; // Covers 2 Adults and up to 2 Juniors
-      
-      const extraAdults = Math.max(0, effectiveNumAdults - 2);
-      const extraJuniors = Math.max(0, numJuniors - 2);
-      
-      totalDue += extraAdults * (prices['Adult'] || 85);
-      totalDue += extraJuniors * (prices['Junior'] || 50);
-      totalDue += numSeniors * (prices['Senior'] || 70);
-      
-      // Add prices for any other unknown types just in case
-      totalDue += members.filter(m => !['Adult', 'Junior', 'Senior', 'Family'].includes(m.membershipType)).reduce((sum, m) => sum + (prices[m.membershipType] || 0), 0);
-    } else {
-      totalDue = members.reduce((sum, m) => sum + (prices[m.membershipType] || 0), 0);
-    }
-    
-    // Determine which specific members are covered by the Family discount so we can cross out their individual prices
-    const coveredIndexes = new Set<number>();
-    if (showFamilyDiscount) {
-      let adultCount = 0;
-      let juniorCount = 0;
-      members.forEach((m, i) => {
-        if (m.membershipType === 'Family') {
-          adultCount++;
-          coveredIndexes.add(i);
-        } else if (m.membershipType === 'Adult') {
-          if (adultCount < 2) {
-            adultCount++;
-            coveredIndexes.add(i);
-          }
-        } else if (m.membershipType === 'Junior') {
-          if (juniorCount < 2) {
-            juniorCount++;
-            coveredIndexes.add(i);
-          }
-        }
-      });
-    }
+    const { totalDue, coveredIndexes, showFamilyDiscount } = calculateHouseholdTotal(members, prices);
 
     return (
       <div className="p-8 bg-green-50 border border-green-200 rounded-lg max-w-2xl mx-auto shadow-sm">
@@ -387,32 +336,17 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Link 
-            href="/"
-            className="px-6 py-2 border border-green-600 text-green-700 font-medium rounded hover:bg-green-50 transition-colors text-center"
-          >
-            Return to Home
-          </Link>
           <button 
-            onClick={() => setSuccess(false)}
-            className="px-6 py-2 border border-green-600 text-green-700 font-medium rounded hover:bg-green-50 transition-colors"
+            onClick={() => window.close()}
+            className="px-8 py-3 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition-transform transform hover:-translate-y-0.5"
           >
-            Edit Registration
+            Close this page
           </button>
           <button 
-            onClick={() => {
-              setAddress({ streetAddress: '', city: '', postalCode: '' });
-              setMembers([{ firstName: '', lastName: '', email: '', password: '', phoneNumber: '', gender: '', dateOfBirth: '', wantsFreeLessons: false, membershipType: '' }]);
-              setSuccess(false);
-              setEditToken(undefined);
-              setError('');
-              setMemberErrors({});
-              setPostalError('');
-              setEmailPreviewUrl('');
-            }}
-            className="px-6 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition-colors"
+            onClick={() => setSuccess(false)}
+            className="px-6 py-2 border border-green-600 text-green-700 font-medium rounded-lg hover:bg-green-50 transition-colors"
           >
-            Register Another Household
+            Edit Registration
           </button>
         </div>
       </div>
@@ -516,6 +450,7 @@ export function RegistrationForm({ initialEditToken, initialLeadId, initialRenew
                   options={plans
                     .filter(p => !p.isArchived || p.name === member.membershipType)
                     .filter(p => !(index > 0 && p.name === 'Family'))
+                    .filter(p => p.name !== 'Extra Junior')
                     .map(p => ({ value: p.name, label: `${p.name} ($${p.cost}) - ${p.description || ''}${p.isArchived ? ' (Archived)' : ''}` }))} 
                   required 
                 />

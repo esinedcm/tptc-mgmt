@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Papa from 'papaparse';
+import { calculateHouseholdTotal as calcTotal } from '@/lib/pricing';
 import { isValidPostalCode, isValidPhoneNumber, formatPhoneNumber, formatPostalCode } from '@/lib/validation';
 
 type Membership = {
@@ -284,47 +285,10 @@ export default function AdminDashboard() {
 
   const calculateHouseholdTotal = (selectedIds: string[]) => {
     const selectedMemberships = memberships.filter(m => selectedIds.includes(m.id));
-
-    const numAdults = selectedMemberships.filter(m => m.membershipType === 'Adult').length;
-    const numJuniors = selectedMemberships.filter(m => m.membershipType === 'Junior').length;
-    const numSeniors = selectedMemberships.filter(m => m.membershipType === 'Senior').length;
-    const manuallySelectedFamily = selectedMemberships.some((m) => m.membershipType === 'Family');
+    const prices: Record<string, number> = {};
+    plans.forEach(p => { prices[p.name] = p.cost; });
     
-    const effectiveNumAdults = manuallySelectedFamily ? numAdults + 1 : numAdults;
-    const showFamilyDiscount = manuallySelectedFamily || (effectiveNumAdults >= 2 && numJuniors >= 1);
-
-    const familyPlan = plans.find(p => p.name === 'Family');
-    const familyCost = familyPlan ? familyPlan.cost : 200;
-
-    let totalDue = 0;
-
-    if (showFamilyDiscount) {
-      totalDue += familyCost;
-      
-      const extraAdults = Math.max(0, effectiveNumAdults - 2);
-      const extraJuniors = Math.max(0, numJuniors - 2);
-      
-      const adultPlan = plans.find(p => p.name === 'Adult');
-      const juniorPlan = plans.find(p => p.name === 'Junior');
-      const seniorPlan = plans.find(p => p.name === 'Senior');
-
-      totalDue += extraAdults * (adultPlan?.cost || 85);
-      totalDue += extraJuniors * (juniorPlan?.cost || 50);
-      totalDue += numSeniors * (seniorPlan?.cost || 70);
-      
-      totalDue += selectedMemberships
-        .filter(m => !['Adult', 'Junior', 'Senior', 'Family'].includes(m.membershipType))
-        .reduce((sum, m) => {
-          const plan = plans.find(p => p.name === m.membershipType);
-          return sum + (plan?.cost || 0);
-        }, 0);
-    } else {
-      totalDue = selectedMemberships.reduce((sum, m) => {
-        const plan = plans.find(p => p.name === m.membershipType);
-        return sum + (plan?.cost || 0);
-      }, 0);
-    }
-
+    const { totalDue } = calcTotal(selectedMemberships, prices);
     return totalDue;
   };
 

@@ -26,6 +26,16 @@ model SystemSetting {
   primaryColor              String   @default("#4f46e5")
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
+  
+  heroTitle                 String?  @default("Elevate Your Game at")
+  heroSubtitle              String?  @default("Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.")
+  feature1Title             String?  @default("Pristine Courts")
+  feature1Desc              String?  @default("Play on our perfectly maintained surfaces. Easy online booking ensures your court is ready when you are.")
+  feature2Title             String?  @default("Expert Coaching")
+  feature2Desc              String?  @default("Elevate your skills with our certified professionals offering group clinics and private lessons.")
+  feature3Title             String?  @default("Vibrant Community")
+  feature3Desc              String?  @default("Join tournaments, ladders, and social events. Find playing partners easily through our member portal.")
+
   updatedAt                 DateTime @updatedAt
 }
 
@@ -238,4 +248,16 @@ model CouponCode {
   
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+}
+
+model CustomPage {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  contentHtml String
+  isPublished Boolean  @default(true)
+  isPublic    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

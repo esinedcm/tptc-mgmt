@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendImportWelcomeEmail, sendRenewalLinkEmail, sendInterestConfirmationEmail, sendEditLinkEmail, sendWelcomeEmail } from '@/lib/email';
+import { calculateHouseholdTotal } from '@/lib/pricing';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
@@ -89,27 +90,14 @@ export async function POST(request: Request) {
       const memberNames = householdUsers.map(u => `${u.firstName} ${u.lastName}`);
       
       const plans = await prisma.membershipPlan.findMany();
-      let totalDue = 0;
-      let hasFamily = false;
-      let familyCost = 0;
+      const prices: Record<string, number> = {};
+      plans.forEach(p => { prices[p.name] = p.cost; });
 
-      for (const u of householdUsers) {
-        if (u.memberships.length > 0) {
-          const type = u.memberships[0].membershipType;
-          if (type === 'Family') {
-            hasFamily = true;
-          } else {
-            const plan = plans.find(p => p.name === type);
-            totalDue += (plan?.cost || 0);
-          }
-        }
-      }
+      const membersData = householdUsers.map(u => ({
+        membershipType: u.memberships[0]?.membershipType || 'Adult'
+      }));
 
-      if (hasFamily) {
-        const fPlan = plans.find(p => p.name === 'Family');
-        familyCost = fPlan?.cost || 0;
-        totalDue = familyCost;
-      }
+      const { totalDue } = calculateHouseholdTotal(membersData, prices);
       
       let editToken = user.editToken;
       if (!editToken) {

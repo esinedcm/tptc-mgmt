@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/hash';
 import { sendEditLinkEmail, sendAdminNewRegistrationEmail } from '@/lib/email';
 import { isValidPostalCode, isValidPhoneNumber } from '@/lib/validation';
+import { calculateHouseholdTotal } from '@/lib/pricing';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
@@ -235,30 +236,7 @@ export async function POST(request: Request) {
     const plans = await prisma.membershipPlan.findMany();
     const prices: Record<string, number> = {};
     plans.forEach(p => { prices[p.name] = p.cost; });
-    const familyPlan = plans.find(p => p.name === 'Family');
-    const familyCost = familyPlan ? familyPlan.cost : 200;
-
-    const manuallySelectedFamily = members.some((m) => m.membershipType === 'Family');
-    let totalDue = 0;
-
-    if (manuallySelectedFamily) {
-      totalDue = familyCost;
-    } else {
-      const numAdults = members.filter(m => m.membershipType === 'Adult').length;
-      const numJuniors = members.filter(m => m.membershipType === 'Junior').length;
-      const numSeniors = members.filter(m => m.membershipType === 'Senior').length;
-
-      if (numAdults >= 2 && numJuniors >= 1) {
-        totalDue += familyCost;
-        const extraAdults = Math.max(0, numAdults - 2);
-        const extraJuniors = Math.max(0, numJuniors - 2);
-        totalDue += extraAdults * (prices['Adult'] || 85);
-        totalDue += extraJuniors * (prices['Junior'] || 50);
-        totalDue += numSeniors * (prices['Senior'] || 70);
-      } else {
-        totalDue = members.reduce((sum, m) => sum + (prices[m.membershipType] || 0), 0);
-      }
-    }
+    const { totalDue } = calculateHouseholdTotal(members, prices);
 
     // Send email to Member 1
     const memberOneEmail = members[0].email;

@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { PrintButton } from '@/components/PrintButton';
+import { calculateHouseholdTotal } from "@/lib/pricing";
 
 export const dynamic = 'force-dynamic';
 
@@ -57,27 +58,8 @@ export default async function TreasurerReport() {
 
     if (pendingTypes.length === 0) return;
 
-    let owed = 0;
-    const manuallySelectedFamily = pendingTypes.includes('Family');
-
-    if (manuallySelectedFamily) {
-      owed = familyCost;
-    } else {
-      const numAdults = pendingTypes.filter(t => t === 'Adult').length;
-      const numJuniors = pendingTypes.filter(t => t === 'Junior').length;
-      const numSeniors = pendingTypes.filter(t => t === 'Senior').length;
-
-      if (numAdults >= 2 && numJuniors >= 1) {
-        owed += familyCost;
-        const extraAdults = Math.max(0, numAdults - 2);
-        const extraJuniors = Math.max(0, numJuniors - 2);
-        owed += extraAdults * (prices['Adult'] || 85);
-        owed += extraJuniors * (prices['Junior'] || 50);
-        owed += numSeniors * (prices['Senior'] || 70);
-      } else {
-        owed = pendingTypes.reduce((sum, t) => sum + (prices[t] || 0), 0);
-      }
-    }
+    const membersData = pendingTypes.map(type => ({ membershipType: type }));
+    const { totalDue: owed } = calculateHouseholdTotal(membersData, prices);
 
     if (owed > 0) {
       totalOutstanding += owed;

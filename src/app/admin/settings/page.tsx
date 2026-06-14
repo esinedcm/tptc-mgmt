@@ -49,6 +49,15 @@ type CouponCode = {
   validEvents: { id: string; title: string }[];
 };
 
+type CustomPage = {
+  id: string;
+  slug: string;
+  title: string;
+  contentHtml: string;
+  isPublished: boolean;
+  isPublic: boolean;
+};
+
 const TEMPLATE_VARIABLES: Record<string, string[]> = {
   WELCOME_EMAIL: [
     "{{firstName}}",
@@ -179,6 +188,15 @@ export default function AdminSettingsPage() {
   const [wipingSystem, setWipingSystem] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [heroTitle, setHeroTitle] = useState("Elevate Your Game at");
+  const [heroSubtitle, setHeroSubtitle] = useState("Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.");
+  const [feature1Title, setFeature1Title] = useState("Pristine Courts");
+  const [feature1Desc, setFeature1Desc] = useState("Play on our perfectly maintained surfaces. Easy online booking ensures your court is ready when you are.");
+  const [feature2Title, setFeature2Title] = useState("Expert Coaching");
+  const [feature2Desc, setFeature2Desc] = useState("Elevate your skills with our certified professionals offering group clinics and private lessons.");
+  const [feature3Title, setFeature3Title] = useState("Vibrant Community");
+  const [feature3Desc, setFeature3Desc] = useState("Join tournaments, ladders, and social events. Find playing partners easily through our member portal.");
+
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [plansLoading, setPlansLoading] = useState(true);
 
@@ -239,18 +257,25 @@ export default function AdminSettingsPage() {
 
   const [coupons, setCoupons] = useState<CouponCode[]>([]);
   const [couponsLoading, setCouponsLoading] = useState(true);
-  const [showAddCoupon, setShowAddCoupon] = useState(false);
   const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
   const [couponFormData, setCouponFormData] = useState({
     code: '',
-    discountType: 'FIXED',
+    discountType: 'PERCENT' as 'PERCENT' | 'FIXED',
     discountAmount: '',
     description: '',
     maxUses: '',
     expiryDate: '',
     validForMemberships: false
   });
+  const [showAddCoupon, setShowAddCoupon] = useState(false);
+  const [savingCoupon, setSavingCoupon] = useState(false);
 
+  const [customPages, setCustomPages] = useState<CustomPage[]>([]);
+  const [pagesLoading, setPagesLoading] = useState(true);
+  const [showAddPage, setShowAddPage] = useState(false);
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [pageForm, setPageForm] = useState<Partial<CustomPage>>({});
+  const [savingPage, setSavingPage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editorInstance, setEditorInstance] = useState<any>(null);
   const [editorMode, setEditorMode] = useState<"visual" | "raw" | "preview">(
@@ -298,6 +323,18 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const fetchPages = async () => {
+    try {
+      const res = await fetch('/api/admin/pages');
+      const data = await res.json();
+      if (data.pages) setCustomPages(data.pages);
+    } catch (err) {
+      console.error('Failed to load pages', err);
+    } finally {
+      setPagesLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetch("/api/admin/settings")
       .then((res) => res.json())
@@ -320,6 +357,14 @@ export default function AdminSettingsPage() {
           ) {
             setGenderOptions(data.settings.genderOptions.join(", "));
           }
+          if (data.settings.heroTitle) setHeroTitle(data.settings.heroTitle);
+          if (data.settings.heroSubtitle) setHeroSubtitle(data.settings.heroSubtitle);
+          if (data.settings.feature1Title) setFeature1Title(data.settings.feature1Title);
+          if (data.settings.feature1Desc) setFeature1Desc(data.settings.feature1Desc);
+          if (data.settings.feature2Title) setFeature2Title(data.settings.feature2Title);
+          if (data.settings.feature2Desc) setFeature2Desc(data.settings.feature2Desc);
+          if (data.settings.feature3Title) setFeature3Title(data.settings.feature3Title);
+          if (data.settings.feature3Desc) setFeature3Desc(data.settings.feature3Desc);
         }
         setLoading(false);
       })
@@ -359,7 +404,8 @@ export default function AdminSettingsPage() {
         setBookingTypesLoading(false);
       });
       
-    fetchCoupons();
+      fetchCoupons();
+    fetchPages();
   }, []);
 
   const handleSaveNewBookingType = async () => {
@@ -514,6 +560,52 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleSavePage = async () => {
+    if (!pageForm.title || !pageForm.slug) return alert('Title and Slug are required');
+    setSavingPage(true);
+    try {
+      const method = editingPageId ? 'PUT' : 'POST';
+      const url = editingPageId ? `/api/admin/pages/${editingPageId}` : '/api/admin/pages';
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pageForm)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setEditingPageId(null);
+        setShowAddPage(false);
+        setPageForm({});
+        await fetchPages();
+      } else {
+        alert(data.error || 'Failed to save page');
+      }
+    } catch (err) {
+      alert('Error saving page');
+    }
+    setSavingPage(false);
+  };
+
+  const handleStartEditPage = (page: CustomPage) => {
+    setEditingPageId(page.id);
+    setPageForm(page);
+    setShowAddPage(true);
+  };
+
+  const handleDeletePage = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this page?')) return;
+    try {
+      const res = await fetch(`/api/admin/pages/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchPages();
+      } else {
+        alert('Failed to delete page');
+      }
+    } catch (err) {
+      alert('Error deleting page');
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setMessage("");
@@ -537,6 +629,14 @@ export default function AdminSettingsPage() {
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          heroTitle,
+          heroSubtitle,
+          feature1Title,
+          feature1Desc,
+          feature2Title,
+          feature2Desc,
+          feature3Title,
+          feature3Desc,
         }),
       });
       if (res.ok) {
@@ -919,6 +1019,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="space-y-6">
+
         <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Court Settings
@@ -1292,7 +1393,7 @@ export default function AdminSettingsPage() {
             Member Data Settings
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Enable CSV Import
@@ -1354,6 +1455,25 @@ export default function AdminSettingsPage() {
                 <span className="text-sm text-gray-700">
                   {enableWelcomeEmails ? "Enabled" : "Disabled"}
                 </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Active Season
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                The current active membership year. Change this to rollover to
+                the next year.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="text"
+                  value={activeSeason}
+                  onChange={(e) => setActiveSeason(e.target.value)}
+                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                  placeholder="e.g. 2026"
+                />
               </div>
             </div>
           </div>
@@ -1537,7 +1657,7 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        <div className="border-t pt-6 mt-6">
+        <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Membership Plans
           </h3>
@@ -2094,9 +2214,9 @@ export default function AdminSettingsPage() {
 
         <div className="border-t pt-6 mt-6 pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
-            System Preferences
+            Website & Branding
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Primary Brand Colour
@@ -2117,25 +2237,139 @@ export default function AdminSettingsPage() {
                 </span>
               </div>
             </div>
+          </div>
 
+          <h4 className="text-md font-medium text-gray-900 mb-4">
+            Landing Page Content
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Active Season
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The current active membership year. Change this to rollover to
-                the next year.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={activeSeason}
-                  onChange={(e) => setActiveSeason(e.target.value)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                  placeholder="e.g. 2026"
-                />
-              </div>
+              <label className="text-sm font-medium text-gray-700">Hero Title</label>
+              <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
             </div>
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
+              <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
+              <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+              <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
+              <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
+              <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+              <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
+              <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
+              <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+              <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
+              <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+          </div>
+        </div>
+        <div className="border-b pb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Website Pages Manager
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">Create dynamic, custom pages for your website (e.g. "About Us", "Club Rules").</p>
+          
+          <div className="space-y-4 mb-6">
+            {pagesLoading ? (
+              <p className="text-sm text-gray-500">Loading pages...</p>
+            ) : (
+              customPages.map(page => (
+                <div key={page.id} className="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-200">
+                  <div>
+                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                      {page.title}
+                      {!page.isPublic && (
+                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                      )}
+                    </h4>
+                    <p className="text-xs text-gray-500">/p/{page.slug} • {page.isPublished ? 'Published' : 'Draft'}</p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button onClick={() => handleStartEditPage(page)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
+                    <button onClick={() => handleDeletePage(page.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                  </div>
+                </div>
+              ))
+            )}
+            {!pagesLoading && customPages.length === 0 && (
+              <p className="text-sm text-gray-500 italic">No custom pages created yet.</p>
+            )}
+          </div>
+
+          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="text-sm font-medium text-gray-900">
+                {editingPageId ? 'Edit Page' : 'Add New Page'}
+              </h4>
+              <button
+                onClick={() => {
+                  setShowAddPage(!showAddPage);
+                  if (editingPageId) {
+                    setEditingPageId(null);
+                    setPageForm({});
+                  }
+                }}
+                className="text-primary-600 text-sm font-medium hover:text-primary-800"
+              >
+                {showAddPage ? "Cancel" : "+ Add Page"}
+              </button>
+            </div>
+            {showAddPage && (
+              <div className="flex flex-col space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
+                    <input type="text" value={pageForm.title || ''} onChange={e => setPageForm({...pageForm, title: e.target.value})} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Club Rules" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
+                    <div className="flex items-center">
+                      <span className="text-gray-500 text-sm bg-gray-100 border border-r-0 border-gray-300 rounded-l px-3 py-2">/p/</span>
+                      <input type="text" value={pageForm.slug || ''} onChange={e => setPageForm({...pageForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="flex-1 border border-gray-300 rounded-r px-3 py-2 text-sm" placeholder="e.g. club-rules" />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-6 border-t pt-4">
+                  <label className="flex items-center space-x-2">
+                    <input type="checkbox" checked={pageForm.isPublished ?? true} onChange={e => setPageForm({...pageForm, isPublished: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
+                    <span className="text-sm text-gray-700">Published (Visible on site)</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input type="checkbox" checked={pageForm.isPublic ?? true} onChange={e => setPageForm({...pageForm, isPublic: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
+                    <span className="text-sm text-gray-700">Public (Uncheck for Members Only access)</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Page Content</label>
+                  <TipTapEditor
+                    value={pageForm.contentHtml || ""}
+                    onChange={(html) => setPageForm({...pageForm, contentHtml: html})}
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={handleSavePage}
+                    disabled={savingPage}
+                    className="px-4 py-2 bg-primary-600 text-white rounded shadow-sm hover:bg-primary-700 font-medium text-sm disabled:opacity-50"
+                  >
+                    {savingPage ? 'Saving...' : 'Save Page'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
