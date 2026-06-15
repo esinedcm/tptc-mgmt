@@ -33,10 +33,18 @@ export default async function RootLayout({
   const isLoggedIn = !!cookieStore.get('auth_token')?.value;
 
   let primaryColor = "#4f46e5"; // default primary-600
+  let secondaryColor = "#10b981"; // default emerald-500
+  let fontFamily = "Inter";
   try {
     const settings = await prisma.systemSetting.findUnique({ where: { id: "global" } });
     if (settings?.primaryColor) {
       primaryColor = settings.primaryColor;
+    }
+    if (settings?.secondaryColor) {
+      secondaryColor = settings.secondaryColor;
+    }
+    if (settings?.fontFamily) {
+      fontFamily = settings.fontFamily;
     }
   } catch (err: any) {
     if (err?.code === 'P2021') {
@@ -48,11 +56,16 @@ export default async function RootLayout({
   }
 
   const palette = generatePalette(primaryColor);
+  const secondaryPalette = generatePalette(secondaryColor);
   const themeStyles = `
     :root {
       ${Object.entries(palette).map(([weight, hex]) => `--primary-${weight}: ${hex};`).join('\n      ')}
+      ${Object.entries(secondaryPalette).map(([weight, hex]) => `--secondary-${weight}: ${hex};`).join('\n      ')}
+      --font-sans: '${fontFamily}', sans-serif;
     }
   `;
+  
+  const fontLink = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@400;500;600;700&display=swap`;
 
   return (
     <html
@@ -60,9 +73,12 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href={fontLink} rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
       </head>
-      <body className="min-h-full flex flex-col bg-gray-50">
+      <body className="h-full bg-gray-50 flex flex-col min-h-screen" style={{ fontFamily: `'${fontFamily}', sans-serif` }}>
         <main className="flex-1 flex flex-col">
           {children}
         </main>

@@ -25,6 +25,11 @@ model SystemSetting {
   enableWelcomeEmails       Boolean  @default(true)
   enableMemberCourtBooking  Boolean  @default(true)
   primaryColor              String   @default("#4f46e5")
+  secondaryColor            String   @default("#10b981")
+  fontFamily                String   @default("Inter")
+  heroImageUrl              String?
+  promoImageUrl             String?
+  promoLinkUrl              String?
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   

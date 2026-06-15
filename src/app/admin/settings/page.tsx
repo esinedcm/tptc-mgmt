@@ -174,6 +174,11 @@ export default function AdminSettingsPage() {
   const [calendarDaysToShow, setCalendarDaysToShow] = useState(3);
   const [calendarSkipDays, setCalendarSkipDays] = useState(1);
   const [primaryColor, setPrimaryColor] = useState("#4f46e5");
+  const [secondaryColor, setSecondaryColor] = useState("#10b981");
+  const [fontFamily, setFontFamily] = useState("Inter");
+  const [heroImageUrl, setHeroImageUrl] = useState("");
+  const [promoImageUrl, setPromoImageUrl] = useState("");
+  const [promoLinkUrl, setPromoLinkUrl] = useState("");
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
   const [activeSeason, setActiveSeason] = useState("2026");
@@ -349,6 +354,11 @@ export default function AdminSettingsPage() {
           setCalendarDaysToShow(data.settings.calendarDaysToShow ?? 3);
           setCalendarSkipDays(data.settings.calendarSkipDays ?? 1);
           setPrimaryColor(data.settings.primaryColor ?? "#4f46e5");
+          setSecondaryColor(data.settings.secondaryColor ?? "#10b981");
+          setFontFamily(data.settings.fontFamily ?? "Inter");
+          setHeroImageUrl(data.settings.heroImageUrl ?? "");
+          setPromoImageUrl(data.settings.promoImageUrl ?? "");
+          setPromoLinkUrl(data.settings.promoLinkUrl ?? "");
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
           setActiveSeason(data.settings.activeSeason ?? "2026");
@@ -624,6 +634,11 @@ export default function AdminSettingsPage() {
           calendarDaysToShow: calendarDaysToShow,
           calendarSkipDays: calendarSkipDays,
           primaryColor: primaryColor,
+          secondaryColor: secondaryColor,
+          fontFamily: fontFamily,
+          heroImageUrl: heroImageUrl || null,
+          promoImageUrl: promoImageUrl || null,
+          promoLinkUrl: promoLinkUrl || null,
           activeSeason,
           enableCsvImport,
           enableWelcomeEmails,
@@ -2299,6 +2314,103 @@ export default function AdminSettingsPage() {
                 <span className="text-gray-600 font-mono text-sm">
                   {primaryColor.toUpperCase()}
                 </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Secondary Color
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Used for accents, success states, and secondary buttons.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={secondaryColor}
+                  onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+                />
+                <span className="text-gray-600 font-mono text-sm">
+                  {secondaryColor.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">
+                Font Family
+              </label>
+              <select
+                value={fontFamily}
+                onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
+                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              >
+                <option value="Inter">Inter (Modern, Clean)</option>
+                <option value="Roboto">Roboto (Classic, Readable)</option>
+                <option value="Outfit">Outfit (Geometric, Trendy)</option>
+                <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
+                <option value="Montserrat">Montserrat (Wide, Professional)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col space-y-2 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">
+                Hero Image URL
+              </label>
+              <p className="text-xs text-gray-500 mb-1">
+                Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
+              </p>
+              <input
+                type="text"
+                placeholder="https://example.com/my-club-hero.jpg"
+                value={heroImageUrl}
+                onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              />
+              {heroImageUrl && (
+                <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
+              <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
+              <p className="text-xs text-gray-500 mb-2">
+                Display an event flyer or promotional banner on your homepage. Leave blank to hide.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/tournament-flyer.png"
+                    value={promoImageUrl}
+                    onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  />
+                  {promoImageUrl && (
+                    <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/register"
+                    value={promoLinkUrl}
+                    onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  />
+                  <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
+                </div>
               </div>
             </div>
           </div>

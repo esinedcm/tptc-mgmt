@@ -31,7 +31,7 @@ export default async function CustomPageView({ params }: { params: Promise<{ slu
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicNavbar />
       
       <main className="flex-grow pt-28 pb-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">

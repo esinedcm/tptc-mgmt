@@ -14,6 +14,9 @@ export default async function Home() {
 
   const heroTitle = settings?.heroTitle || "Elevate Your Game at";
   const heroSubtitle = settings?.heroSubtitle || "Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.";
+  const heroImageUrl = settings?.heroImageUrl || "/hero_tennis_court.png";
+  const promoImageUrl = settings?.promoImageUrl;
+  const promoLinkUrl = settings?.promoLinkUrl;
   const feature1Title = settings?.feature1Title || "Pristine Courts";
   const feature1Desc = settings?.feature1Desc || "Play on our perfectly maintained surfaces. Easy online booking ensures your court is ready when you are.";
   const feature2Title = settings?.feature2Title || "Expert Coaching";
@@ -22,14 +25,14 @@ export default async function Home() {
   const feature3Desc = settings?.feature3Desc || "Join tournaments, ladders, and social events. Find playing partners easily through our member portal.";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicNavbar />
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden flex-grow flex flex-col justify-center">
         <div className="absolute inset-0 z-0">
           <img 
-            src="/hero_tennis_court.png" 
+            src={heroImageUrl} 
             alt="Tennis Court at Sunset" 
             className="w-full h-full object-cover filter brightness-[0.4]"
           />
@@ -61,6 +64,33 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Promotional Showcase Section */}
+      {promoImageUrl && (
+        <section className="py-16 bg-gray-100 border-b border-gray-200">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="text-sm font-semibold text-primary-600 tracking-wide uppercase">Club Announcements</h2>
+            </div>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-white flex justify-center items-center p-2 hover:shadow-3xl transition-shadow duration-300">
+              {promoLinkUrl ? (
+                <a href={promoLinkUrl} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={promoImageUrl} alt="Promotional Event" className="w-full object-contain max-h-[600px] rounded-xl group-hover:opacity-95 transition-opacity" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded-xl">
+                    <span className="bg-primary-600 text-white font-semibold py-3 px-6 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                      Learn More &rarr;
+                    </span>
+                  </div>
+                </a>
+              ) : (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={promoImageUrl} alt="Promotional Event" className="w-full object-contain max-h-[600px] rounded-xl" />
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features Section */}
       <section id="facilities" className="py-24 bg-white">

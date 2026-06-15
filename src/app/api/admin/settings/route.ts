@@ -31,7 +31,7 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -42,6 +42,19 @@ export async function PUT(req: Request) {
     if (typeof calendarDaysToShow === 'number') updateData.calendarDaysToShow = calendarDaysToShow;
     if (typeof calendarSkipDays === 'number') updateData.calendarSkipDays = calendarSkipDays;
     if (typeof primaryColor === 'string') updateData.primaryColor = primaryColor;
+    if (typeof secondaryColor === 'string') updateData.secondaryColor = secondaryColor;
+    if (typeof fontFamily === 'string') updateData.fontFamily = fontFamily;
+    if (heroImageUrl === null || typeof heroImageUrl === 'string') updateData.heroImageUrl = heroImageUrl;
+    if (promoImageUrl === null || typeof promoImageUrl === 'string') updateData.promoImageUrl = promoImageUrl;
+    if (promoLinkUrl === null || typeof promoLinkUrl === 'string') updateData.promoLinkUrl = promoLinkUrl;
+    if (typeof heroTitle === 'string') updateData.heroTitle = heroTitle;
+    if (typeof heroSubtitle === 'string') updateData.heroSubtitle = heroSubtitle;
+    if (typeof feature1Title === 'string') updateData.feature1Title = feature1Title;
+    if (typeof feature1Desc === 'string') updateData.feature1Desc = feature1Desc;
+    if (typeof feature2Title === 'string') updateData.feature2Title = feature2Title;
+    if (typeof feature2Desc === 'string') updateData.feature2Desc = feature2Desc;
+    if (typeof feature3Title === 'string') updateData.feature3Title = feature3Title;
+    if (typeof feature3Desc === 'string') updateData.feature3Desc = feature3Desc;
     if (typeof activeSeason === 'string') updateData.activeSeason = activeSeason;
     if (typeof enableCsvImport === 'boolean') updateData.enableCsvImport = enableCsvImport;
     if (typeof enableWelcomeEmails === 'boolean') updateData.enableWelcomeEmails = enableWelcomeEmails;
@@ -61,6 +74,19 @@ export async function PUT(req: Request) {
         calendarDaysToShow: typeof calendarDaysToShow === 'number' ? calendarDaysToShow : 3,
         calendarSkipDays: typeof calendarSkipDays === 'number' ? calendarSkipDays : 1,
         primaryColor: typeof primaryColor === 'string' ? primaryColor : '#4f46e5',
+        secondaryColor: typeof secondaryColor === 'string' ? secondaryColor : '#10b981',
+        fontFamily: typeof fontFamily === 'string' ? fontFamily : 'Inter',
+        heroImageUrl: heroImageUrl === null || typeof heroImageUrl === 'string' ? heroImageUrl : null,
+        promoImageUrl: promoImageUrl === null || typeof promoImageUrl === 'string' ? promoImageUrl : null,
+        promoLinkUrl: promoLinkUrl === null || typeof promoLinkUrl === 'string' ? promoLinkUrl : null,
+        heroTitle: typeof heroTitle === 'string' ? heroTitle : "Elevate Your Game at",
+        heroSubtitle: typeof heroSubtitle === 'string' ? heroSubtitle : "Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.",
+        feature1Title: typeof feature1Title === 'string' ? feature1Title : "Pristine Courts",
+        feature1Desc: typeof feature1Desc === 'string' ? feature1Desc : "Play on our perfectly maintained surfaces. Easy online booking ensures your court is ready when you are.",
+        feature2Title: typeof feature2Title === 'string' ? feature2Title : "Expert Coaching",
+        feature2Desc: typeof feature2Desc === 'string' ? feature2Desc : "Elevate your skills with our certified professionals offering group clinics and private lessons.",
+        feature3Title: typeof feature3Title === 'string' ? feature3Title : "Vibrant Community",
+        feature3Desc: typeof feature3Desc === 'string' ? feature3Desc : "Join tournaments, ladders, and social events. Find playing partners easily through our member portal.",
         activeSeason: typeof activeSeason === 'string' ? activeSeason : '2026',
         enableCsvImport: typeof enableCsvImport === 'boolean' ? enableCsvImport : true,
         enableWelcomeEmails: typeof enableWelcomeEmails === 'boolean' ? enableWelcomeEmails : true,
