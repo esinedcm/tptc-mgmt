@@ -1,0 +1,74 @@
+[
+  {
+    "hash": "931316d",
+    "date": "2026-06-15T16:41:54-04:00",
+    "type": "New Feature",
+    "message": "Add custom website styling and promotional showcase"
+  },
+  {
+    "hash": "0fac6a6",
+    "date": "2026-06-14T12:36:56-04:00",
+    "type": "Bug Fix",
+    "message": "Add layouts to public pages and update registration error UI"
+  },
+  {
+    "hash": "ee733d4",
+    "date": "2026-06-14T12:16:45-04:00",
+    "type": "New Feature",
+    "message": "Centralize pricing and Extra Junior rule, CMS updates, landing UI tweaks"
+  },
+  {
+    "hash": "65428cb",
+    "date": "2026-06-14T10:56:12-04:00",
+    "type": "Bug Fix",
+    "message": "Resolve TS type error in admin dashboard filter"
+  },
+  {
+    "hash": "04d89e7",
+    "date": "2026-06-14T10:49:46-04:00",
+    "type": "New Feature",
+    "message": "Pre-demo updates including System Wipe, Staff filters, and Import enhancements"
+  },
+  {
+    "hash": "7f0ffb5",
+    "date": "2026-06-14T07:43:01-04:00",
+    "type": "New Feature",
+    "message": "Management roles, targeted email notifications, event/booking logic fixes"
+  },
+  {
+    "hash": "5c80997",
+    "date": "2026-06-10T07:57:00-04:00",
+    "type": "New Feature",
+    "message": "Move Mark as Paid button and restrict event registration to paid members"
+  },
+  {
+    "hash": "27751f5",
+    "date": "2026-06-08T08:39:16-04:00",
+    "type": "Bug Fix",
+    "message": "Make standalone output conditional to fix vercel build hang"
+  },
+  {
+    "hash": "a3854d0",
+    "date": "2026-06-08T07:38:03-04:00",
+    "type": "New Feature",
+    "message": "Add Dockerfile and standalone output for mapledeploy test"
+  },
+  {
+    "hash": "6a981a5",
+    "date": "2026-06-08T07:36:00-04:00",
+    "type": "Bug Fix",
+    "message": "Remove directUrl from schema to fix vercel build"
+  },
+  {
+    "hash": "0a0fd5c",
+    "date": "2026-06-08T07:01:14-04:00",
+    "type": "Bug Fix",
+    "message": "Tsc error and rearrange settings page"
+  },
+  {
+    "hash": "06a813e",
+    "date": "2026-06-08T06:36:06-04:00",
+    "type": "New Feature",
+    "message": "Migrate email editor to TipTap"
+  }
+]

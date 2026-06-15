@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Papa from 'papaparse';
 import { calculateHouseholdTotal as calcTotal } from '@/lib/pricing';
 import { isValidPostalCode, isValidPhoneNumber, formatPhoneNumber, formatPostalCode } from '@/lib/validation';
+import { ReleaseNotesWidget } from '@/components/ReleaseNotesWidget';
 
 type Membership = {
   id: string;
@@ -630,7 +631,8 @@ export default function AdminDashboard() {
               
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 md:gap-4">
+          <div className="flex flex-wrap gap-2 md:gap-4 items-center">
+            <ReleaseNotesWidget />
             <Link
               href="/admin/bookings"
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-primary-600 bg-primary-50 hover:bg-primary-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"

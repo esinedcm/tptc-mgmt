@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import TipTapEditor from "@/components/TipTapEditor";
+import { ReleaseNotesWidget } from "@/components/ReleaseNotesWidget";
+
 type MembershipPlan = {
   id: string;
   name: string;
@@ -1018,6 +1020,7 @@ export default function AdminSettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <h2 className="text-2xl font-bold text-gray-800">System Settings</h2>
         <div className="flex flex-wrap items-center gap-3">
+          <ReleaseNotesWidget />
           <button
             onClick={handleSave}
             disabled={!isDirty || saving}
