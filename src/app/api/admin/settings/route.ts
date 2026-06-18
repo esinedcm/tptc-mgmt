@@ -19,7 +19,10 @@ export async function GET(req: Request) {
       });
     }
 
-    return NextResponse.json({ settings }, { status: 200 });
+    return NextResponse.json({ 
+      settings,
+      isSuperAdmin: adminCheck.user?.isSuperAdmin || false 
+    }, { status: 200 });
   } catch (error) {
     console.error('Fetch settings error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
@@ -31,7 +34,7 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -47,6 +50,12 @@ export async function PUT(req: Request) {
     if (heroImageUrl === null || typeof heroImageUrl === 'string') updateData.heroImageUrl = heroImageUrl;
     if (promoImageUrl === null || typeof promoImageUrl === 'string') updateData.promoImageUrl = promoImageUrl;
     if (promoLinkUrl === null || typeof promoLinkUrl === 'string') updateData.promoLinkUrl = promoLinkUrl;
+    if (logoUrl === null || typeof logoUrl === 'string') updateData.logoUrl = logoUrl;
+    
+    // Only SUPER_ADMIN can change the externalWebsiteUrl
+    if (adminCheck.user?.isSuperAdmin && (externalWebsiteUrl === null || typeof externalWebsiteUrl === 'string')) {
+      updateData.externalWebsiteUrl = externalWebsiteUrl;
+    }
     if (typeof heroTitle === 'string') updateData.heroTitle = heroTitle;
     if (typeof heroSubtitle === 'string') updateData.heroSubtitle = heroSubtitle;
     if (typeof feature1Title === 'string') updateData.feature1Title = feature1Title;
@@ -79,6 +88,8 @@ export async function PUT(req: Request) {
         heroImageUrl: heroImageUrl === null || typeof heroImageUrl === 'string' ? heroImageUrl : null,
         promoImageUrl: promoImageUrl === null || typeof promoImageUrl === 'string' ? promoImageUrl : null,
         promoLinkUrl: promoLinkUrl === null || typeof promoLinkUrl === 'string' ? promoLinkUrl : null,
+        logoUrl: logoUrl === null || typeof logoUrl === 'string' ? logoUrl : null,
+        externalWebsiteUrl: adminCheck.user?.isSuperAdmin && (externalWebsiteUrl === null || typeof externalWebsiteUrl === 'string') ? externalWebsiteUrl : null,
         heroTitle: typeof heroTitle === 'string' ? heroTitle : "Elevate Your Game at",
         heroSubtitle: typeof heroSubtitle === 'string' ? heroSubtitle : "Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.",
         feature1Title: typeof feature1Title === 'string' ? feature1Title : "Pristine Courts",

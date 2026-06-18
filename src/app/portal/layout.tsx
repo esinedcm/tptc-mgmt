@@ -25,10 +25,12 @@ export default async function PortalLayout({
   }
 
   let enableMemberCourtBooking = true;
+  let logoUrl = process.env.NEXT_PUBLIC_CLUB_LOGO_URL;
   try {
     const settings = await prisma.systemSetting.findUnique({ where: { id: 'global' } });
     if (settings) {
       enableMemberCourtBooking = settings.enableMemberCourtBooking;
+      if (settings.logoUrl) logoUrl = settings.logoUrl;
     }
   } catch (e) {
     console.error('Error fetching settings for layout:', e);
@@ -45,8 +47,8 @@ export default async function PortalLayout({
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-3">
-                {process.env.NEXT_PUBLIC_CLUB_LOGO_URL && (
-                  <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Club Logo" className="h-8 w-auto" />
+                {logoUrl && (
+                  <img src={logoUrl} alt="Club Logo" className="h-8 w-auto" />
                 )}
                 <span className="text-xl font-bold text-white tracking-tight">{process.env.NEXT_PUBLIC_CLUB_NAME || "Tennis Club"}</span>
               </div>

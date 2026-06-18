@@ -35,6 +35,7 @@ export default async function RootLayout({
   let primaryColor = "#4f46e5"; // default primary-600
   let secondaryColor = "#10b981"; // default emerald-500
   let fontFamily = "Inter";
+  let logoUrl = "";
   try {
     const settings = await prisma.systemSetting.findUnique({ where: { id: "global" } });
     if (settings?.primaryColor) {
@@ -45,6 +46,9 @@ export default async function RootLayout({
     }
     if (settings?.fontFamily) {
       fontFamily = settings.fontFamily;
+    }
+    if (settings?.logoUrl) {
+      logoUrl = settings.logoUrl;
     }
   } catch (err: any) {
     if (err?.code === 'P2021') {
@@ -77,6 +81,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href={fontLink} rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
+        <script dangerouslySetInnerHTML={{ __html: `window.CLUB_LOGO_URL = "${logoUrl}";` }} />
       </head>
       <body className="h-full bg-gray-50 flex flex-col min-h-screen" style={{ fontFamily: `'${fontFamily}', sans-serif` }}>
         <main className="flex-1 flex flex-col">

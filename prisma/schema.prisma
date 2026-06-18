@@ -30,6 +30,8 @@ model SystemSetting {
   heroImageUrl              String?
   promoImageUrl             String?
   promoLinkUrl              String?
+  externalWebsiteUrl        String?
+  logoUrl                   String?
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   

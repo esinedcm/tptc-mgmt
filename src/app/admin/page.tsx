@@ -280,6 +280,14 @@ export default function AdminDashboard() {
     }
   };
 
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLogoUrl((window as any).CLUB_LOGO_URL || process.env.NEXT_PUBLIC_CLUB_LOGO_URL || null);
+    }
+  }, []);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -623,8 +631,8 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div className="flex items-center gap-4">
-            {process.env.NEXT_PUBLIC_CLUB_LOGO_URL && (
-              <img src={process.env.NEXT_PUBLIC_CLUB_LOGO_URL} alt="Club Logo" className="h-10 w-auto" />
+            {logoUrl && (
+              <img src={logoUrl} alt="Club Logo" className="h-10 w-auto" />
             )}
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">{process.env.NEXT_PUBLIC_CLUB_NAME}<br /> {activeSeason && `${activeSeason}`}<br /></h2>

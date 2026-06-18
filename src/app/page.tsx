@@ -1,10 +1,16 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import PublicNavbar from '@/components/PublicNavbar';
 import PublicFooter from '@/components/PublicFooter';
 
 export default async function Home() {
   const settings = await prisma.systemSetting.findUnique({ where: { id: "global" } });
+  
+  if (settings?.externalWebsiteUrl) {
+    redirect(settings.externalWebsiteUrl);
+  }
+
   const customPages = await prisma.customPage.findMany({
     where: { isPublished: true },
     orderBy: { createdAt: 'asc' }

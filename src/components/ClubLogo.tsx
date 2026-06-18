@@ -4,7 +4,9 @@ import React, { useState } from 'react';
 
 export function ClubLogo() {
   const [logoError, setLogoError] = useState(false);
-  const logoUrl = process.env.NEXT_PUBLIC_CLUB_LOGO_URL || '/logo.png';
+  const logoUrl = (typeof window !== 'undefined' && (window as any).CLUB_LOGO_URL) 
+    ? (window as any).CLUB_LOGO_URL 
+    : (process.env.NEXT_PUBLIC_CLUB_LOGO_URL || '/logo.png');
 
   if (!logoError) {
     return (

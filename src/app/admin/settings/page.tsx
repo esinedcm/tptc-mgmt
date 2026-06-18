@@ -181,6 +181,9 @@ export default function AdminSettingsPage() {
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [promoImageUrl, setPromoImageUrl] = useState("");
   const [promoLinkUrl, setPromoLinkUrl] = useState("");
+  const [externalWebsiteUrl, setExternalWebsiteUrl] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [courtOpenTime, setCourtOpenTime] = useState(6);
   const [courtCloseTime, setCourtCloseTime] = useState(23);
   const [activeSeason, setActiveSeason] = useState("2026");
@@ -361,6 +364,8 @@ export default function AdminSettingsPage() {
           setHeroImageUrl(data.settings.heroImageUrl ?? "");
           setPromoImageUrl(data.settings.promoImageUrl ?? "");
           setPromoLinkUrl(data.settings.promoLinkUrl ?? "");
+          setExternalWebsiteUrl(data.settings.externalWebsiteUrl ?? "");
+          setLogoUrl(data.settings.logoUrl ?? "");
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
           setCourtCloseTime(data.settings.courtCloseTime ?? 23);
           setActiveSeason(data.settings.activeSeason ?? "2026");
@@ -372,6 +377,9 @@ export default function AdminSettingsPage() {
             Array.isArray(data.settings.genderOptions)
           ) {
             setGenderOptions(data.settings.genderOptions.join(", "));
+          }
+          if (data.isSuperAdmin !== undefined) {
+            setIsSuperAdmin(data.isSuperAdmin);
           }
           if (data.settings.heroTitle) setHeroTitle(data.settings.heroTitle);
           if (data.settings.heroSubtitle) setHeroSubtitle(data.settings.heroSubtitle);
@@ -641,6 +649,8 @@ export default function AdminSettingsPage() {
           heroImageUrl: heroImageUrl || null,
           promoImageUrl: promoImageUrl || null,
           promoLinkUrl: promoLinkUrl || null,
+          externalWebsiteUrl: isSuperAdmin ? externalWebsiteUrl : undefined,
+          logoUrl: logoUrl || null,
           activeSeason,
           enableCsvImport,
           enableWelcomeEmails,
@@ -1537,6 +1547,43 @@ export default function AdminSettingsPage() {
                 <span className="text-sm text-gray-700">
                   {enableWelcomeEmails ? "Enabled" : "Disabled"}
                 </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Club Logo URL
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                Provide a URL to an image to replace the default logo. We recommend a transparent PNG with a max height of 40px.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="text"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                  className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                External Website URL
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                If your club has its own website (e.g. www.myclub.com), enter it here. Visitors to the root of this app will automatically be redirected there instead of seeing our built-in landing page. <strong>Requires Super Admin privileges.</strong>
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="text"
+                  value={externalWebsiteUrl}
+                  onChange={(e) => setExternalWebsiteUrl(e.target.value)}
+                  disabled={!isSuperAdmin}
+                  className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border disabled:opacity-50 disabled:bg-gray-100"
+                  placeholder="https://www.myclub.com"
+                />
               </div>
             </div>
 
