@@ -25,6 +25,7 @@ type Booking = {
   maxParticipants?: number | null;
   cost?: number | null;
   waitlistedUsers?: User[];
+  checkedInAt?: string | null;
 };
 
 export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, closeTime = 23, daysToShow = 3, skipDays = 1 }: { isAdmin: boolean; currentUserId: string; openTime?: number; closeTime?: number; daysToShow?: number; skipDays?: number }) {
@@ -440,11 +441,22 @@ export default function BookingCalendar({ isAdmin, currentUserId, openTime = 6, 
                         <td key={`${dayOffset}-${court.id}`} rowSpan={rowSpanValue} className={`align-top relative p-0 ${courtIndex === courts.length - 1 ? 'border-r-2 border-gray-400' : 'border-r'} ${dayOffset > 0 ? 'hidden md:table-cell' : ''}`}>
                           <div 
                             onClick={() => setViewBooking(booking)}
-                            className={`absolute inset-0 m-1 rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden ${myBookingBorder}`}
+                            className={`absolute inset-0 m-1 rounded p-1 cursor-pointer hover:opacity-90 overflow-hidden flex flex-col ${myBookingBorder}`}
                             style={{ backgroundColor: baseColor, color: '#1f2937' }}
                           >
-                            <div className="font-semibold text-xs truncate" style={{ color: 'inherit' }}>{booking.title || booking.type}</div>
-                            <div className="text-[10px] leading-tight truncate" style={{ color: 'inherit', opacity: 0.9 }}>{booking.organizer?.firstName} {booking.organizer?.lastName}</div>
+                            <div className="font-semibold text-xs truncate pr-4" style={{ color: 'inherit' }}>
+                              {booking.title || booking.type}
+                            </div>
+                            <div className="text-[10px] leading-tight truncate flex-1" style={{ color: 'inherit', opacity: 0.9 }}>
+                              {booking.organizer?.firstName} {booking.organizer?.lastName}
+                            </div>
+                            {isAdmin && booking.checkedInAt && (
+                              <div className="absolute top-1 right-1 bg-green-500 rounded-full p-0.5 shadow-sm" title="Checked In">
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              </div>
+                            )}
                           </div>
                         </td>
                       );

@@ -24,6 +24,10 @@ model SystemSetting {
   enableCsvImport           Boolean  @default(true)
   enableWelcomeEmails       Boolean  @default(true)
   enableMemberCourtBooking  Boolean  @default(true)
+  enableQrCheckIn           Boolean  @default(false)
+  requireGpsCheckIn         Boolean  @default(false)
+  clubLatitude              Float?
+  clubLongitude             Float?
   primaryColor              String   @default("#4f46e5")
   secondaryColor            String   @default("#10b981")
   fontFamily                String   @default("Inter")
@@ -32,6 +36,7 @@ model SystemSetting {
   promoLinkUrl              String?
   externalWebsiteUrl        String?
   logoUrl                   String?
+  simpleLandingPage         Boolean  @default(false)
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   
@@ -163,6 +168,7 @@ model Booking {
   title       String?
   description String?
   notes       String?
+  checkedInAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   

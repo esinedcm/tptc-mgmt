@@ -15,6 +15,7 @@ type Booking = {
   court: Court;
   organizer: User;
   participants: User[];
+  checkedInAt?: string | null;
 };
 
 export default function BookingList({ onEdit }: { onEdit?: (id: string, date: string) => void }) {
@@ -72,6 +73,7 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
       uniqueDates: Set<string>;
       organizerName: string;
       participants: User[];
+      checkedInCount: number;
     }> = {};
 
     bookings.forEach(b => {
@@ -90,13 +92,17 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
           instances: 0,
           uniqueDates: new Set(),
           organizerName: b.organizer ? `${b.organizer.firstName} ${b.organizer.lastName}` : 'Unknown',
-          participants: b.participants || []
+          participants: b.participants || [],
+          checkedInCount: 0
         };
       }
       
       groups[key].ids.push(b.id);
       groups[key].courts.add(b.court.name);
       groups[key].uniqueDates.add(new Date(b.startTime).toDateString());
+      if (b.checkedInAt) {
+        groups[key].checkedInCount += 1;
+      }
       
       // Keep the earliest start time for sorting
       if (new Date(b.startTime) < new Date(groups[key].startTime)) {
@@ -213,7 +219,14 @@ export default function BookingList({ onEdit }: { onEdit?: (id: string, date: st
                     {new Date(g.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                   </td>
                   <td className="px-3 sm:px-6 py-3 sm:py-4 text-gray-900 font-medium whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px] sm:max-w-none">
-                    {g.title}
+                    <div className="flex items-center gap-2">
+                      {g.title}
+                      {g.checkedInCount > 0 && (
+                        <span className="inline-flex items-center justify-center bg-green-100 text-green-800 text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap" title={`${g.checkedInCount} Check-In(s)`}>
+                          ✓ {g.checkedInCount > 1 ? g.checkedInCount : ''}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="hidden sm:table-cell px-6 py-4 text-gray-600">{g.courtsList}</td>
                   <td className="hidden sm:table-cell px-6 py-4 whitespace-nowrap">

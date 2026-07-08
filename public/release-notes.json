@@ -1,5 +1,17 @@
 [
   {
+    "hash": "c93259c",
+    "date": "2026-07-07T11:54:22-04:00",
+    "type": "Bug Fix",
+    "message": "Anchor Sign Out button to the right of admin header"
+  },
+  {
+    "hash": "334deb8",
+    "date": "2026-06-17T21:33:32-04:00",
+    "type": "New Feature",
+    "message": "Add external website routing and custom logo configuration"
+  },
+  {
     "hash": "d5f6017",
     "date": "2026-06-15T17:14:00-04:00",
     "type": "New Feature",

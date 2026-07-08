@@ -190,6 +190,11 @@ export default function AdminSettingsPage() {
   const [enableCsvImport, setEnableCsvImport] = useState(true);
   const [enableWelcomeEmails, setEnableWelcomeEmails] = useState(true);
   const [enableMemberCourtBooking, setEnableMemberCourtBooking] = useState(true);
+  const [simpleLandingPage, setSimpleLandingPage] = useState(false);
+  const [enableQrCheckIn, setEnableQrCheckIn] = useState(false);
+  const [requireGpsCheckIn, setRequireGpsCheckIn] = useState(false);
+  const [clubLatitude, setClubLatitude] = useState("");
+  const [clubLongitude, setClubLongitude] = useState("");
   const [genderOptions, setGenderOptions] = useState(
     "Male, Female, Prefer not to say",
   );
@@ -371,7 +376,16 @@ export default function AdminSettingsPage() {
           setActiveSeason(data.settings.activeSeason ?? "2026");
           setEnableCsvImport(data.settings.enableCsvImport ?? true);
           setEnableWelcomeEmails(data.settings.enableWelcomeEmails ?? true);
-          setEnableMemberCourtBooking(data.settings.enableMemberCourtBooking ?? true);
+          if (data.settings.enableMemberCourtBooking !== undefined) {
+            setEnableMemberCourtBooking(data.settings.enableMemberCourtBooking);
+          }
+          if (data.settings.simpleLandingPage !== undefined) {
+            setSimpleLandingPage(data.settings.simpleLandingPage);
+          }
+          setEnableQrCheckIn(data.settings.enableQrCheckIn ?? false);
+          setRequireGpsCheckIn(data.settings.requireGpsCheckIn ?? false);
+          if (data.settings.clubLatitude !== null) setClubLatitude(String(data.settings.clubLatitude));
+          if (data.settings.clubLongitude !== null) setClubLongitude(String(data.settings.clubLongitude));
           if (
             data.settings.genderOptions &&
             Array.isArray(data.settings.genderOptions)
@@ -655,6 +669,11 @@ export default function AdminSettingsPage() {
           enableCsvImport,
           enableWelcomeEmails,
           enableMemberCourtBooking,
+          simpleLandingPage,
+          enableQrCheckIn,
+          requireGpsCheckIn,
+          clubLatitude: clubLatitude ? parseFloat(clubLatitude) : null,
+          clubLongitude: clubLongitude ? parseFloat(clubLongitude) : null,
           courtOpenTime,
           courtCloseTime,
           genderOptions: genderOptions
@@ -1073,51 +1092,63 @@ export default function AdminSettingsPage() {
             Court Settings
           </h3>
 
-          <div className="flex items-center justify-between mb-6 border border-gray-200 rounded-md p-4 bg-gray-50">
-            <div>
-              <p className="text-sm font-medium text-gray-900">Enable Member Court Bookings</p>
-              <p className="text-sm text-gray-500">Allow standard members to book courts. Disable this for phased rollouts.</p>
+          <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Allow Member Registration & Booking
+              </label>
+              <div className="flex items-center mt-2">
+                <button
+                  type="button"
+                  onClick={() => setEnableMemberCourtBooking(!enableMemberCourtBooking)}
+                  className={`${
+                    enableMemberCourtBooking ? "bg-primary-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`${
+                      enableMemberCourtBooking ? "translate-x-5" : "translate-x-0"
+                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                  />
+                </button>
+                <span className="ml-3 text-sm text-gray-500">
+                  {enableMemberCourtBooking
+                    ? "Members can book courts."
+                    : "Booking is disabled."}
+                </span>
+              </div>
             </div>
-            <button
-              onClick={() => {
-                setEnableMemberCourtBooking(!enableMemberCourtBooking);
-                setIsDirty(true);
-              }}
-              className={`${
-                enableMemberCourtBooking ? 'bg-primary-600' : 'bg-gray-200'
-              } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
-            >
-              <span className="sr-only">Use setting</span>
-              <span
-                className={`${
-                  enableMemberCourtBooking ? 'translate-x-5' : 'translate-x-0'
-                } pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-              >
-                <span
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Use Simple Landing Page
+              </label>
+              <div className="flex items-center mt-2">
+                <button
+                  type="button"
+                  onClick={() => setSimpleLandingPage(!simpleLandingPage)}
                   className={`${
-                    enableMemberCourtBooking ? 'opacity-0 duration-100 ease-out' : 'opacity-100 duration-200 ease-in'
-                  } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
-                  aria-hidden="true"
+                    simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
                 >
-                  <svg className="h-3 w-3 text-gray-400" fill="none" viewBox="0 0 12 12">
-                    <path d="M4 8l2-2m0 0l2-2M6 6L4 4m2 2l2 2" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
+                  <span
+                    aria-hidden="true"
+                    className={`${
+                      simpleLandingPage ? "translate-x-5" : "translate-x-0"
+                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                  />
+                </button>
+                <span className="ml-3 text-sm text-gray-500">
+                  {simpleLandingPage
+                    ? "Hides extra marketing sections. Shows only the hero image and buttons."
+                    : "Shows the full marketing webpage with features and promos."}
                 </span>
-                <span
-                  className={`${
-                    enableMemberCourtBooking ? 'opacity-100 duration-200 ease-in' : 'opacity-0 duration-100 ease-out'
-                  } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
-                  aria-hidden="true"
-                >
-                  <svg className="h-3 w-3 text-primary-600" fill="currentColor" viewBox="0 0 12 12">
-                    <path d="M3.707 5.293a1 1 0 00-1.414 1.414l1.414-1.414zM5 8l-.707.707a1 1 0 001.414 0L5 8zm4.707-3.293a1 1 0 00-1.414-1.414l1.414 1.414zm-7.414 2l2 2 1.414-1.414-2-2-1.414 1.414zm3.414 2l4-4-1.414-1.414-4 4 1.414 1.414z" />
-                  </svg>
-                </span>
-              </span>
-            </button>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Cancellation Cutoff (Minutes)
@@ -1452,6 +1483,121 @@ export default function AdminSettingsPage() {
                     Add Court
                   </button>
                 </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="border-b pb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Check-In Settings
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Enable QR Code Check-In
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                Allow members to check-in to their bookings by scanning a QR code at the club.
+              </p>
+              <div className="flex items-center space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setEnableQrCheckIn(!enableQrCheckIn)}
+                  className={`${
+                    enableQrCheckIn ? "bg-primary-600" : "bg-gray-200"
+                  } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                  role="switch"
+                  aria-checked={enableQrCheckIn}
+                >
+                  <span className="sr-only">Enable QR Check-In</span>
+                  <span
+                    aria-hidden="true"
+                    className={`${
+                      enableQrCheckIn ? "translate-x-5" : "translate-x-0"
+                    } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                  />
+                </button>
+                <span className="text-sm text-gray-700">
+                  {enableQrCheckIn ? "Enabled" : "Disabled"}
+                </span>
+              </div>
+              
+              {enableQrCheckIn && (
+                <div className="mt-4">
+                  <a
+                    href="/check-in?print=true"
+                    target="_blank"
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+                  >
+                    <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    Print Check-In QR Code
+                  </a>
+                </div>
+              )}
+            </div>
+            
+            {enableQrCheckIn && (
+              <div className="flex flex-col space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Require GPS Location for Check-In
+                  </label>
+                  <p className="text-sm text-gray-500 mb-2">
+                    If enabled, members must be physically near the club to check in. (Requires HTTPS)
+                  </p>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setRequireGpsCheckIn(!requireGpsCheckIn)}
+                      className={`${
+                        requireGpsCheckIn ? "bg-primary-600" : "bg-gray-200"
+                      } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                      role="switch"
+                    >
+                      <span className="sr-only">Require GPS Check-In</span>
+                      <span
+                        aria-hidden="true"
+                        className={`${
+                          requireGpsCheckIn ? "translate-x-5" : "translate-x-0"
+                        } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                      />
+                    </button>
+                    <span className="text-sm text-gray-700">
+                      {requireGpsCheckIn ? "Required" : "Optional"}
+                    </span>
+                  </div>
+                </div>
+
+                {requireGpsCheckIn && (
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Club Latitude</label>
+                      <input
+                        type="text"
+                        value={clubLatitude}
+                        onChange={(e) => setClubLatitude(e.target.value)}
+                        placeholder="e.g. 43.6532"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Club Longitude</label>
+                      <input
+                        type="text"
+                        value={clubLongitude}
+                        onChange={(e) => setClubLongitude(e.target.value)}
+                        placeholder="e.g. -79.3832"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+                      />
+                    </div>
+                    <div className="col-span-2 text-xs text-gray-500">
+                      To find coordinates, right-click your club on Google Maps and click the lat/long numbers at the top.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

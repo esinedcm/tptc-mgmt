@@ -16,6 +16,7 @@ type Booking = {
   organizerId: string | null;
   organizer: User | null;
   participants: User[];
+  checkedInAt?: string | null;
 };
 
 type MemberStat = {
@@ -25,6 +26,7 @@ type MemberStat = {
   timesParticipated: number;
   totalTimesPlayed: number;
   totalHoursBooked: number;
+  checkInCount: number;
 };
 
 export default function BookingsReportPage() {
@@ -76,12 +78,14 @@ export default function BookingsReportPage() {
           timesParticipated: 0,
           totalTimesPlayed: 0,
           totalHoursBooked: 0,
+          checkInCount: 0,
         });
       }
       return statsMap.get(user.id)!;
     };
 
     let totalHours = 0;
+    let totalCheckIns = 0;
 
     bookings.forEach(booking => {
       const start = new Date(booking.startTime);
@@ -94,6 +98,13 @@ export default function BookingsReportPage() {
         const stat = getOrCreateStat(booking.organizer);
         stat.timesOrganized += 1;
         stat.totalHoursBooked += hours;
+        if (booking.checkedInAt) {
+          stat.checkInCount += 1;
+        }
+      }
+
+      if (booking.checkedInAt) {
+        totalCheckIns += 1;
       }
 
       booking.participants.forEach(participant => {
@@ -112,7 +123,8 @@ export default function BookingsReportPage() {
 
     return {
       stats: Array.from(statsMap.values()),
-      totalHours
+      totalHours,
+      totalCheckIns
     };
   }, [bookings]);
 
@@ -191,7 +203,7 @@ export default function BookingsReportPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-400 p-6 flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">Total Bookings</p>
@@ -211,6 +223,19 @@ export default function BookingsReportPage() {
             <div className="bg-blue-100 p-3 rounded-md">
               <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-400 p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Check-In Rate</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">
+                {loading ? '...' : bookings.length > 0 ? Math.round((memberStats.totalCheckIns / bookings.length) * 100) : 0}%
+              </p>
+            </div>
+            <div className="bg-green-100 p-3 rounded-md">
+              <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
           </div>
@@ -244,6 +269,9 @@ export default function BookingsReportPage() {
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('timesParticipated')}>
                       Participated <SortIcon columnKey="timesParticipated" />
                     </th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => handleSort('checkInCount')}>
+                      Check-Ins <SortIcon columnKey="checkInCount" />
+                    </th>
                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors bg-gray-100 font-bold" onClick={() => handleSort('totalTimesPlayed')}>
                       Total Played <SortIcon columnKey="totalTimesPlayed" />
                     </th>
@@ -263,6 +291,9 @@ export default function BookingsReportPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
                         {stat.timesParticipated}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
+                        {stat.checkInCount}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 text-right bg-gray-50/50">
                         {stat.totalTimesPlayed}

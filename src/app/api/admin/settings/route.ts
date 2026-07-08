@@ -34,7 +34,7 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -68,6 +68,11 @@ export async function PUT(req: Request) {
     if (typeof enableCsvImport === 'boolean') updateData.enableCsvImport = enableCsvImport;
     if (typeof enableWelcomeEmails === 'boolean') updateData.enableWelcomeEmails = enableWelcomeEmails;
     if (typeof enableMemberCourtBooking === 'boolean') updateData.enableMemberCourtBooking = enableMemberCourtBooking;
+    if (typeof simpleLandingPage === 'boolean') updateData.simpleLandingPage = simpleLandingPage;
+    if (typeof enableQrCheckIn === 'boolean') updateData.enableQrCheckIn = enableQrCheckIn;
+    if (typeof requireGpsCheckIn === 'boolean') updateData.requireGpsCheckIn = requireGpsCheckIn;
+    if (typeof clubLatitude === 'number' || clubLatitude === null) updateData.clubLatitude = clubLatitude;
+    if (typeof clubLongitude === 'number' || clubLongitude === null) updateData.clubLongitude = clubLongitude;
     if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
 
     const settings = await prisma.systemSetting.upsert({
@@ -102,6 +107,11 @@ export async function PUT(req: Request) {
         enableCsvImport: typeof enableCsvImport === 'boolean' ? enableCsvImport : true,
         enableWelcomeEmails: typeof enableWelcomeEmails === 'boolean' ? enableWelcomeEmails : true,
         enableMemberCourtBooking: typeof enableMemberCourtBooking === 'boolean' ? enableMemberCourtBooking : true,
+        simpleLandingPage: typeof simpleLandingPage === 'boolean' ? simpleLandingPage : false,
+        enableQrCheckIn: typeof enableQrCheckIn === 'boolean' ? enableQrCheckIn : false,
+        requireGpsCheckIn: typeof requireGpsCheckIn === 'boolean' ? requireGpsCheckIn : false,
+        clubLatitude: typeof clubLatitude === 'number' ? clubLatitude : null,
+        clubLongitude: typeof clubLongitude === 'number' ? clubLongitude : null,
         genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say']
       }
     });
