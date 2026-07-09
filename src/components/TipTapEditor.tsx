@@ -195,7 +195,17 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
     content: value,
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[300px] p-4 bg-white',
+        class: 'focus:outline-none min-h-[300px] p-4 bg-white text-gray-700 ' +
+               '[&_h1]:text-3xl [&_h1]:font-extrabold [&_h1]:mt-6 [&_h1]:mb-4 ' +
+               '[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-3 ' +
+               '[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 ' +
+               '[&_p]:leading-relaxed [&_p]:mb-4 ' +
+               '[&_a]:text-primary-600 hover:[&_a]:underline ' +
+               '[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 ' +
+               '[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 ' +
+               '[&_li]:mb-1 ' +
+               '[&_blockquote]:border-l-4 [&_blockquote]:border-primary-500 [&_blockquote]:pl-4 [&_blockquote]:italic ' +
+               '[&_strong]:text-gray-900 [&_strong]:font-bold',
       },
     },
     onUpdate: ({ editor }) => {

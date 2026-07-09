@@ -1,5 +1,11 @@
 [
   {
+    "hash": "17f1554",
+    "date": "2026-07-09T16:36:39-04:00",
+    "type": "New Feature",
+    "message": "Allow hex code entry for brand colors in settings"
+  },
+  {
     "hash": "a563406",
     "date": "2026-07-09T15:09:28-04:00",
     "type": "New Feature",
@@ -94,23 +100,5 @@
     "date": "2026-06-14T12:16:45-04:00",
     "type": "New Feature",
     "message": "Centralize pricing and Extra Junior rule, CMS updates, landing UI tweaks"
-  },
-  {
-    "hash": "65428cb",
-    "date": "2026-06-14T10:56:12-04:00",
-    "type": "Bug Fix",
-    "message": "Resolve TS type error in admin dashboard filter"
-  },
-  {
-    "hash": "04d89e7",
-    "date": "2026-06-14T10:49:46-04:00",
-    "type": "New Feature",
-    "message": "Pre-demo updates including System Wipe, Staff filters, and Import enhancements"
-  },
-  {
-    "hash": "7f0ffb5",
-    "date": "2026-06-14T07:43:01-04:00",
-    "type": "New Feature",
-    "message": "Management roles, targeted email notifications, event/booking logic fixes"
   }
 ]

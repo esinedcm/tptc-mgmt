@@ -38,16 +38,18 @@ export default async function CustomPageView({ params }: { params: Promise<{ slu
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-8 border-b pb-4">{page.title}</h1>
           <div 
-            className="prose prose-lg prose-primary max-w-none text-gray-700
-                       prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4
-                       prose-h3:text-xl prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3
-                       prose-p:leading-relaxed prose-p:mb-5
-                       prose-a:text-primary-600 prose-a:no-underline hover:prose-a:underline
-                       prose-ul:list-disc prose-ul:pl-5 prose-ul:mb-5
-                       prose-ol:list-decimal prose-ol:pl-5 prose-ol:mb-5
-                       prose-li:mb-2
-                       prose-blockquote:border-l-4 prose-blockquote:border-primary-500 prose-blockquote:pl-4 prose-blockquote:italic
-                       prose-strong:text-gray-900 prose-strong:font-bold"
+            className="text-gray-700
+                       [&_h1]:text-3xl [&_h1]:font-extrabold [&_h1]:mt-8 [&_h1]:mb-6
+                       [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
+                       [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
+                       [&_p]:leading-relaxed [&_p]:mb-5
+                       [&_a]:text-primary-600 hover:[&_a]:underline
+                       [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-5
+                       [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-5
+                       [&_li]:mb-2
+                       [&_blockquote]:border-l-4 [&_blockquote]:border-primary-500 [&_blockquote]:pl-4 [&_blockquote]:italic
+                       [&_strong]:text-gray-900 [&_strong]:font-bold
+                       [&_img]:max-w-full [&_img]:h-auto"
             dangerouslySetInnerHTML={{ __html: page.contentHtml }}
           />
         </div>
