@@ -7,10 +7,13 @@ import { TableRow } from '@tiptap/extension-table-row';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { TableHeader } from '@tiptap/extension-table-header';
 import { Link } from '@tiptap/extension-link';
+import { Color } from '@tiptap/extension-color';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Highlight } from '@tiptap/extension-highlight';
 import { 
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, 
   List, ListOrdered, Link as LinkIcon, Unlink, Table as TableIcon,
-  Trash2, Plus, Minus, Image as ImageIcon
+  Trash2, Plus, Minus, Image as ImageIcon, PaintBucket, Type
 } from 'lucide-react';
 import { CustomImage } from './CustomImageExtension';
 import { useEffect } from 'react';
@@ -142,6 +145,29 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
       <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
+      <div className="flex items-center gap-1">
+        <label className="p-1.5 rounded text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center relative overflow-hidden" title="Text Color">
+          <Type className="w-4 h-4" />
+          <input
+            type="color"
+            onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
+            value={editor.getAttributes('textStyle').color || '#000000'}
+            className="opacity-0 absolute w-full h-full cursor-pointer top-0 left-0"
+          />
+        </label>
+        <label className="p-1.5 rounded text-gray-600 hover:bg-gray-200 cursor-pointer flex items-center relative overflow-hidden" title="Highlight Color">
+          <PaintBucket className="w-4 h-4" />
+          <input
+            type="color"
+            onInput={(event) => editor.chain().focus().setHighlight({ color: (event.target as HTMLInputElement).value }).run()}
+            value={editor.getAttributes('highlight').color || '#ffff00'}
+            className="opacity-0 absolute w-full h-full cursor-pointer top-0 left-0"
+          />
+        </label>
+      </div>
+
+      <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
       <button
         onClick={(e) => { e.preventDefault(); editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); }}
         className="p-1.5 rounded text-gray-600 hover:bg-gray-200 flex items-center gap-1 text-xs font-medium"
@@ -168,6 +194,9 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
     extensions: [
       StarterKit,
       CustomImage,
+      Color,
+      TextStyle,
+      Highlight.configure({ multicolor: true }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -207,8 +236,8 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
                '[&_blockquote]:border-l-4 [&_blockquote]:border-primary-500 [&_blockquote]:pl-4 [&_blockquote]:italic ' +
                '[&_strong]:text-gray-900 [&_strong]:font-bold ' +
                '[&_table]:w-full [&_table]:mb-6 [&_table]:border-collapse [&_table]:table-fixed ' +
-               '[&_th]:border [&_th]:border-gray-200 [&_th]:p-3 [&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-semibold ' +
-               '[&_td]:border [&_td]:border-gray-200 [&_td]:p-3 ' +
+               '[&_th]:border [&_th]:border-gray-200 [&_th]:p-1.5 [&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-semibold ' +
+               '[&_td]:border [&_td]:border-gray-200 [&_td]:p-1.5 ' +
                '[&_td:first-child]:font-bold [&_td:first-child]:w-1/3 ' +
                '[&_th:first-child]:w-1/3',
       },
