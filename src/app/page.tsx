@@ -64,12 +64,18 @@ export default async function Home() {
               Learn More
             </Link>
           </div>
-          <div className="mt-2 text-center w-full">
+          <div className="mt-2 text-center w-full flex flex-col items-center gap-2">
             <Link 
               href="/login" 
               className="text-gray-600 hover:text-primary-600 font-medium transition-colors inline-flex items-center gap-2"
             >
               Already a member? Login &rarr;
+            </Link>
+            <Link 
+              href="/calendar" 
+              className="text-gray-600 hover:text-primary-600 font-medium transition-colors inline-flex items-center gap-2"
+            >
+              View Club Calendar
             </Link>
           </div>
         </div>
