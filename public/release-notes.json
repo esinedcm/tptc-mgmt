@@ -1,5 +1,11 @@
 [
   {
+    "hash": "8c6df62",
+    "date": "2026-07-09T17:44:09-04:00",
+    "type": "Bug Fix",
+    "message": "Update rich text styling for pages to use standard Tailwind classes instead of missing typography plugin"
+  },
+  {
     "hash": "17f1554",
     "date": "2026-07-09T16:36:39-04:00",
     "type": "New Feature",
@@ -94,11 +100,5 @@
     "date": "2026-06-14T12:36:56-04:00",
     "type": "Bug Fix",
     "message": "Add layouts to public pages and update registration error UI"
-  },
-  {
-    "hash": "ee733d4",
-    "date": "2026-06-14T12:16:45-04:00",
-    "type": "New Feature",
-    "message": "Centralize pricing and Extra Junior rule, CMS updates, landing UI tweaks"
   }
 ]

@@ -49,7 +49,12 @@ export default async function CustomPageView({ params }: { params: Promise<{ slu
                        [&_li]:mb-2
                        [&_blockquote]:border-l-4 [&_blockquote]:border-primary-500 [&_blockquote]:pl-4 [&_blockquote]:italic
                        [&_strong]:text-gray-900 [&_strong]:font-bold
-                       [&_img]:max-w-full [&_img]:h-auto"
+                       [&_img]:max-w-full [&_img]:h-auto
+                       [&_table]:w-full [&_table]:mb-6 [&_table]:border-collapse [&_table]:table-fixed
+                       [&_th]:border [&_th]:border-gray-200 [&_th]:p-3 [&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-semibold
+                       [&_td]:border [&_td]:border-gray-200 [&_td]:p-3
+                       [&_td:first-child]:font-bold [&_td:first-child]:w-1/3
+                       [&_th:first-child]:w-1/3"
             dangerouslySetInnerHTML={{ __html: page.contentHtml }}
           />
         </div>

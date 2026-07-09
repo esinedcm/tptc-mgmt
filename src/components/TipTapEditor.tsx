@@ -205,7 +205,12 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
                '[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 ' +
                '[&_li]:mb-1 ' +
                '[&_blockquote]:border-l-4 [&_blockquote]:border-primary-500 [&_blockquote]:pl-4 [&_blockquote]:italic ' +
-               '[&_strong]:text-gray-900 [&_strong]:font-bold',
+               '[&_strong]:text-gray-900 [&_strong]:font-bold ' +
+               '[&_table]:w-full [&_table]:mb-6 [&_table]:border-collapse [&_table]:table-fixed ' +
+               '[&_th]:border [&_th]:border-gray-200 [&_th]:p-3 [&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-semibold ' +
+               '[&_td]:border [&_td]:border-gray-200 [&_td]:p-3 ' +
+               '[&_td:first-child]:font-bold [&_td:first-child]:w-1/3 ' +
+               '[&_th:first-child]:w-1/3',
       },
     },
     onUpdate: ({ editor }) => {
