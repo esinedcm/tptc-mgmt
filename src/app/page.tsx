@@ -33,6 +33,38 @@ export default async function Home() {
   const feature3Title = settings?.feature3Title || "Vibrant Community";
   const feature3Desc = settings?.feature3Desc || "Join tournaments, ladders, and social events. Find playing partners easily through our member portal.";
 
+  if (settings?.simpleLandingPage) {
+    const logoToUse = settings.logoUrl || process.env.NEXT_PUBLIC_CLUB_LOGO_URL;
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+        {logoToUse ? (
+          <img src={logoToUse} alt="Club Logo" className="h-24 w-auto mb-8" />
+        ) : (
+          <div className="w-24 h-24 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold text-4xl shadow-lg mb-8">
+            T
+          </div>
+        )}
+        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight text-center mb-12">
+          {clubName}
+        </h1>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 w-full max-w-md sm:max-w-none">
+          <Link 
+            href="/register" 
+            className="bg-primary-600 text-white font-bold px-8 py-4 rounded-md hover:bg-primary-700 shadow-lg text-lg flex items-center justify-center transition-colors"
+          >
+            Become a Member
+          </Link>
+          <Link 
+            href="/interest" 
+            className="bg-white text-primary-600 border-2 border-primary-600 font-bold px-8 py-4 rounded-md hover:bg-primary-50 transition-colors text-lg flex items-center justify-center"
+          >
+            Learn More
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicNavbar />
@@ -75,7 +107,7 @@ export default async function Home() {
       </section>
 
       {/* Promotional Showcase Section */}
-      {!settings?.simpleLandingPage && promoImageUrl && (
+      {promoImageUrl && (
         <section className="py-16 bg-gray-100 border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-8">
@@ -101,69 +133,65 @@ export default async function Home() {
         </section>
       )}
 
-      {!settings?.simpleLandingPage && (
-        <>
-          {/* Features Section */}
-          <section id="facilities" className="py-24 bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">World-Class Facilities</h2>
-                <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">Everything you need to play your best tennis, whether you're a seasoned pro or picking up a racket for the first time.</p>
+      {/* Features Section */}
+      <section id="facilities" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">World-Class Facilities</h2>
+            <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">Everything you need to play your best tennis, whether you're a seasoned pro or picking up a racket for the first time.</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Feature 1 */}
+            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300 group">
+              <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center text-primary-600 mb-6 group-hover:scale-110 transition-transform">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                {/* Feature 1 */}
-                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300 group">
-                  <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center text-primary-600 mb-6 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature1Title}</h3>
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{feature1Desc}</p>
-                </div>
-                
-                {/* Feature 2 */}
-                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300 group">
-                  <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-6 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature2Title}</h3>
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{feature2Desc}</p>
-                </div>
-                
-                {/* Feature 3 */}
-                <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300 group">
-                  <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
-                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature3Title}</h3>
-                  <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{feature3Desc}</p>
-                </div>
-              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature1Title}</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{feature1Desc}</p>
             </div>
-          </section>
+            
+            {/* Feature 2 */}
+            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300 group">
+              <div className="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-6 group-hover:scale-110 transition-transform">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature2Title}</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{feature2Desc}</p>
+            </div>
+            
+            {/* Feature 3 */}
+            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300 group">
+              <div className="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mb-6 group-hover:scale-110 transition-transform">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature3Title}</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">{feature3Desc}</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          {/* CTA Section */}
-          <section className="bg-primary-900 py-20">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-6">Ready to hit the courts?</h2>
-              <p className="text-xl text-primary-100 mb-10">Join our club today and get immediate access to our member portal and court booking system.</p>
-              <Link 
-                href="/register" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block bg-white text-primary-900 font-bold px-10 py-4 rounded-full hover:bg-gray-100 shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-1 text-lg"
-              >
-                Create Your Account
-              </Link>
-              <div className="mt-8">
-                <Link href="/login" target="_blank" rel="noopener noreferrer" className="text-primary-200 hover:text-white font-medium transition-colors">
-                  Already a member? Sign in here &rarr;
-                </Link>
-              </div>
-            </div>
-          </section>
-        </>
-      )}
+      {/* CTA Section */}
+      <section className="bg-primary-900 py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl mb-6">Ready to hit the courts?</h2>
+          <p className="text-xl text-primary-100 mb-10">Join our club today and get immediate access to our member portal and court booking system.</p>
+          <Link 
+            href="/register" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-white text-primary-900 font-bold px-10 py-4 rounded-full hover:bg-gray-100 shadow-lg hover:shadow-xl transition-transform transform hover:-translate-y-1 text-lg"
+          >
+            Create Your Account
+          </Link>
+          <div className="mt-8">
+            <Link href="/login" target="_blank" rel="noopener noreferrer" className="text-primary-200 hover:text-white font-medium transition-colors">
+              Already a member? Sign in here &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <PublicFooter />
     </div>
