@@ -1,5 +1,11 @@
 [
   {
+    "hash": "1448bd7",
+    "date": "2026-07-09T18:25:53-04:00",
+    "type": "Bug Fix",
+    "message": "Revert bubble menu and enhance table borders"
+  },
+  {
     "hash": "4650f3c",
     "date": "2026-07-09T18:21:25-04:00",
     "type": "New Feature",

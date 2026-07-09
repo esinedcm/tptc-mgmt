@@ -42,6 +42,7 @@ model SystemSetting {
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   navigationLinks           Json?
   sponsorLogos              Json?
+  googleCalendarIframe      String?
   
   heroTitle                 String?  @default("Elevate Your Game at")
   heroSubtitle              String?  @default("Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.")

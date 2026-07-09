@@ -34,9 +34,10 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, landingPageTheme, activeSeason, genderOptions, navigationLinks, sponsorLogos, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, landingPageTheme, activeSeason, genderOptions, navigationLinks, sponsorLogos, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc, googleCalendarIframe } = await req.json();
 
     const updateData: any = {};
+    if (typeof googleCalendarIframe === 'string' || googleCalendarIframe === null) updateData.googleCalendarIframe = googleCalendarIframe;
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
     if (typeof maxHoursPerDay === 'number') updateData.maxHoursPerDay = maxHoursPerDay;
     if (typeof maxDaysInAdvance === 'number') updateData.maxDaysInAdvance = maxDaysInAdvance;
@@ -118,7 +119,8 @@ export async function PUT(req: Request) {
         clubLongitude: typeof clubLongitude === 'number' ? clubLongitude : null,
         genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say'],
         navigationLinks: navigationLinks !== undefined ? navigationLinks : null,
-        sponsorLogos: sponsorLogos !== undefined ? sponsorLogos : null
+        sponsorLogos: sponsorLogos !== undefined ? sponsorLogos : null,
+        googleCalendarIframe: typeof googleCalendarIframe === 'string' ? googleCalendarIframe : null
       }
     });
 

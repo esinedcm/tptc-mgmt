@@ -182,6 +182,7 @@ export default function AdminSettingsPage() {
   const [heroImageUrl, setHeroImageUrl] = useState("");
   const [promoImageUrl, setPromoImageUrl] = useState("");
   const [promoLinkUrl, setPromoLinkUrl] = useState("");
+  const [googleCalendarIframe, setGoogleCalendarIframe] = useState("");
   const [externalWebsiteUrl, setExternalWebsiteUrl] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -195,7 +196,8 @@ export default function AdminSettingsPage() {
   const [landingPageTheme, setLandingPageTheme] = useState("classic");
   const [navigationLinks, setNavigationLinks] = useState<{label: string, url: string, isExternal: boolean}[]>([
     { label: "Facilities", url: "/#facilities", isExternal: false },
-    { label: "Membership", url: "/interest", isExternal: false }
+    { label: "Membership", url: "/interest", isExternal: false },
+    { label: "Calendar", url: "/calendar", isExternal: false }
   ]);
   const [sponsorLogos, setSponsorLogos] = useState<{url: string, link: string, isExternal: boolean}[]>([]);
   const [enableQrCheckIn, setEnableQrCheckIn] = useState(false);
@@ -376,6 +378,7 @@ export default function AdminSettingsPage() {
           setHeroImageUrl(data.settings.heroImageUrl ?? "");
           setPromoImageUrl(data.settings.promoImageUrl ?? "");
           setPromoLinkUrl(data.settings.promoLinkUrl ?? "");
+          setGoogleCalendarIframe(data.settings.googleCalendarIframe ?? "");
           setExternalWebsiteUrl(data.settings.externalWebsiteUrl ?? "");
           setLogoUrl(data.settings.logoUrl ?? "");
           setCourtOpenTime(data.settings.courtOpenTime ?? 6);
@@ -689,6 +692,7 @@ export default function AdminSettingsPage() {
           heroImageUrl: heroImageUrl || null,
           promoImageUrl: promoImageUrl || null,
           promoLinkUrl: promoLinkUrl || null,
+          googleCalendarIframe: googleCalendarIframe || null,
           externalWebsiteUrl: isSuperAdmin ? externalWebsiteUrl : undefined,
           logoUrl: logoUrl || null,
           activeSeason,
@@ -1409,6 +1413,24 @@ export default function AdminSettingsPage() {
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
             Add Sponsor Logo
           </button>
+        </div>
+
+        <div className="border-b pb-6 mb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Google Calendar Integration
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Paste the iframe embed code from Google Calendar to display it on the public calendar page.
+          </p>
+          <textarea
+            value={googleCalendarIframe}
+            onChange={(e) => {
+              setGoogleCalendarIframe(e.target.value);
+              setIsDirty(true);
+            }}
+            placeholder='<iframe src="https://calendar.google.com/calendar/embed?src=..." style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>'
+            className="w-full h-24 p-3 border rounded-md font-mono text-sm"
+          />
         </div>
 
         
