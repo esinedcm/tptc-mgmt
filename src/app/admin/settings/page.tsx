@@ -1427,18 +1427,22 @@ export default function AdminSettingsPage() {
                 <input
                   type="color"
                   value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
                   className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
                 />
-                <span className="text-gray-600 font-mono text-sm">
-                  {primaryColor.toUpperCase()}
-                </span>
+                <input
+                  type="text"
+                  value={primaryColor}
+                  onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
+                  placeholder="#000000"
+                  className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+                />
               </div>
             </div>
 
             <div className="flex flex-col space-y-2">
               <label className="text-sm font-medium text-gray-700">
-                Secondary Color
+                Secondary Colour
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 Used for accents, success states, and secondary buttons.
@@ -1450,9 +1454,13 @@ export default function AdminSettingsPage() {
                   onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
                   className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
                 />
-                <span className="text-gray-600 font-mono text-sm">
-                  {secondaryColor.toUpperCase()}
-                </span>
+                <input
+                  type="text"
+                  value={secondaryColor}
+                  onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                  placeholder="#000000"
+                  className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+                />
               </div>
             </div>
 
