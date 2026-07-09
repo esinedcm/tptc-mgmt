@@ -1,5 +1,23 @@
 [
   {
+    "hash": "c7e6a90",
+    "date": "2026-07-08T11:46:51-04:00",
+    "type": "Bug Fix",
+    "message": "Make landing page dynamic to immediately reflect layout settings"
+  },
+  {
+    "hash": "1c49169",
+    "date": "2026-07-08T11:37:39-04:00",
+    "type": "Bug Fix",
+    "message": "Enable save button when toggling new landing page settings"
+  },
+  {
+    "hash": "b47ab13",
+    "date": "2026-07-08T11:16:03-04:00",
+    "type": "New Feature",
+    "message": "Add simple landing page toggle option"
+  },
+  {
     "hash": "c93259c",
     "date": "2026-07-07T11:54:22-04:00",
     "type": "Bug Fix",

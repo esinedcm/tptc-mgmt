@@ -5,6 +5,7 @@ import PublicNavbar from '@/components/PublicNavbar';
 import PublicFooter from '@/components/PublicFooter';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Home() {
   const settings = await prisma.systemSetting.findUnique({ where: { id: "global" } });

@@ -170,6 +170,7 @@ const DEFAULT_TEMPLATES: Record<string, { subject: string; htmlBody: string }> =
   };
 
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const [cutoffMinutes, setCutoffMinutes] = useState(90);
   const [maxHoursPerDay, setMaxHoursPerDay] = useState(2);
   const [maxDaysInAdvance, setMaxDaysInAdvance] = useState(3);
@@ -693,6 +694,7 @@ export default function AdminSettingsPage() {
       if (res.ok) {
         setMessage("Settings saved successfully!");
         setIsDirty(false);
+        router.refresh();
       } else {
         setMessage("Failed to save settings.");
       }
