@@ -37,8 +37,10 @@ model SystemSetting {
   externalWebsiteUrl        String?
   logoUrl                   String?
   simpleLandingPage         Boolean  @default(false)
+  landingPageTheme          String   @default("classic")
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
+  navigationLinks           Json?
   
   heroTitle                 String?  @default("Elevate Your Game at")
   heroSubtitle              String?  @default("Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.")

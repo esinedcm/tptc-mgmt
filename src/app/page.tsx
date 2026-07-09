@@ -33,8 +33,10 @@ export default async function Home() {
   const feature3Title = settings?.feature3Title || "Vibrant Community";
   const feature3Desc = settings?.feature3Desc || "Join tournaments, ladders, and social events. Find playing partners easily through our member portal.";
 
-  if (settings?.simpleLandingPage) {
-    const logoToUse = settings.logoUrl || process.env.NEXT_PUBLIC_CLUB_LOGO_URL;
+  const theme = settings?.landingPageTheme || "classic";
+
+  if (settings?.simpleLandingPage || theme === "simple") {
+    const logoToUse = settings?.logoUrl || process.env.NEXT_PUBLIC_CLUB_LOGO_URL;
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
         {logoToUse ? (
@@ -75,6 +77,161 @@ export default async function Home() {
     );
   }
 
+  if (theme === "modern-light") {
+    return (
+      <div className="min-h-screen bg-white flex flex-col font-sans">
+        <PublicNavbar />
+
+        {/* Split Hero Section */}
+        <section className="bg-blue-50 py-20 lg:py-32">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight mb-6">
+                {heroTitle} <br /> <span className="text-primary-600">{clubName}</span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-8 whitespace-pre-wrap">{heroSubtitle}</p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link 
+                  href="/register" 
+                  className="bg-primary-600 text-white font-bold px-8 py-4 rounded-md shadow-md hover:bg-primary-700 transition flex items-center justify-center"
+                >
+                  Become a Member
+                </Link>
+                <Link 
+                  href="/interest" 
+                  className="bg-white text-primary-600 font-bold px-8 py-4 border-2 border-primary-600 rounded-md hover:bg-primary-50 transition flex items-center justify-center"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
+            <div className="rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+              <img 
+                src={heroImageUrl || "/hero_tennis_court.png"} 
+                alt="Tennis Club" 
+                className="w-full h-full object-cover aspect-video lg:aspect-square" 
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Event Announcement Card */}
+        {promoImageUrl && (
+          <section className="py-16 bg-white">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-gray-50 border border-gray-100 rounded-3xl p-8 lg:p-12 shadow-sm flex flex-col md:flex-row items-center gap-8 hover:shadow-md transition-shadow">
+                <div className="flex-shrink-0 w-full md:w-1/3">
+                  <img src={promoImageUrl} alt="Special Event" className="rounded-xl shadow-md w-full object-cover aspect-[4/3]" />
+                </div>
+                <div className="w-full md:w-2/3 flex flex-col justify-center">
+                  <div className="mb-4">
+                    <span className="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold tracking-wider uppercase">
+                      Special Announcement
+                    </span>
+                  </div>
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">Upcoming Club Event</h2>
+                  <p className="text-lg text-gray-600 mb-6">
+                    Check out our latest news and events. Don't miss out on what's happening at {clubName}!
+                  </p>
+                  {promoLinkUrl && (
+                    <div>
+                      <a 
+                        href={promoLinkUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="inline-flex items-center font-bold text-primary-600 hover:text-primary-800 transition text-lg"
+                      >
+                        Read More details 
+                        <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Alternating Features Section */}
+        <section className="py-20 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-extrabold text-gray-900">World-Class Facilities</h2>
+            </div>
+
+            <div className="space-y-24">
+              {/* Feature 1 */}
+              <div className="flex flex-col md:flex-row items-center gap-12">
+                <div className="md:w-1/2">
+                  <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600 mb-6 shadow-sm">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-4">{feature1Title}</h3>
+                  <p className="text-lg text-gray-600 leading-relaxed whitespace-pre-wrap">{feature1Desc}</p>
+                </div>
+                <div className="md:w-1/2 w-full bg-gray-200 rounded-2xl aspect-video overflow-hidden shadow-lg">
+                  <img src="/hero_tennis_court.png" alt="Feature 1" className="w-full h-full object-cover" />
+                </div>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="flex flex-col md:flex-row-reverse items-center gap-12">
+                <div className="md:w-1/2">
+                  <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 mb-6 shadow-sm">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-4">{feature2Title}</h3>
+                  <p className="text-lg text-gray-600 leading-relaxed whitespace-pre-wrap">{feature2Desc}</p>
+                </div>
+                <div className="md:w-1/2 w-full bg-gray-200 rounded-2xl aspect-video overflow-hidden shadow-lg">
+                  <img src="/hero_tennis_court.png" alt="Feature 2" className="w-full h-full object-cover filter saturate-150 hue-rotate-15" />
+                </div>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="flex flex-col md:flex-row items-center gap-12">
+                <div className="md:w-1/2">
+                  <div className="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center text-purple-600 mb-6 shadow-sm">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-900 mb-4">{feature3Title}</h3>
+                  <p className="text-lg text-gray-600 leading-relaxed whitespace-pre-wrap">{feature3Desc}</p>
+                </div>
+                <div className="md:w-1/2 w-full bg-gray-200 rounded-2xl aspect-video overflow-hidden shadow-lg">
+                  <img src="/hero_tennis_court.png" alt="Feature 3" className="w-full h-full object-cover filter sepia-[.3]" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Call to Action */}
+        <section className="bg-primary-50 py-20 border-t border-primary-100">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl font-extrabold text-primary-900 sm:text-4xl mb-6">Ready to hit the courts?</h2>
+            <p className="text-xl text-primary-700 mb-10">Join our club today and get immediate access to our member portal and court booking system.</p>
+            <Link 
+              href="/register" 
+              className="inline-block bg-primary-600 text-white font-bold px-10 py-4 rounded-md hover:bg-primary-700 shadow-md transition-colors text-lg"
+            >
+              Create Your Account
+            </Link>
+            <div className="mt-8">
+              <Link href="/login" className="text-primary-600 hover:text-primary-800 font-medium transition-colors">
+                Already a member? Sign in here &rarr;
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <PublicFooter />
+      </div>
+    );
+  }
+
+  // Classic Theme (Default)
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <PublicNavbar />

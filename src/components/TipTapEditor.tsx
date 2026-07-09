@@ -10,8 +10,9 @@ import { Link } from '@tiptap/extension-link';
 import { 
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, 
   List, ListOrdered, Link as LinkIcon, Unlink, Table as TableIcon,
-  Trash2, Plus, Minus
+  Trash2, Plus, Minus, Image as ImageIcon
 } from 'lucide-react';
+import { CustomImage } from './CustomImageExtension';
 import { useEffect } from 'react';
 
 interface TipTapEditorProps {
@@ -123,6 +124,25 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
       <button
+        onClick={(e) => {
+          e.preventDefault();
+          const url = window.prompt('Enter image URL');
+          if (url) {
+            editor.chain().focus().insertContent({
+              type: 'customImage',
+              attrs: { src: url, align: 'center' }
+            }).run();
+          }
+        }}
+        className="p-1.5 rounded text-gray-600 hover:bg-gray-200"
+        title="Insert Image"
+      >
+        <ImageIcon className="w-4 h-4" />
+      </button>
+
+      <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
+      <button
         onClick={(e) => { e.preventDefault(); editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); }}
         className="p-1.5 rounded text-gray-600 hover:bg-gray-200 flex items-center gap-1 text-xs font-medium"
         title="Insert Table"
@@ -147,6 +167,7 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
   const editor = useEditor({
     extensions: [
       StarterKit,
+      CustomImage,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {

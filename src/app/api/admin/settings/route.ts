@@ -34,7 +34,7 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, activeSeason, genderOptions, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, landingPageTheme, activeSeason, genderOptions, navigationLinks, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -69,11 +69,13 @@ export async function PUT(req: Request) {
     if (typeof enableWelcomeEmails === 'boolean') updateData.enableWelcomeEmails = enableWelcomeEmails;
     if (typeof enableMemberCourtBooking === 'boolean') updateData.enableMemberCourtBooking = enableMemberCourtBooking;
     if (typeof simpleLandingPage === 'boolean') updateData.simpleLandingPage = simpleLandingPage;
+    if (typeof landingPageTheme === 'string') updateData.landingPageTheme = landingPageTheme;
     if (typeof enableQrCheckIn === 'boolean') updateData.enableQrCheckIn = enableQrCheckIn;
     if (typeof requireGpsCheckIn === 'boolean') updateData.requireGpsCheckIn = requireGpsCheckIn;
     if (typeof clubLatitude === 'number' || clubLatitude === null) updateData.clubLatitude = clubLatitude;
     if (typeof clubLongitude === 'number' || clubLongitude === null) updateData.clubLongitude = clubLongitude;
     if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
+    if (navigationLinks !== undefined) updateData.navigationLinks = navigationLinks;
 
     const settings = await prisma.systemSetting.upsert({
       where: { id: 'global' },
@@ -108,11 +110,13 @@ export async function PUT(req: Request) {
         enableWelcomeEmails: typeof enableWelcomeEmails === 'boolean' ? enableWelcomeEmails : true,
         enableMemberCourtBooking: typeof enableMemberCourtBooking === 'boolean' ? enableMemberCourtBooking : true,
         simpleLandingPage: typeof simpleLandingPage === 'boolean' ? simpleLandingPage : false,
+        landingPageTheme: typeof landingPageTheme === 'string' ? landingPageTheme : 'classic',
         enableQrCheckIn: typeof enableQrCheckIn === 'boolean' ? enableQrCheckIn : false,
         requireGpsCheckIn: typeof requireGpsCheckIn === 'boolean' ? requireGpsCheckIn : false,
         clubLatitude: typeof clubLatitude === 'number' ? clubLatitude : null,
         clubLongitude: typeof clubLongitude === 'number' ? clubLongitude : null,
-        genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say']
+        genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say'],
+        navigationLinks: navigationLinks !== undefined ? navigationLinks : null
       }
     });
 

@@ -1,5 +1,23 @@
 [
   {
+    "hash": "de2209f",
+    "date": "2026-07-09T09:40:55-04:00",
+    "type": "New Feature",
+    "message": "Add login button to simple landing page"
+  },
+  {
+    "hash": "f83c1f5",
+    "date": "2026-07-09T09:38:43-04:00",
+    "type": "Bug Fix",
+    "message": "Make simple landing page a bare-bones splash screen as requested"
+  },
+  {
+    "hash": "3692197",
+    "date": "2026-07-09T09:28:30-04:00",
+    "type": "Bug Fix",
+    "message": "Bust next.js cache for simple landing page"
+  },
+  {
     "hash": "c7e6a90",
     "date": "2026-07-08T11:46:51-04:00",
     "type": "Bug Fix",
@@ -82,29 +100,5 @@
     "date": "2026-06-08T08:39:16-04:00",
     "type": "Bug Fix",
     "message": "Make standalone output conditional to fix vercel build hang"
-  },
-  {
-    "hash": "a3854d0",
-    "date": "2026-06-08T07:38:03-04:00",
-    "type": "New Feature",
-    "message": "Add Dockerfile and standalone output for mapledeploy test"
-  },
-  {
-    "hash": "6a981a5",
-    "date": "2026-06-08T07:36:00-04:00",
-    "type": "Bug Fix",
-    "message": "Remove directUrl from schema to fix vercel build"
-  },
-  {
-    "hash": "0a0fd5c",
-    "date": "2026-06-08T07:01:14-04:00",
-    "type": "Bug Fix",
-    "message": "Tsc error and rearrange settings page"
-  },
-  {
-    "hash": "06a813e",
-    "date": "2026-06-08T06:36:06-04:00",
-    "type": "New Feature",
-    "message": "Migrate email editor to TipTap"
   }
 ]

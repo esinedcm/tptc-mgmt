@@ -11,6 +11,20 @@ export default async function PublicNavbar() {
 
   const clubName = process.env.NEXT_PUBLIC_CLUB_NAME || "The Tennis Club";
 
+  let navLinks = [
+    { label: "Facilities", url: "/#facilities", isExternal: false },
+    { label: "Membership", url: "/interest", isExternal: false }
+  ];
+
+  if (settings?.navigationLinks) {
+    try {
+      const parsed = typeof settings.navigationLinks === 'string' ? JSON.parse(settings.navigationLinks) : settings.navigationLinks;
+      if (Array.isArray(parsed)) {
+        navLinks = parsed;
+      }
+    } catch(e) {}
+  }
+
   return (
     <nav className="fixed w-full z-50 top-0 transition-all duration-300 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,7 +40,17 @@ export default async function PublicNavbar() {
             <span className="font-extrabold text-xl tracking-tight text-gray-900">{clubName}</span>
           </Link>
           <div className="hidden md:flex space-x-8 items-center">
-            <Link href="/#facilities" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">Facilities</Link>
+            {navLinks.map((link: any, idx: number) => (
+              <Link 
+                key={`nav-${idx}`} 
+                href={link.url} 
+                target={link.isExternal ? "_blank" : undefined}
+                rel={link.isExternal ? "noopener noreferrer" : undefined}
+                className="text-gray-600 hover:text-primary-600 font-medium transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
             {customPages.map((p: any) => (
               <Link key={p.id} href={`/p/${p.slug}`} className="text-gray-600 hover:text-primary-600 font-medium transition-colors flex items-center gap-1">
                 {p.title}
@@ -35,7 +59,6 @@ export default async function PublicNavbar() {
                 )}
               </Link>
             ))}
-            <Link href="/interest" className="text-gray-600 hover:text-primary-600 font-medium transition-colors">Membership</Link>
           </div>
           <div className="flex items-center gap-4">
             <Link 
