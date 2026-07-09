@@ -47,25 +47,29 @@ export default async function Home() {
         <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight text-center mb-12">
           {clubName}
         </h1>
-        <div className="flex flex-col sm:flex-row justify-center gap-4 w-full max-w-md sm:max-w-none">
-          <Link 
-            href="/register" 
-            className="bg-primary-600 text-white font-bold px-8 py-4 rounded-md hover:bg-primary-700 shadow-lg text-lg flex items-center justify-center transition-colors"
-          >
-            Become a Member
-          </Link>
-          <Link 
-            href="/login" 
-            className="bg-white text-primary-600 border-2 border-primary-600 font-bold px-8 py-4 rounded-md hover:bg-primary-50 transition-colors text-lg flex items-center justify-center"
-          >
-            Login
-          </Link>
-          <Link 
-            href="/interest" 
-            className="bg-white text-primary-600 border-2 border-primary-600 font-bold px-8 py-4 rounded-md hover:bg-primary-50 transition-colors text-lg flex items-center justify-center"
-          >
-            Learn More
-          </Link>
+        <div className="flex flex-col items-center gap-4 w-full max-w-md sm:max-w-none">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 w-full">
+            <Link 
+              href="/register" 
+              className="bg-primary-600 text-white font-bold px-8 py-4 rounded-md hover:bg-primary-700 shadow-lg text-lg flex items-center justify-center transition-colors sm:w-auto w-full"
+            >
+              Become a Member
+            </Link>
+            <Link 
+              href="/interest" 
+              className="bg-white text-primary-600 border-2 border-primary-600 font-bold px-8 py-4 rounded-md hover:bg-primary-50 transition-colors text-lg flex items-center justify-center sm:w-auto w-full"
+            >
+              Learn More
+            </Link>
+          </div>
+          <div className="mt-2 text-center w-full">
+            <Link 
+              href="/login" 
+              className="text-gray-600 hover:text-primary-600 font-medium transition-colors inline-flex items-center gap-2"
+            >
+              Already a member? Login &rarr;
+            </Link>
+          </div>
         </div>
       </div>
     );
