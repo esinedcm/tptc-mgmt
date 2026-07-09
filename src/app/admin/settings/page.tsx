@@ -1127,6 +1127,62 @@ export default function AdminSettingsPage() {
           </summary>
           <div className="mt-6 space-y-6 border-t pt-6">
             <div className="border-b pb-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Landing Page Structure
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Use Simple Landing Page (Legacy)
+              </label>
+              <div className="flex items-center mt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSimpleLandingPage(!simpleLandingPage);
+                    setIsDirty(true);
+                  }}
+                  className={`${
+                    simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
+                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`${
+                      simpleLandingPage ? "translate-x-5" : "translate-x-0"
+                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                  />
+                </button>
+                <span className="ml-3 text-sm text-gray-500">
+                  {simpleLandingPage
+                    ? "Hides extra marketing sections. Shows only the hero image and buttons."
+                    : "Shows the full marketing webpage with features and promos."}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2 mt-4">
+              <label className="text-sm font-medium text-gray-700">
+                Landing Page Theme
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                Select the overall design and layout for the club's landing page.
+              </p>
+              <select
+                value={landingPageTheme}
+                onChange={(e) => {
+                  setLandingPageTheme(e.target.value);
+                  setIsDirty(true);
+                }}
+                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+              >
+                <option value="classic">Classic Theme (Dark Hero, 3-Column Features)</option>
+                <option value="modern-light">Modern Light Theme (Split Layout, Alternating Features)</option>
+              </select>
+            </div>
+              </div>
+            </div>
+            <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Navigation Menu
           </h3>
@@ -1551,55 +1607,7 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Use Simple Landing Page (Legacy)
-              </label>
-              <div className="flex items-center mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSimpleLandingPage(!simpleLandingPage);
-                    setIsDirty(true);
-                  }}
-                  className={`${
-                    simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      simpleLandingPage ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                  />
-                </button>
-                <span className="ml-3 text-sm text-gray-500">
-                  {simpleLandingPage
-                    ? "Hides extra marketing sections. Shows only the hero image and buttons."
-                    : "Shows the full marketing webpage with features and promos."}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2 mt-4">
-              <label className="text-sm font-medium text-gray-700">
-                Landing Page Theme
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Select the overall design and layout for the club's landing page.
-              </p>
-              <select
-                value={landingPageTheme}
-                onChange={(e) => {
-                  setLandingPageTheme(e.target.value);
-                  setIsDirty(true);
-                }}
-                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-              >
-                <option value="classic">Classic Theme (Dark Hero, 3-Column Features)</option>
-                <option value="modern-light">Modern Light Theme (Split Layout, Alternating Features)</option>
-              </select>
-            </div>
+            
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
