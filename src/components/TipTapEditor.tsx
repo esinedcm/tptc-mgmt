@@ -195,7 +195,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       >
         <TableIcon className="w-4 h-4" /> Table
       </button>
-      
+
       {editor.isActive('table') && (
         <div className="flex items-center gap-1 bg-gray-200 rounded p-0.5 ml-1">
           <label className="p-1 rounded hover:bg-white text-gray-600 text-xs flex items-center cursor-pointer relative overflow-hidden" title="Table Background Color">
@@ -264,9 +264,9 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
                '[&_li]:mb-1 ' +
                '[&_blockquote]:border-l-4 [&_blockquote]:border-primary-500 [&_blockquote]:pl-4 [&_blockquote]:italic ' +
                '[&_strong]:text-gray-900 [&_strong]:font-bold ' +
-               '[&_table]:w-full [&_table]:mb-6 [&_table]:border-collapse [&_table]:table-fixed ' +
-               '[&_th]:border [&_th]:border-gray-200 [&_th]:p-1.5 [&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-semibold ' +
-               '[&_td]:border [&_td]:border-gray-200 [&_td]:p-1.5 ' +
+               '[&_table]:border [&_table]:border-gray-300 [&_table]:w-full [&_table]:mb-6 [&_table]:border-collapse [&_table]:table-fixed ' +
+               '[&_th]:border [&_th]:border-gray-300 [&_th]:p-1.5 [&_th]:bg-gray-50 [&_th]:text-left [&_th]:font-semibold ' +
+               '[&_td]:border [&_td]:border-gray-300 [&_td]:p-1.5 ' +
                '[&_td:first-child]:font-bold [&_td:first-child]:w-1/3 ' +
                '[&_th:first-child]:w-1/3',
       },
@@ -290,7 +290,7 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
   }, [value, editor]);
 
   return (
-    <div className="border border-gray-300 rounded-md overflow-hidden">
+    <div className="border border-gray-300 rounded-md overflow-hidden relative">
       <MenuBar editor={editor} />
       <EditorContent editor={editor} />
     </div>
