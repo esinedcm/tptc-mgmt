@@ -197,7 +197,7 @@ export default function AdminSettingsPage() {
   const [navigationLinks, setNavigationLinks] = useState<{label: string, url: string, isExternal: boolean}[]>([
     { label: "Facilities", url: "/#facilities", isExternal: false },
     { label: "Membership", url: "/interest", isExternal: false },
-    { label: "Calendar", url: "/calendar", isExternal: false }
+    { label: "Events", url: "/events", isExternal: false }
   ]);
   const [sponsorLogos, setSponsorLogos] = useState<{url: string, link: string, isExternal: boolean}[]>([]);
   const [enableQrCheckIn, setEnableQrCheckIn] = useState(false);

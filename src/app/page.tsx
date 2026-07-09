@@ -72,10 +72,10 @@ export default async function Home() {
               Already a member? Login &rarr;
             </Link>
             <Link 
-              href="/calendar" 
+              href="/events" 
               className="text-gray-600 hover:text-primary-600 font-medium transition-colors inline-flex items-center gap-2"
             >
-              View Club Calendar
+              View Club Events
             </Link>
           </div>
         </div>

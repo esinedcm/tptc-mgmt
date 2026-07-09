@@ -14,7 +14,7 @@ export default async function PublicNavbar() {
   let navLinks = [
     { label: "Facilities", url: "/#facilities", isExternal: false },
     { label: "Membership", url: "/interest", isExternal: false },
-    { label: "Calendar", url: "/calendar", isExternal: false }
+    { label: "Events", url: "/events", isExternal: false }
   ];
 
   if (settings?.navigationLinks) {
