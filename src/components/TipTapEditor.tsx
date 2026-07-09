@@ -24,6 +24,26 @@ interface TipTapEditorProps {
   onEditorReady?: (editor: Editor) => void;
 }
 
+const CustomTable = Table.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      backgroundColor: {
+        default: null,
+        parseHTML: element => element.style.backgroundColor || null,
+        renderHTML: attributes => {
+          if (!attributes.backgroundColor) {
+            return {};
+          }
+          return {
+            style: `background-color: ${attributes.backgroundColor}`,
+          };
+        },
+      },
+    };
+  },
+});
+
 const MenuBar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
     return null;
@@ -178,6 +198,15 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       
       {editor.isActive('table') && (
         <div className="flex items-center gap-1 bg-gray-200 rounded p-0.5 ml-1">
+          <label className="p-1 rounded hover:bg-white text-gray-600 text-xs flex items-center cursor-pointer relative overflow-hidden" title="Table Background Color">
+            <PaintBucket className="w-3 h-3 mr-0.5"/> Bg
+            <input 
+              type="color" 
+              onInput={(e) => editor.chain().focus().updateAttributes('table', { backgroundColor: (e.target as HTMLInputElement).value }).run()} 
+              value={editor.getAttributes('table').backgroundColor || '#ffffff'} 
+              className="opacity-0 absolute w-full h-full cursor-pointer top-0 left-0" 
+            />
+          </label>
           <button onClick={(e) => { e.preventDefault(); editor.chain().focus().addColumnAfter().run(); }} className="p-1 rounded hover:bg-white text-gray-600 text-xs" title="Add Column"><Plus className="w-3 h-3"/> Col</button>
           <button onClick={(e) => { e.preventDefault(); editor.chain().focus().deleteColumn().run(); }} className="p-1 rounded hover:bg-white text-gray-600 text-xs" title="Delete Column"><Minus className="w-3 h-3"/> Col</button>
           <button onClick={(e) => { e.preventDefault(); editor.chain().focus().addRowAfter().run(); }} className="p-1 rounded hover:bg-white text-gray-600 text-xs" title="Add Row"><Plus className="w-3 h-3"/> Row</button>
@@ -203,7 +232,7 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
           class: 'text-primary-600 underline cursor-pointer',
         },
       }),
-      Table.configure({
+      CustomTable.configure({
         resizable: true,
         HTMLAttributes: {
           class: 'border-collapse table-auto w-full border border-gray-300 my-4',
