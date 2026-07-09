@@ -34,7 +34,7 @@ export async function PUT(req: Request) {
     const adminCheck = await checkAdmin('MANAGE_SETTINGS');
     if (adminCheck.error) return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
 
-    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, landingPageTheme, activeSeason, genderOptions, navigationLinks, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
+    const { cancellationCutoffMinutes, maxHoursPerDay, maxDaysInAdvance, courtOpenTime, courtCloseTime, calendarDaysToShow, calendarSkipDays, primaryColor, secondaryColor, fontFamily, heroImageUrl, promoImageUrl, promoLinkUrl, externalWebsiteUrl, logoUrl, simpleLandingPage, landingPageTheme, activeSeason, genderOptions, navigationLinks, sponsorLogos, enableCsvImport, enableWelcomeEmails, enableMemberCourtBooking, enableQrCheckIn, requireGpsCheckIn, clubLatitude, clubLongitude, heroTitle, heroSubtitle, feature1Title, feature1Desc, feature2Title, feature2Desc, feature3Title, feature3Desc } = await req.json();
 
     const updateData: any = {};
     if (typeof cancellationCutoffMinutes === 'number') updateData.cancellationCutoffMinutes = cancellationCutoffMinutes;
@@ -76,6 +76,7 @@ export async function PUT(req: Request) {
     if (typeof clubLongitude === 'number' || clubLongitude === null) updateData.clubLongitude = clubLongitude;
     if (Array.isArray(genderOptions)) updateData.genderOptions = genderOptions;
     if (navigationLinks !== undefined) updateData.navigationLinks = navigationLinks;
+    if (sponsorLogos !== undefined) updateData.sponsorLogos = sponsorLogos;
 
     const settings = await prisma.systemSetting.upsert({
       where: { id: 'global' },
@@ -116,7 +117,8 @@ export async function PUT(req: Request) {
         clubLatitude: typeof clubLatitude === 'number' ? clubLatitude : null,
         clubLongitude: typeof clubLongitude === 'number' ? clubLongitude : null,
         genderOptions: Array.isArray(genderOptions) ? genderOptions : ['Male', 'Female', 'Prefer not to say'],
-        navigationLinks: navigationLinks !== undefined ? navigationLinks : null
+        navigationLinks: navigationLinks !== undefined ? navigationLinks : null,
+        sponsorLogos: sponsorLogos !== undefined ? sponsorLogos : null
       }
     });
 

@@ -1,29 +1,65 @@
 import { cookies } from 'next/headers';
 import { FeedbackFooterLink } from './FeedbackFooterLink';
+import { prisma } from '@/lib/prisma';
 
 export default async function PublicFooter() {
   const cookieStore = await cookies();
   const isLoggedIn = !!cookieStore.get('auth_token')?.value;
   const clubName = process.env.NEXT_PUBLIC_CLUB_NAME || "The Tennis Club";
 
+  let sponsorLogos: any[] = [];
+  try {
+    const settings = await prisma.systemSetting.findUnique({ where: { id: "global" } });
+    if (settings?.sponsorLogos) {
+      sponsorLogos = typeof settings.sponsorLogos === 'string' ? JSON.parse(settings.sponsorLogos) : settings.sponsorLogos;
+      if (!Array.isArray(sponsorLogos)) sponsorLogos = [];
+    }
+  } catch (e) {
+    console.error("Failed to fetch sponsor logos", e);
+  }
+
   return (
     <footer className="bg-gray-900 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold text-sm">T</div>
+          <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            {clubName.charAt(0)}
+          </div>
           <span className="text-gray-300 font-semibold">{clubName}</span>
         </div>
-        <div className="flex flex-col md:flex-row items-center gap-4 text-gray-500 text-sm">
-          {isLoggedIn && (
-            <>
-              <FeedbackFooterLink />
-              <span className="hidden md:inline">&bull;</span>
-            </>
-          )}
-          <span>&copy; {new Date().getFullYear()} {clubName}. All rights reserved.</span>
-          <span className="hidden md:inline">&bull;</span>
-          <span>Powered by Ace TCM</span>
-        </div>
+        
+        {sponsorLogos.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-6">
+            {sponsorLogos.map((logo: any, idx: number) => {
+              if (!logo.url) return null;
+              
+              const imageElement = (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img 
+                  src={logo.url} 
+                  alt={`Sponsor ${idx + 1}`} 
+                  className="w-[101px] h-[94px] object-contain"
+                />
+              );
+
+              return logo.link ? (
+                <a 
+                  key={idx}
+                  href={logo.link}
+                  target={logo.isExternal ? "_blank" : undefined}
+                  rel={logo.isExternal ? "noopener noreferrer" : undefined}
+                  className="block hover:opacity-80 transition-opacity"
+                >
+                  {imageElement}
+                </a>
+              ) : (
+                <div key={idx} className="block">
+                  {imageElement}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </footer>
   );

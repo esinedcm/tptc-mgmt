@@ -1,5 +1,23 @@
 [
   {
+    "hash": "5e5649f",
+    "date": "2026-07-09T14:48:53-04:00",
+    "type": "New Feature",
+    "message": "Add move up and down buttons for dynamic navigation links"
+  },
+  {
+    "hash": "ec0c3c9",
+    "date": "2026-07-09T14:38:47-04:00",
+    "type": "Bug Fix",
+    "message": "Pin @tiptap/extension-image to 3.26.0 to resolve Vercel build error"
+  },
+  {
+    "hash": "ba993ba",
+    "date": "2026-07-09T14:37:33-04:00",
+    "type": "New Feature",
+    "message": "Add image support with alignment and resizing to custom pages, and update themes"
+  },
+  {
     "hash": "de2209f",
     "date": "2026-07-09T09:40:55-04:00",
     "type": "New Feature",
@@ -88,17 +106,5 @@
     "date": "2026-06-14T07:43:01-04:00",
     "type": "New Feature",
     "message": "Management roles, targeted email notifications, event/booking logic fixes"
-  },
-  {
-    "hash": "5c80997",
-    "date": "2026-06-10T07:57:00-04:00",
-    "type": "New Feature",
-    "message": "Move Mark as Paid button and restrict event registration to paid members"
-  },
-  {
-    "hash": "27751f5",
-    "date": "2026-06-08T08:39:16-04:00",
-    "type": "Bug Fix",
-    "message": "Make standalone output conditional to fix vercel build hang"
   }
 ]

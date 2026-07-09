@@ -197,6 +197,7 @@ export default function AdminSettingsPage() {
     { label: "Facilities", url: "/#facilities", isExternal: false },
     { label: "Membership", url: "/interest", isExternal: false }
   ]);
+  const [sponsorLogos, setSponsorLogos] = useState<{url: string, link: string, isExternal: boolean}[]>([]);
   const [enableQrCheckIn, setEnableQrCheckIn] = useState(false);
   const [requireGpsCheckIn, setRequireGpsCheckIn] = useState(false);
   const [clubLatitude, setClubLatitude] = useState("");
@@ -396,6 +397,14 @@ export default function AdminSettingsPage() {
               let parsed = typeof data.settings.navigationLinks === 'string' ? JSON.parse(data.settings.navigationLinks) : data.settings.navigationLinks;
               if (Array.isArray(parsed) && parsed.length > 0) {
                 setNavigationLinks(parsed);
+              }
+            } catch(e) {}
+          }
+          if (data.settings.sponsorLogos) {
+            try {
+              let parsed = typeof data.settings.sponsorLogos === 'string' ? JSON.parse(data.settings.sponsorLogos) : data.settings.sponsorLogos;
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setSponsorLogos(parsed);
               }
             } catch(e) {}
           }
@@ -689,6 +698,7 @@ export default function AdminSettingsPage() {
           simpleLandingPage,
           landingPageTheme,
           navigationLinks,
+          sponsorLogos,
           enableQrCheckIn,
           requireGpsCheckIn,
           clubLatitude: clubLatitude ? parseFloat(clubLatitude) : null,
@@ -1212,6 +1222,126 @@ export default function AdminSettingsPage() {
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
             Add Link
+          </button>
+        </div>
+
+        <div className="border-b pb-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">
+            Footer Sponsor Logos
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Manage sponsor logos that appear in the public footer. Logos will be displayed at exactly 101x94 pixels.
+          </p>
+          <div className="space-y-3 mb-4">
+            {sponsorLogos.map((logo, idx) => (
+              <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-gray-50 p-2 rounded border">
+                {logo.url && (
+                  <div className="w-[101px] h-[94px] shrink-0 bg-white border rounded overflow-hidden flex items-center justify-center p-1">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logo.url} alt="Sponsor" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  </div>
+                )}
+                <div className="flex-1 space-y-2 w-full">
+                  <input 
+                    type="text" 
+                    value={logo.url}
+                    onChange={e => {
+                      const newLogos = [...sponsorLogos];
+                      newLogos[idx].url = e.target.value;
+                      setSponsorLogos(newLogos);
+                      setIsDirty(true);
+                    }}
+                    className="border rounded p-1 text-sm w-full"
+                    placeholder="Image URL (e.g. https://.../logo.png)"
+                  />
+                  <input 
+                    type="text" 
+                    value={logo.link}
+                    onChange={e => {
+                      const newLogos = [...sponsorLogos];
+                      newLogos[idx].link = e.target.value;
+                      setSponsorLogos(newLogos);
+                      setIsDirty(true);
+                    }}
+                    className="border rounded p-1 text-sm w-full"
+                    placeholder="Link URL (e.g. https://sponsor-website.com)"
+                  />
+                </div>
+                <div className="flex items-center w-full sm:w-auto mt-2 sm:mt-0">
+                  <label className="text-xs flex items-center gap-1 ml-0 sm:ml-2 shrink-0 flex-1 sm:flex-none">
+                    <input 
+                      type="checkbox" 
+                      checked={logo.isExternal}
+                      onChange={e => {
+                        const newLogos = [...sponsorLogos];
+                        newLogos[idx].isExternal = e.target.checked;
+                        setSponsorLogos(newLogos);
+                        setIsDirty(true);
+                      }}
+                    />
+                    New Tab
+                  </label>
+                  <div className="flex flex-col sm:flex-row gap-1 shrink-0 ml-2 border-l pl-2">
+                    <div className="flex gap-1">
+                      <button 
+                        onClick={() => {
+                          if (idx === 0) return;
+                          const newLogos = [...sponsorLogos];
+                          const temp = newLogos[idx - 1];
+                          newLogos[idx - 1] = newLogos[idx];
+                          newLogos[idx] = temp;
+                          setSponsorLogos(newLogos);
+                          setIsDirty(true);
+                        }}
+                        disabled={idx === 0}
+                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        title="Move up"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (idx === sponsorLogos.length - 1) return;
+                          const newLogos = [...sponsorLogos];
+                          const temp = newLogos[idx + 1];
+                          newLogos[idx + 1] = newLogos[idx];
+                          newLogos[idx] = temp;
+                          setSponsorLogos(newLogos);
+                          setIsDirty(true);
+                        }}
+                        disabled={idx === sponsorLogos.length - 1}
+                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        title="Move down"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        const newLogos = sponsorLogos.filter((_, i) => i !== idx);
+                        setSponsorLogos(newLogos);
+                        setIsDirty(true);
+                      }}
+                      className="text-red-400 hover:text-red-600 flex justify-center mt-0 sm:mt-1 ml-2 sm:ml-0 border-l sm:border-l-0 pl-2 sm:pl-0"
+                      title="Remove logo"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setSponsorLogos([...sponsorLogos, { url: "", link: "", isExternal: true }]);
+              setIsDirty(true);
+            }}
+            className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+            Add Sponsor Logo
           </button>
         </div>
 

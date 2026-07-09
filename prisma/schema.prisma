@@ -41,6 +41,7 @@ model SystemSetting {
   activeSeason              String   @default("2026")
   genderOptions             String[] @default(["Male", "Female", "Prefer not to say"])
   navigationLinks           Json?
+  sponsorLogos              Json?
   
   heroTitle                 String?  @default("Elevate Your Game at")
   heroSubtitle              String?  @default("Experience premier tennis facilities, professional coaching, and a vibrant community of players of all levels.")
