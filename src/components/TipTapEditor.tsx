@@ -199,7 +199,7 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
                '[&_h1]:text-3xl [&_h1]:font-extrabold [&_h1]:mt-6 [&_h1]:mb-4 ' +
                '[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-5 [&_h2]:mb-3 ' +
                '[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-4 [&_h3]:mb-2 ' +
-               '[&_p]:leading-relaxed [&_p]:mb-4 ' +
+               '[&_p]:leading-none [&_p]:mb-4 ' +
                '[&_a]:text-primary-600 hover:[&_a]:underline ' +
                '[&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-4 ' +
                '[&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-4 ' +

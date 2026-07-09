@@ -94,11 +94,5 @@
     "date": "2026-06-15T16:41:54-04:00",
     "type": "New Feature",
     "message": "Add custom website styling and promotional showcase"
-  },
-  {
-    "hash": "0fac6a6",
-    "date": "2026-06-14T12:36:56-04:00",
-    "type": "Bug Fix",
-    "message": "Add layouts to public pages and update registration error UI"
   }
 ]

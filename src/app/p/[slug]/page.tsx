@@ -42,7 +42,7 @@ export default async function CustomPageView({ params }: { params: Promise<{ slu
                        [&_h1]:text-3xl [&_h1]:font-extrabold [&_h1]:mt-8 [&_h1]:mb-6
                        [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-4
                        [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-3
-                       [&_p]:leading-relaxed [&_p]:mb-5
+                       [&_p]:leading-none [&_p]:mb-5
                        [&_a]:text-primary-600 hover:[&_a]:underline
                        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-5
                        [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-5
