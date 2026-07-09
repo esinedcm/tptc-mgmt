@@ -55,6 +55,12 @@ export default async function Home() {
             Become a Member
           </Link>
           <Link 
+            href="/login" 
+            className="bg-white text-primary-600 border-2 border-primary-600 font-bold px-8 py-4 rounded-md hover:bg-primary-50 transition-colors text-lg flex items-center justify-center"
+          >
+            Login
+          </Link>
+          <Link 
             href="/interest" 
             className="bg-white text-primary-600 border-2 border-primary-600 font-bold px-8 py-4 rounded-md hover:bg-primary-50 transition-colors text-lg flex items-center justify-center"
           >
