@@ -1420,7 +1420,7 @@ export default function AdminSettingsPage() {
             Google Calendar Integration
           </h3>
           <p className="text-sm text-gray-500 mb-4">
-            Paste the iframe embed code from Google Calendar to display it on the public calendar page.
+            Paste the iframe embed code OR the "Public URL to this calendar" from Google Calendar to display it on the public events page.
           </p>
           <textarea
             value={googleCalendarIframe}
@@ -1428,7 +1428,7 @@ export default function AdminSettingsPage() {
               setGoogleCalendarIframe(e.target.value);
               setIsDirty(true);
             }}
-            placeholder='<iframe src="https://calendar.google.com/calendar/embed?src=..." style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>'
+            placeholder='https://calendar.google.com/calendar/embed?src=... OR <iframe src="..."></iframe>'
             className="w-full h-24 p-3 border rounded-md font-mono text-sm"
           />
         </div>

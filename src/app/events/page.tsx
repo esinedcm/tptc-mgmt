@@ -48,10 +48,28 @@ export default async function EventsPage() {
           )}
 
           {iframeHtml ? (
-            <div 
-              className="flex-grow w-full h-full min-h-[600px] overflow-hidden rounded-lg border border-gray-200"
-              dangerouslySetInnerHTML={{ __html: iframeHtml }}
-            />
+            <div className="flex-grow w-full h-full min-h-[600px] overflow-hidden rounded-lg border border-gray-200">
+              {iframeHtml.trim().toLowerCase().startsWith('<iframe') ? (
+                <div 
+                  className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:min-h-[600px]"
+                  dangerouslySetInnerHTML={{ __html: iframeHtml }}
+                />
+              ) : iframeHtml.trim().toLowerCase().startsWith('http') ? (
+                <iframe 
+                  src={iframeHtml.trim()} 
+                  style={{ border: 0 }} 
+                  width="100%" 
+                  height="100%" 
+                  className="min-h-[600px]"
+                  frameBorder="0" 
+                  scrolling="no"
+                />
+              ) : (
+                <div className="p-4 text-red-500">
+                  Invalid calendar format provided. Please provide either an iframe embed code or a valid URL.
+                </div>
+              )}
+            </div>
           ) : (
             <div className="text-center py-12 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
               <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
