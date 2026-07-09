@@ -1,5 +1,11 @@
 [
   {
+    "hash": "a563406",
+    "date": "2026-07-09T15:09:28-04:00",
+    "type": "New Feature",
+    "message": "Replace footer information with manageable sponsor logos"
+  },
+  {
     "hash": "5e5649f",
     "date": "2026-07-09T14:48:53-04:00",
     "type": "New Feature",

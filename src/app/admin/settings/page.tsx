@@ -1117,7 +1117,16 @@ export default function AdminSettingsPage() {
 
       <div className="space-y-6" onChange={() => setIsDirty(true)}>
 
-        <div className="border-b pb-6">
+        
+        <details className="border rounded-md bg-white shadow-sm p-4 group mb-6">
+          <summary className="text-lg font-medium text-gray-900 cursor-pointer list-none flex justify-between items-center outline-none focus:ring-2 focus:ring-primary-500 rounded">
+            Website & Branding
+            <span className="transition-transform group-open:rotate-180">
+              <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+            </span>
+          </summary>
+          <div className="mt-6 space-y-6 border-t pt-6">
+            <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Navigation Menu
           </h3>
@@ -1225,7 +1234,8 @@ export default function AdminSettingsPage() {
           </button>
         </div>
 
-        <div className="border-b pb-6">
+        
+            <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Footer Sponsor Logos
           </h3>
@@ -1345,7 +1355,167 @@ export default function AdminSettingsPage() {
           </button>
         </div>
 
-        <div className="border-b pb-6">
+        
+            <div className="border-b pb-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Primary Brand Colour
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                The main colour used for buttons, links, and highlights across
+                the entire app.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+                />
+                <span className="text-gray-600 font-mono text-sm">
+                  {primaryColor.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">
+                Secondary Color
+              </label>
+              <p className="text-xs text-gray-500 mb-2">
+                Used for accents, success states, and secondary buttons.
+              </p>
+              <div className="flex items-center space-x-3">
+                <input
+                  type="color"
+                  value={secondaryColor}
+                  onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+                />
+                <span className="text-gray-600 font-mono text-sm">
+                  {secondaryColor.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col space-y-2 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">
+                Font Family
+              </label>
+              <select
+                value={fontFamily}
+                onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
+                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              >
+                <option value="Inter">Inter (Modern, Clean)</option>
+                <option value="Roboto">Roboto (Classic, Readable)</option>
+                <option value="Outfit">Outfit (Geometric, Trendy)</option>
+                <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
+                <option value="Montserrat">Montserrat (Wide, Professional)</option>
+              </select>
+            </div>
+
+            <div className="flex flex-col space-y-2 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">
+                Hero Image URL
+              </label>
+              <p className="text-xs text-gray-500 mb-1">
+                Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
+              </p>
+              <input
+                type="text"
+                placeholder="https://example.com/my-club-hero.jpg"
+                value={heroImageUrl}
+                onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+              />
+              {heroImageUrl && (
+                <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
+              <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
+              <p className="text-xs text-gray-500 mb-2">
+                Display an event flyer or promotional banner on your homepage. Leave blank to hide.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/tournament-flyer.png"
+                    value={promoImageUrl}
+                    onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  />
+                  {promoImageUrl && (
+                    <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                  <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="https://example.com/register"
+                    value={promoLinkUrl}
+                    onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  />
+                  <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h4 className="text-md font-medium text-gray-900 mb-4">
+            Landing Page Content
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Hero Title</label>
+              <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            </div>
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
+              <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
+              <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+              <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
+              <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
+              <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+              <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
+              <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
+              <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+              <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
+              <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+            </div>
+          </div>
+        </div>
+        
+          </div>
+        </details>
+<div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Court Settings
           </h3>
@@ -2771,164 +2941,6 @@ export default function AdminSettingsPage() {
           </div>
         </div>
 
-        <div className="border-t pt-6 mt-6 pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Website & Branding
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Primary Brand Colour
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The main colour used for buttons, links, and highlights across
-                the entire app.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
-                />
-                <span className="text-gray-600 font-mono text-sm">
-                  {primaryColor.toUpperCase()}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Secondary Color
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Used for accents, success states, and secondary buttons.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="color"
-                  value={secondaryColor}
-                  onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
-                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
-                />
-                <span className="text-gray-600 font-mono text-sm">
-                  {secondaryColor.toUpperCase()}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">
-                Font Family
-              </label>
-              <select
-                value={fontFamily}
-                onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
-                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              >
-                <option value="Inter">Inter (Modern, Clean)</option>
-                <option value="Roboto">Roboto (Classic, Readable)</option>
-                <option value="Outfit">Outfit (Geometric, Trendy)</option>
-                <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
-                <option value="Montserrat">Montserrat (Wide, Professional)</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">
-                Hero Image URL
-              </label>
-              <p className="text-xs text-gray-500 mb-1">
-                Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
-              </p>
-              <input
-                type="text"
-                placeholder="https://example.com/my-club-hero.jpg"
-                value={heroImageUrl}
-                onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              />
-              {heroImageUrl && (
-                <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
-              <p className="text-xs text-gray-500 mb-2">
-                Display an event flyer or promotional banner on your homepage. Leave blank to hide.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://example.com/tournament-flyer.png"
-                    value={promoImageUrl}
-                    onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                  {promoImageUrl && (
-                    <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="https://example.com/register"
-                    value={promoLinkUrl}
-                    onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                  <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h4 className="text-md font-medium text-gray-900 mb-4">
-            Landing Page Content
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Hero Title</label>
-              <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-            </div>
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
-              <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
-              <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-              <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
-              <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
-              <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-              <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
-              <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
-              <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-              <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
-              <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-          </div>
-        </div>
         <div className="border-b pb-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">
             Website Pages Manager
