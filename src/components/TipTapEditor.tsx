@@ -10,10 +10,12 @@ import { Link } from '@tiptap/extension-link';
 import { Color } from '@tiptap/extension-color';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Highlight } from '@tiptap/extension-highlight';
+import TextAlign from '@tiptap/extension-text-align';
 import { 
   Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, 
   List, ListOrdered, Link as LinkIcon, Unlink, Table as TableIcon,
-  Trash2, Plus, Minus, Image as ImageIcon, PaintBucket, Type
+  Trash2, Plus, Minus, Image as ImageIcon, PaintBucket, Type,
+  AlignLeft, AlignCenter, AlignRight
 } from 'lucide-react';
 import { CustomImage } from './CustomImageExtension';
 import { useEffect } from 'react';
@@ -128,6 +130,30 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
       <div className="w-px h-4 bg-gray-300 mx-1"></div>
 
       <button
+        onClick={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('left').run(); }}
+        className={`p-1.5 rounded ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-200 text-primary-600' : 'text-gray-600 hover:bg-gray-200'}`}
+        title="Align Left"
+      >
+        <AlignLeft className="w-4 h-4" />
+      </button>
+      <button
+        onClick={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('center').run(); }}
+        className={`p-1.5 rounded ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-200 text-primary-600' : 'text-gray-600 hover:bg-gray-200'}`}
+        title="Align Center"
+      >
+        <AlignCenter className="w-4 h-4" />
+      </button>
+      <button
+        onClick={(e) => { e.preventDefault(); editor.chain().focus().setTextAlign('right').run(); }}
+        className={`p-1.5 rounded ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-200 text-primary-600' : 'text-gray-600 hover:bg-gray-200'}`}
+        title="Align Right"
+      >
+        <AlignRight className="w-4 h-4" />
+      </button>
+
+      <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
+      <button
         onClick={(e) => { e.preventDefault(); toggleLink(); }}
         className={`p-1.5 rounded ${editor.isActive('link') ? 'bg-gray-200 text-primary-600' : 'text-gray-600 hover:bg-gray-200'}`}
         title="Link"
@@ -222,6 +248,9 @@ export default function TipTapEditor({ value, onChange, onEditorReady }: TipTapE
   const editor = useEditor({
     extensions: [
       StarterKit,
+      TextAlign.configure({
+        types: ['heading', 'paragraph', 'tableCell', 'tableHeader'],
+      }),
       CustomImage,
       Color,
       TextStyle,
