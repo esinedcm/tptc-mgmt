@@ -140,7 +140,7 @@ const DEFAULT_TEMPLATES: Record<string, { subject: string; htmlBody: string }> =
     REGISTRATION_PENDING: {
       subject: "Your Registration Details & Edit Link",
       htmlBody:
-        '<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> {{memberNames}}</li><li><b>Total Amount Due:</b> $\\{{totalDue}}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>{{paymentEmail}}</strong>.<br/>\n<strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href="{{editUrl}}">{{editUrl}}</a></p>',
+        '<b>Thank you for registering!</b><br><p>Your registration is now pending approval. Here are your registration details:</p><ul><li><b>Registered Members:</b> {{memberNames}}</li><li><b>Total Amount Due:</b> $\\{{totalDue}}</li></ul><p>Send your membership payment (ensure you include your first and last name in the message) via Etransfer to <strong>{{paymentEmail}}</strong>.<br/>\\n<strong>NOTE</strong>: Your membership is not complete until payment is received.  Once your membership registration and payment have been verified, you will receive an email with the lock code to the entrance gates along with other Club information including shoe tag arrangements.</p><p>You can edit your household registration at any time using this link:</p><p><a href="{{editUrl}}">{{editUrl}}</a></p>',
     },
     PROFILE_UPDATED: {
       subject: "Your Club Registration Details Were Updated",
@@ -168,6 +168,23 @@ const DEFAULT_TEMPLATES: Record<string, { subject: string; htmlBody: string }> =
         '\n    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">\n      <h2 style="color: #4f46e5;">Welcome to the new {{clubName}} Portal!</h2>\n      <p>Hi {{firstName}},</p>\n      <p>We\'ve launched a new Member Portal for the upcoming season, and your account is ready to go!</p>\n      <p>Click the link below to securely set your password and access your account:</p>\n      <a href="{{resetUrl}}" style="display: inline-block; padding: 12px 24px; margin: 20px 0; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Set Password & Log In</a>\n      <p>Once logged in, you can update your profile, view your membership status, and book courts.</p>\n      <p>See you on the courts!</p>\n    </div>\n  ',
     },
   };
+
+
+const CollapsibleSection = ({ title, children, isDanger, defaultOpen = false }: { title: string, children: React.ReactNode, isDanger?: boolean, defaultOpen?: boolean }) => {
+  return (
+    <details className={`border rounded-md bg-white shadow-sm p-4 group mb-6 ${isDanger ? 'border-red-300' : ''}`} open={defaultOpen}>
+      <summary className="text-lg font-medium text-gray-900 cursor-pointer list-none flex justify-between items-center outline-none focus:ring-2 focus:ring-primary-500 rounded">
+        {isDanger ? <span className="text-red-700 flex items-center"><svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>{title}</span> : title}
+        <span className="transition-transform group-open:rotate-180">
+          <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+        </span>
+      </summary>
+      <div className="mt-6 space-y-6 border-t pt-6">
+        {children}
+      </div>
+    </details>
+  );
+};
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -397,7 +414,7 @@ export default function AdminSettingsPage() {
           }
           if (data.settings.navigationLinks) {
             try {
-              let parsed = typeof data.settings.navigationLinks === 'string' ? JSON.parse(data.settings.navigationLinks) : data.settings.navigationLinks;
+              const parsed = typeof data.settings.navigationLinks === 'string' ? JSON.parse(data.settings.navigationLinks) : data.settings.navigationLinks;
               if (Array.isArray(parsed) && parsed.length > 0) {
                 setNavigationLinks(parsed);
               }
@@ -405,7 +422,7 @@ export default function AdminSettingsPage() {
           }
           if (data.settings.sponsorLogos) {
             try {
-              let parsed = typeof data.settings.sponsorLogos === 'string' ? JSON.parse(data.settings.sponsorLogos) : data.settings.sponsorLogos;
+              const parsed = typeof data.settings.sponsorLogos === 'string' ? JSON.parse(data.settings.sponsorLogos) : data.settings.sponsorLogos;
               if (Array.isArray(parsed) && parsed.length > 0) {
                 setSponsorLogos(parsed);
               }
@@ -1118,1569 +1135,840 @@ export default function AdminSettingsPage() {
           </Link>
         </div>
       </div>
-
       <div className="space-y-6" onChange={() => setIsDirty(true)}>
-
-        
-        <details className="border rounded-md bg-white shadow-sm p-4 group mb-6">
-          <summary className="text-lg font-medium text-gray-900 cursor-pointer list-none flex justify-between items-center outline-none focus:ring-2 focus:ring-primary-500 rounded">
-            Website & Branding
-            <span className="transition-transform group-open:rotate-180">
-              <svg fill="none" height="24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-            </span>
-          </summary>
-          <div className="mt-6 space-y-6 border-t pt-6">
-            <div className="border-b pb-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Landing Page Structure
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Use Simple Landing Page (Legacy)
-              </label>
-              <div className="flex items-center mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSimpleLandingPage(!simpleLandingPage);
-                    setIsDirty(true);
-                  }}
-                  className={`${
-                    simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      simpleLandingPage ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                  />
-                </button>
-                <span className="ml-3 text-sm text-gray-500">
-                  {simpleLandingPage
-                    ? "Hides extra marketing sections. Shows only the hero image and buttons."
-                    : "Shows the full marketing webpage with features and promos."}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2 mt-4">
-              <label className="text-sm font-medium text-gray-700">
-                Landing Page Theme
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Select the overall design and layout for the club's landing page.
-              </p>
-              <select
-                value={landingPageTheme}
-                onChange={(e) => {
-                  setLandingPageTheme(e.target.value);
+<CollapsibleSection title="Website & Branding">
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Landing Page Structure
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Use Simple Landing Page (Legacy)
+            </label>
+            <div className="flex items-center mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSimpleLandingPage(!simpleLandingPage);
                   setIsDirty(true);
                 }}
-                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                className={`${
+                  simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
               >
-                <option value="classic">Classic Theme (Dark Hero, 3-Column Features)</option>
-                <option value="modern-light">Modern Light Theme (Split Layout, Alternating Features)</option>
-              </select>
+                <span
+                  aria-hidden="true"
+                  className={`${
+                    simpleLandingPage ? "translate-x-5" : "translate-x-0"
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                />
+              </button>
+              <span className="ml-3 text-sm text-gray-500">
+                {simpleLandingPage
+                  ? "Hides extra marketing sections. Shows only the hero image and buttons."
+                  : "Shows the full marketing webpage with features and promos."}
+              </span>
             </div>
+          </div>
+
+          <div className="flex flex-col space-y-2 mt-4">
+            <label className="text-sm font-medium text-gray-700">
+              Landing Page Theme
+            </label>
+            <p className="text-sm text-gray-500 mb-2">
+              Select the overall design and layout for the club's landing page.
+            </p>
+            <select
+              value={landingPageTheme}
+              onChange={(e) => {
+                setLandingPageTheme(e.target.value);
+                setIsDirty(true);
+              }}
+              className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+            >
+              <option value="classic">Classic Theme (Dark Hero, 3-Column Features)</option>
+              <option value="modern-light">Modern Light Theme (Split Layout, Alternating Features)</option>
+            </select>
+          </div>
+            </div>
+          </div>
+<div className="border-b pb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Navigation Menu
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Manage the links that appear in the public navigation bar. Published custom pages will also appear automatically.
+        </p>
+        <div className="space-y-3 mb-4">
+          {navigationLinks.map((link, idx) => (
+            <div key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+              <input 
+                type="text" 
+                value={link.label}
+                onChange={e => {
+                  const newLinks = [...navigationLinks];
+                  newLinks[idx].label = e.target.value;
+                  setNavigationLinks(newLinks);
+                  setIsDirty(true);
+                }}
+                className="border rounded p-1 text-sm w-32"
+                placeholder="Label"
+              />
+              <input 
+                type="text" 
+                value={link.url}
+                onChange={e => {
+                  const newLinks = [...navigationLinks];
+                  newLinks[idx].url = e.target.value;
+                  setNavigationLinks(newLinks);
+                  setIsDirty(true);
+                }}
+                className="border rounded p-1 text-sm flex-1"
+                placeholder="URL (e.g. /interest or https://...)"
+              />
+              <label className="text-xs flex items-center gap-1">
+                <input 
+                  type="checkbox" 
+                  checked={link.isExternal}
+                  onChange={e => {
+                    const newLinks = [...navigationLinks];
+                    newLinks[idx].isExternal = e.target.checked;
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                />
+                New Tab
+              </label>
+              <div className="flex items-center ml-2 border-l pl-2 gap-1">
+                <button 
+                  onClick={() => {
+                    if (idx === 0) return;
+                    const newLinks = [...navigationLinks];
+                    const temp = newLinks[idx - 1];
+                    newLinks[idx - 1] = newLinks[idx];
+                    newLinks[idx] = temp;
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                  disabled={idx === 0}
+                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  title="Move up"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
+                </button>
+                <button 
+                  onClick={() => {
+                    if (idx === navigationLinks.length - 1) return;
+                    const newLinks = [...navigationLinks];
+                    const temp = newLinks[idx + 1];
+                    newLinks[idx + 1] = newLinks[idx];
+                    newLinks[idx] = temp;
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                  disabled={idx === navigationLinks.length - 1}
+                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  title="Move down"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <button 
+                  onClick={() => {
+                    const newLinks = navigationLinks.filter((_, i) => i !== idx);
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                  className="text-red-400 hover:text-red-600 ml-1"
+                  title="Remove link"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
               </div>
             </div>
-            <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Navigation Menu
-          </h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Manage the links that appear in the public navigation bar. Published custom pages will also appear automatically.
-          </p>
-          <div className="space-y-3 mb-4">
-            {navigationLinks.map((link, idx) => (
-              <div key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setNavigationLinks([...navigationLinks, { label: "", url: "", isExternal: false }]);
+            setIsDirty(true);
+          }}
+          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+          Add Link
+        </button>
+      </div>
+<div className="border-b pb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Footer Sponsor Logos
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Manage sponsor logos that appear in the public footer. Logos will be displayed at exactly 101x94 pixels.
+        </p>
+        <div className="space-y-3 mb-4">
+          {sponsorLogos.map((logo, idx) => (
+            <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-gray-50 p-2 rounded border">
+              {logo.url && (
+                <div className="w-[101px] h-[94px] shrink-0 bg-white border rounded overflow-hidden flex items-center justify-center p-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logo.url} alt="Sponsor" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                </div>
+              )}
+              <div className="flex-1 space-y-2 w-full">
                 <input 
                   type="text" 
-                  value={link.label}
+                  value={logo.url}
                   onChange={e => {
-                    const newLinks = [...navigationLinks];
-                    newLinks[idx].label = e.target.value;
-                    setNavigationLinks(newLinks);
+                    const newLogos = [...sponsorLogos];
+                    newLogos[idx].url = e.target.value;
+                    setSponsorLogos(newLogos);
                     setIsDirty(true);
                   }}
-                  className="border rounded p-1 text-sm w-32"
-                  placeholder="Label"
+                  className="border rounded p-1 text-sm w-full"
+                  placeholder="Image URL (e.g. https://.../logo.png)"
                 />
                 <input 
                   type="text" 
-                  value={link.url}
+                  value={logo.link}
                   onChange={e => {
-                    const newLinks = [...navigationLinks];
-                    newLinks[idx].url = e.target.value;
-                    setNavigationLinks(newLinks);
+                    const newLogos = [...sponsorLogos];
+                    newLogos[idx].link = e.target.value;
+                    setSponsorLogos(newLogos);
                     setIsDirty(true);
                   }}
-                  className="border rounded p-1 text-sm flex-1"
-                  placeholder="URL (e.g. /interest or https://...)"
+                  className="border rounded p-1 text-sm w-full"
+                  placeholder="Link URL (e.g. https://sponsor-website.com)"
                 />
-                <label className="text-xs flex items-center gap-1">
+              </div>
+              <div className="flex items-center w-full sm:w-auto mt-2 sm:mt-0">
+                <label className="text-xs flex items-center gap-1 ml-0 sm:ml-2 shrink-0 flex-1 sm:flex-none">
                   <input 
                     type="checkbox" 
-                    checked={link.isExternal}
+                    checked={logo.isExternal}
                     onChange={e => {
-                      const newLinks = [...navigationLinks];
-                      newLinks[idx].isExternal = e.target.checked;
-                      setNavigationLinks(newLinks);
+                      const newLogos = [...sponsorLogos];
+                      newLogos[idx].isExternal = e.target.checked;
+                      setSponsorLogos(newLogos);
                       setIsDirty(true);
                     }}
                   />
                   New Tab
                 </label>
-                <div className="flex items-center ml-2 border-l pl-2 gap-1">
+                <div className="flex flex-col sm:flex-row gap-1 shrink-0 ml-2 border-l pl-2">
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => {
+                        if (idx === 0) return;
+                        const newLogos = [...sponsorLogos];
+                        const temp = newLogos[idx - 1];
+                        newLogos[idx - 1] = newLogos[idx];
+                        newLogos[idx] = temp;
+                        setSponsorLogos(newLogos);
+                        setIsDirty(true);
+                      }}
+                      disabled={idx === 0}
+                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      title="Move up"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (idx === sponsorLogos.length - 1) return;
+                        const newLogos = [...sponsorLogos];
+                        const temp = newLogos[idx + 1];
+                        newLogos[idx + 1] = newLogos[idx];
+                        newLogos[idx] = temp;
+                        setSponsorLogos(newLogos);
+                        setIsDirty(true);
+                      }}
+                      disabled={idx === sponsorLogos.length - 1}
+                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      title="Move down"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                  </div>
                   <button 
                     onClick={() => {
-                      if (idx === 0) return;
-                      const newLinks = [...navigationLinks];
-                      const temp = newLinks[idx - 1];
-                      newLinks[idx - 1] = newLinks[idx];
-                      newLinks[idx] = temp;
-                      setNavigationLinks(newLinks);
+                      const newLogos = sponsorLogos.filter((_, i) => i !== idx);
+                      setSponsorLogos(newLogos);
                       setIsDirty(true);
                     }}
-                    disabled={idx === 0}
-                    className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                    title="Move up"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      if (idx === navigationLinks.length - 1) return;
-                      const newLinks = [...navigationLinks];
-                      const temp = newLinks[idx + 1];
-                      newLinks[idx + 1] = newLinks[idx];
-                      newLinks[idx] = temp;
-                      setNavigationLinks(newLinks);
-                      setIsDirty(true);
-                    }}
-                    disabled={idx === navigationLinks.length - 1}
-                    className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                    title="Move down"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                  </button>
-                  <button 
-                    onClick={() => {
-                      const newLinks = navigationLinks.filter((_, i) => i !== idx);
-                      setNavigationLinks(newLinks);
-                      setIsDirty(true);
-                    }}
-                    className="text-red-400 hover:text-red-600 ml-1"
-                    title="Remove link"
+                    className="text-red-400 hover:text-red-600 flex justify-center mt-0 sm:mt-1 ml-2 sm:ml-0 border-l sm:border-l-0 pl-2 sm:pl-0"
+                    title="Remove logo"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setNavigationLinks([...navigationLinks, { label: "", url: "", isExternal: false }]);
-              setIsDirty(true);
-            }}
-            className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-            Add Link
-          </button>
+            </div>
+          ))}
         </div>
-
-        
-            <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Footer Sponsor Logos
-          </h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Manage sponsor logos that appear in the public footer. Logos will be displayed at exactly 101x94 pixels.
-          </p>
-          <div className="space-y-3 mb-4">
-            {sponsorLogos.map((logo, idx) => (
-              <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-gray-50 p-2 rounded border">
-                {logo.url && (
-                  <div className="w-[101px] h-[94px] shrink-0 bg-white border rounded overflow-hidden flex items-center justify-center p-1">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={logo.url} alt="Sponsor" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  </div>
-                )}
-                <div className="flex-1 space-y-2 w-full">
-                  <input 
-                    type="text" 
-                    value={logo.url}
-                    onChange={e => {
-                      const newLogos = [...sponsorLogos];
-                      newLogos[idx].url = e.target.value;
-                      setSponsorLogos(newLogos);
-                      setIsDirty(true);
-                    }}
-                    className="border rounded p-1 text-sm w-full"
-                    placeholder="Image URL (e.g. https://.../logo.png)"
-                  />
-                  <input 
-                    type="text" 
-                    value={logo.link}
-                    onChange={e => {
-                      const newLogos = [...sponsorLogos];
-                      newLogos[idx].link = e.target.value;
-                      setSponsorLogos(newLogos);
-                      setIsDirty(true);
-                    }}
-                    className="border rounded p-1 text-sm w-full"
-                    placeholder="Link URL (e.g. https://sponsor-website.com)"
-                  />
-                </div>
-                <div className="flex items-center w-full sm:w-auto mt-2 sm:mt-0">
-                  <label className="text-xs flex items-center gap-1 ml-0 sm:ml-2 shrink-0 flex-1 sm:flex-none">
-                    <input 
-                      type="checkbox" 
-                      checked={logo.isExternal}
-                      onChange={e => {
-                        const newLogos = [...sponsorLogos];
-                        newLogos[idx].isExternal = e.target.checked;
-                        setSponsorLogos(newLogos);
-                        setIsDirty(true);
-                      }}
-                    />
-                    New Tab
-                  </label>
-                  <div className="flex flex-col sm:flex-row gap-1 shrink-0 ml-2 border-l pl-2">
-                    <div className="flex gap-1">
-                      <button 
-                        onClick={() => {
-                          if (idx === 0) return;
-                          const newLogos = [...sponsorLogos];
-                          const temp = newLogos[idx - 1];
-                          newLogos[idx - 1] = newLogos[idx];
-                          newLogos[idx] = temp;
-                          setSponsorLogos(newLogos);
-                          setIsDirty(true);
-                        }}
-                        disabled={idx === 0}
-                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                        title="Move up"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
-                      </button>
-                      <button 
-                        onClick={() => {
-                          if (idx === sponsorLogos.length - 1) return;
-                          const newLogos = [...sponsorLogos];
-                          const temp = newLogos[idx + 1];
-                          newLogos[idx + 1] = newLogos[idx];
-                          newLogos[idx] = temp;
-                          setSponsorLogos(newLogos);
-                          setIsDirty(true);
-                        }}
-                        disabled={idx === sponsorLogos.length - 1}
-                        className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                        title="Move down"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                      </button>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        const newLogos = sponsorLogos.filter((_, i) => i !== idx);
-                        setSponsorLogos(newLogos);
-                        setIsDirty(true);
-                      }}
-                      className="text-red-400 hover:text-red-600 flex justify-center mt-0 sm:mt-1 ml-2 sm:ml-0 border-l sm:border-l-0 pl-2 sm:pl-0"
-                      title="Remove logo"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <button
+          type="button"
+          onClick={() => {
+            setSponsorLogos([...sponsorLogos, { url: "", link: "", isExternal: true }]);
+            setIsDirty(true);
+          }}
+          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+          Add Sponsor Logo
+        </button>
+      </div>
+<div className="border-b pb-6 mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Google Calendar Integration
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Paste the iframe embed code OR the "Public URL to this calendar" from Google Calendar to display it on the public events page.
+            </p>
+            <textarea
+              value={googleCalendarIframe}
+              onChange={(e) => {
+                setGoogleCalendarIframe(e.target.value);
+                setIsDirty(true);
+              }}
+              placeholder='https://calendar.google.com/calendar/embed?src=... OR <iframe src="..."></iframe>'
+              className="w-full h-24 p-3 border rounded-md font-mono text-sm"
+            />
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              setSponsorLogos([...sponsorLogos, { url: "", link: "", isExternal: true }]);
-              setIsDirty(true);
-            }}
-            className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-            Add Sponsor Logo
-          </button>
-        </div>
-
-        <div className="border-b pb-6 mb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Google Calendar Integration
-          </h3>
-          <p className="text-sm text-gray-500 mb-4">
-            Paste the iframe embed code OR the "Public URL to this calendar" from Google Calendar to display it on the public events page.
-          </p>
-          <textarea
-            value={googleCalendarIframe}
-            onChange={(e) => {
-              setGoogleCalendarIframe(e.target.value);
-              setIsDirty(true);
-            }}
-            placeholder='https://calendar.google.com/calendar/embed?src=... OR <iframe src="..."></iframe>'
-            className="w-full h-24 p-3 border rounded-md font-mono text-sm"
-          />
-        </div>
-
-        
-            <div className="border-b pb-6">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Primary Brand Colour
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The main colour used for buttons, links, and highlights across
-                the entire app.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="color"
-                  value={primaryColor}
-                  onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
-                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
-                />
-                <input
-                  type="text"
-                  value={primaryColor}
-                  onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
-                  placeholder="#000000"
-                  className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Secondary Colour
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Used for accents, success states, and secondary buttons.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="color"
-                  value={secondaryColor}
-                  onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
-                  className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
-                />
-                <input
-                  type="text"
-                  value={secondaryColor}
-                  onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
-                  placeholder="#000000"
-                  className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">
-                Font Family
-              </label>
-              <select
-                value={fontFamily}
-                onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
-                className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              >
-                <option value="Inter">Inter (Modern, Clean)</option>
-                <option value="Roboto">Roboto (Classic, Readable)</option>
-                <option value="Outfit">Outfit (Geometric, Trendy)</option>
-                <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
-                <option value="Montserrat">Montserrat (Wide, Professional)</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col space-y-2 md:col-span-2">
-              <label className="text-sm font-medium text-gray-700">
-                Hero Image URL
-              </label>
-              <p className="text-xs text-gray-500 mb-1">
-                Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
-              </p>
-              <input
-                type="text"
-                placeholder="https://example.com/my-club-hero.jpg"
-                value={heroImageUrl}
-                onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
-                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              />
-              {heroImageUrl && (
-                <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
-              <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
-              <p className="text-xs text-gray-500 mb-2">
-                Display an event flyer or promotional banner on your homepage. Leave blank to hide.
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
-                  <input
-                    type="text"
-                    placeholder="https://example.com/tournament-flyer.png"
-                    value={promoImageUrl}
-                    onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                  {promoImageUrl && (
-                    <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="https://example.com/register"
-                    value={promoLinkUrl}
-                    onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                  />
-                  <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <h4 className="text-md font-medium text-gray-900 mb-4">
-            Landing Page Content
-          </h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Hero Title</label>
-              <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-            </div>
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
-              <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
-              <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-              <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
-              <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
-              <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-              <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
-              <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
-              <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-              <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
-              <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-            </div>
-          </div>
-        </div>
-        
-          </div>
-        </details>
 <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Court Settings
-          </h3>
-
-          <div className="flex flex-col space-y-4">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Allow Member Registration & Booking
-              </label>
-              <div className="flex items-center mt-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEnableMemberCourtBooking(!enableMemberCourtBooking);
-                    setIsDirty(true);
-                  }}
-                  className={`${
-                    enableMemberCourtBooking ? "bg-primary-600" : "bg-gray-200"
-                  } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      enableMemberCourtBooking ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                  />
-                </button>
-                <span className="ml-3 text-sm text-gray-500">
-                  {enableMemberCourtBooking
-                    ? "Members can book courts."
-                    : "Booking is disabled."}
-                </span>
-              </div>
-            </div>
-
-            
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Cancellation Cutoff (Minutes)
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Members cannot cancel a booking if the start time is less than
-                this many minutes away.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="0"
-                  value={cutoffMinutes}
-                  onChange={(e) =>
-                    setCutoffMinutes(parseInt(e.target.value) || 0)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">minutes</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Max Hours Per Day
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The maximum number of hours a member can book courts per day.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="1"
-                  max="24"
-                  value={maxHoursPerDay}
-                  onChange={(e) =>
-                    setMaxHoursPerDay(parseInt(e.target.value) || 1)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">hours</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Max Days in Advance
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                How many days into the future a member is allowed to book a
-                court.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={maxDaysInAdvance}
-                  onChange={(e) =>
-                    setMaxDaysInAdvance(parseInt(e.target.value) || 1)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">days</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Calendar View Span
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                How many days to show side-by-side on the booking calendar.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="1"
-                  max="7"
-                  value={calendarDaysToShow}
-                  onChange={(e) =>
-                    setCalendarDaysToShow(parseInt(e.target.value) || 3)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">days</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Calendar Skip Amount
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                How many days the calendar jumps forward/backward when clicking
-                Prev/Next.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="1"
-                  max="30"
-                  value={calendarSkipDays}
-                  onChange={(e) =>
-                    setCalendarSkipDays(parseInt(e.target.value) || 1)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">days</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Court Operating Hours
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Open Time (0-23)
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The hour (in 24h format) when the courts open.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="0"
-                  max="23"
-                  value={courtOpenTime}
-                  onChange={(e) =>
-                    setCourtOpenTime(parseInt(e.target.value) || 0)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">:00</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Close Time (0-24)
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The hour (in 24h format) when the courts close.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="number"
-                  min="1"
-                  max="24"
-                  value={courtCloseTime}
-                  onChange={(e) =>
-                    setCourtCloseTime(parseInt(e.target.value) || 24)
-                  }
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                />
-                <span className="text-gray-600">:00</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Courts Management
-          </h3>
-          <div className="space-y-4 mb-6">
-            {courts.map((court) => (
-              <div
-                key={court.id}
-                className="border border-gray-400 rounded-md p-4 flex justify-between items-start bg-gray-50"
-              >
-                {editingCourtId === court.id ? (
-                  <div className="w-full flex flex-col space-y-3">
-                    <input
-                      className="border border-gray-300 rounded-md px-2 py-1 text-sm font-medium text-gray-900 w-full"
-                      value={editCourtForm.name}
-                      onChange={(e) =>
-                        setEditCourtForm({
-                          ...editCourtForm,
-                          name: e.target.value,
-                        })
-                      }
-                      placeholder="Court Name"
-                    />
-                    <div className="flex items-center space-x-3 text-sm text-gray-600">
-                      <span>Open Time:</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="23"
-                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
-                        value={editCourtForm.openTime ?? ""}
-                        onChange={(e) =>
-                          setEditCourtForm({
-                            ...editCourtForm,
-                            openTime: parseInt(e.target.value),
-                          })
-                        }
-                        placeholder="Global"
-                      />
-                      <span>Close Time:</span>
-                      <input
-                        type="number"
-                        min="0"
-                        max="23"
-                        className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
-                        value={editCourtForm.closeTime ?? ""}
-                        onChange={(e) =>
-                          setEditCourtForm({
-                            ...editCourtForm,
-                            closeTime: parseInt(e.target.value),
-                          })
-                        }
-                        placeholder="Global"
-                      />
-                    </div>
-                    <div className="flex space-x-2 pt-2">
-                      <button
-                        onClick={handleSaveEditCourt}
-                        className="text-primary-600 hover:text-primary-900 text-sm font-medium"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingCourtId(null)}
-                        className="text-gray-500 hover:text-gray-700 text-sm font-medium"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div>
-                      <h4 className="text-base font-medium text-gray-900">
-                        {court.name}
-                      </h4>
-                      <div className="text-sm text-gray-500 mt-1">
-                        Hours: {court.openTime ?? "Global"} to{" "}
-                        {court.closeTime ?? "Global"}
-                      </div>
-                    </div>
-                    <div className="flex space-x-3">
-                      <button
-                        onClick={() => handleStartEditCourt(court)}
-                        className="text-primary-600 hover:text-primary-900 text-sm font-medium"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCourt(court)}
-                        className="text-red-600 hover:text-red-900 text-sm font-medium"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-            {courts.length === 0 && (
-              <p className="text-sm text-gray-500 italic">No courts found.</p>
-            )}
-          </div>
-
-          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="text-sm font-medium text-gray-900">
-                Add New Court
-              </h4>
-              <button
-                onClick={() => setShowAddCourt(!showAddCourt)}
-                className="text-primary-600 text-sm font-medium hover:text-primary-800"
-              >
-                {showAddCourt ? "Cancel" : "+ Add Court"}
-              </button>
-            </div>
-            {showAddCourt && (
-              <div className="flex flex-col space-y-3">
-                <input
-                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
-                  value={newCourt.name}
-                  onChange={(e) =>
-                    setNewCourt({ ...newCourt, name: e.target.value })
-                  }
-                  placeholder="Court Name (e.g. Court 1)"
-                />
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
-                  <div className="flex items-center space-x-2">
-                    <span>Open Time:</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="23"
-                      className="border border-gray-300 rounded-md px-2 py-1.5 text-sm w-20"
-                      value={newCourt.openTime}
-                      onChange={(e) =>
-                        setNewCourt({ ...newCourt, openTime: e.target.value })
-                      }
-                      placeholder="Global"
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <span>Close Time:</span>
-                    <input
-                      type="number"
-                      min="0"
-                      max="23"
-                      className="border border-gray-300 rounded-md px-2 py-1.5 text-sm w-20"
-                      value={newCourt.closeTime}
-                      onChange={(e) =>
-                        setNewCourt({ ...newCourt, closeTime: e.target.value })
-                      }
-                      placeholder="Global"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => {
-                      handleSaveNewCourt();
-                      setShowAddCourt(false);
-                    }}
-                    disabled={!newCourt.name}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Add Court
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Check-In Settings
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Enable QR Code Check-In
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Allow members to check-in to their bookings by scanning a QR code at the club.
-              </p>
-              <div className="flex items-center space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setEnableQrCheckIn(!enableQrCheckIn)}
-                  className={`${
-                    enableQrCheckIn ? "bg-primary-600" : "bg-gray-200"
-                  } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
-                  role="switch"
-                  aria-checked={enableQrCheckIn}
-                >
-                  <span className="sr-only">Enable QR Check-In</span>
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      enableQrCheckIn ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-                  />
-                </button>
-                <span className="text-sm text-gray-700">
-                  {enableQrCheckIn ? "Enabled" : "Disabled"}
-                </span>
-              </div>
-              
-              {enableQrCheckIn && (
-                <div className="mt-4">
-                  <a
-                    href="/check-in?print=true"
-                    target="_blank"
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
-                  >
-                    <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                    Print Check-In QR Code
-                  </a>
-                </div>
-              )}
-            </div>
-            
-            {enableQrCheckIn && (
-              <div className="flex flex-col space-y-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Require GPS Location for Check-In
-                  </label>
-                  <p className="text-sm text-gray-500 mb-2">
-                    If enabled, members must be physically near the club to check in. (Requires HTTPS)
-                  </p>
-                  <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setRequireGpsCheckIn(!requireGpsCheckIn)}
-                      className={`${
-                        requireGpsCheckIn ? "bg-primary-600" : "bg-gray-200"
-                      } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
-                      role="switch"
-                    >
-                      <span className="sr-only">Require GPS Check-In</span>
-                      <span
-                        aria-hidden="true"
-                        className={`${
-                          requireGpsCheckIn ? "translate-x-5" : "translate-x-0"
-                        } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-                      />
-                    </button>
-                    <span className="text-sm text-gray-700">
-                      {requireGpsCheckIn ? "Required" : "Optional"}
-                    </span>
-                  </div>
-                </div>
-
-                {requireGpsCheckIn && (
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Club Latitude</label>
-                      <input
-                        type="text"
-                        value={clubLatitude}
-                        onChange={(e) => setClubLatitude(e.target.value)}
-                        placeholder="e.g. 43.6532"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">Club Longitude</label>
-                      <input
-                        type="text"
-                        value={clubLongitude}
-                        onChange={(e) => setClubLongitude(e.target.value)}
-                        placeholder="e.g. -79.3832"
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
-                      />
-                    </div>
-                    <div className="col-span-2 text-xs text-gray-500">
-                      To find coordinates, right-click your club on Google Maps and click the lat/long numbers at the top.
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Registration Options
-          </h3>
-
-          <div className="flex flex-col space-y-2 max-w-lg">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="flex flex-col space-y-2">
             <label className="text-sm font-medium text-gray-700">
-              Gender Options
+              Primary Brand Colour
             </label>
             <p className="text-sm text-gray-500 mb-2">
-              Comma-separated list of gender options available during
-              registration.
+              The main colour used for buttons, links, and highlights across
+              the entire app.
+            </p>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
+                className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+              />
+              <input
+                type="text"
+                value={primaryColor}
+                onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
+                placeholder="#000000"
+                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Secondary Colour
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              Used for accents, success states, and secondary buttons.
+            </p>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={secondaryColor}
+                onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+              />
+              <input
+                type="text"
+                value={secondaryColor}
+                onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                placeholder="#000000"
+                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-2 md:col-span-2">
+            <label className="text-sm font-medium text-gray-700">
+              Font Family
+            </label>
+            <select
+              value={fontFamily}
+              onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
+              className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            >
+              <option value="Inter">Inter (Modern, Clean)</option>
+              <option value="Roboto">Roboto (Classic, Readable)</option>
+              <option value="Outfit">Outfit (Geometric, Trendy)</option>
+              <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
+              <option value="Montserrat">Montserrat (Wide, Professional)</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col space-y-2 md:col-span-2">
+            <label className="text-sm font-medium text-gray-700">
+              Hero Image URL
+            </label>
+            <p className="text-xs text-gray-500 mb-1">
+              Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
             </p>
             <input
               type="text"
-              value={genderOptions}
-              onChange={(e) => setGenderOptions(e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-              placeholder="e.g. Male, Female, Non-Binary"
+              placeholder="https://example.com/my-club-hero.jpg"
+              value={heroImageUrl}
+              onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
             />
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Member Data Settings
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Enable CSV Import
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Show the "Import CSV" button on the Admin Dashboard. Typically
-                only needed during initial setup.
-              </p>
-              <div className="flex items-center space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setEnableCsvImport(!enableCsvImport)}
-                  className={`${
-                    enableCsvImport ? "bg-primary-600" : "bg-gray-200"
-                  } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
-                  role="switch"
-                  aria-checked={enableCsvImport}
-                >
-                  <span className="sr-only">Enable CSV Import</span>
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      enableCsvImport ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-                  />
-                </button>
-                <span className="text-sm text-gray-700">
-                  {enableCsvImport ? "Enabled" : "Disabled"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Enable Welcome Emails
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Show the "Send Welcome Emails" button on the Admin Dashboard to
-                manually trigger welcome emails for pending members.
-              </p>
-              <div className="flex items-center space-x-3">
-                <button
-                  type="button"
-                  onClick={() => setEnableWelcomeEmails(!enableWelcomeEmails)}
-                  className={`${
-                    enableWelcomeEmails ? "bg-primary-600" : "bg-gray-200"
-                  } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
-                  role="switch"
-                  aria-checked={enableWelcomeEmails}
-                >
-                  <span className="sr-only">Enable Welcome Emails</span>
-                  <span
-                    aria-hidden="true"
-                    className={`${
-                      enableWelcomeEmails ? "translate-x-5" : "translate-x-0"
-                    } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
-                  />
-                </button>
-                <span className="text-sm text-gray-700">
-                  {enableWelcomeEmails ? "Enabled" : "Disabled"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Club Logo URL
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                Provide a URL to an image to replace the default logo. We recommend a transparent PNG with a max height of 40px.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                  placeholder="https://example.com/logo.png"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                External Website URL
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                If your club has its own website (e.g. www.myclub.com), enter it here. Visitors to the root of this app will automatically be redirected there instead of seeing our built-in landing page. <strong>Requires Super Admin privileges.</strong>
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={externalWebsiteUrl}
-                  onChange={(e) => setExternalWebsiteUrl(e.target.value)}
-                  disabled={!isSuperAdmin}
-                  className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border disabled:opacity-50 disabled:bg-gray-100"
-                  placeholder="https://www.myclub.com"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Active Season
-              </label>
-              <p className="text-sm text-gray-500 mb-2">
-                The current active membership year. Change this to rollover to
-                the next year.
-              </p>
-              <div className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={activeSeason}
-                  onChange={(e) => setActiveSeason(e.target.value)}
-                  className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-                  placeholder="e.g. 2026"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Coupon Codes</h3>
-            {!showAddCoupon && (
-              <button
-                onClick={() => {
-                  setEditingCouponId(null);
-                  setCouponFormData({
-                    code: '',
-                    discountType: 'FIXED',
-                    discountAmount: '',
-                    description: '',
-                    maxUses: '',
-                    expiryDate: '',
-                    validForMemberships: false
-                  });
-                  setShowAddCoupon(true);
-                }}
-                className="bg-indigo-50 text-indigo-700 px-3 py-1 text-sm font-medium rounded-md hover:bg-indigo-100 transition-colors"
-              >
-                + Add Coupon
-              </button>
-            )}
-          </div>
-          
-          {showAddCoupon && (
-            <div className="bg-gray-50 p-4 rounded-md mb-4 border border-gray-200">
-              <h4 className="text-md font-medium text-gray-900 mb-3">{editingCouponId ? 'Edit Coupon' : 'New Coupon'}</h4>
-              <form onSubmit={handleSaveCoupon} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
-                    <input 
-                      required
-                      type="text" 
-                      value={couponFormData.code}
-                      onChange={(e) => setCouponFormData({...couponFormData, code: e.target.value})}
-                      className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
-                      placeholder="e.g. SUMMER26"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description / Notes</label>
-                    <input 
-                      type="text" 
-                      value={couponFormData.description}
-                      onChange={(e) => setCouponFormData({...couponFormData, description: e.target.value})}
-                      className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
-                      placeholder="e.g. Raffle winner discount"
-                    />
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-1/3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                      <select 
-                        value={couponFormData.discountType}
-                        onChange={(e) => setCouponFormData({...couponFormData, discountType: e.target.value as any})}
-                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
-                      >
-                        <option value="FIXED">Fixed ($)</option>
-                        <option value="PERCENT">Percent (%)</option>
-                      </select>
-                    </div>
-                    <div className="w-2/3">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Discount Amount</label>
-                      <input 
-                        required
-                        type="number" 
-                        step="0.01"
-                        min="0.01"
-                        value={couponFormData.discountAmount}
-                        onChange={(e) => setCouponFormData({...couponFormData, discountAmount: e.target.value})}
-                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
-                        placeholder={couponFormData.discountType === 'FIXED' ? "20.00" : "15"}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-1/2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date (Optional)</label>
-                      <input 
-                        type="date" 
-                        value={couponFormData.expiryDate}
-                        onChange={(e) => setCouponFormData({...couponFormData, expiryDate: e.target.value})}
-                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
-                      />
-                    </div>
-                    <div className="w-1/2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Uses (Optional)</label>
-                      <input 
-                        type="number" 
-                        min="1"
-                        value={couponFormData.maxUses}
-                        onChange={(e) => setCouponFormData({...couponFormData, maxUses: e.target.value})}
-                        className="w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
-                        placeholder="Unlimited"
-                      />
-                    </div>
-                  </div>
-                  <div className="md:col-span-2 pt-2">
-                    <label className="flex items-center space-x-3 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        checked={couponFormData.validForMemberships}
-                        onChange={(e) => setCouponFormData({...couponFormData, validForMemberships: e.target.checked})}
-                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500 h-4 w-4"
-                      />
-                      <span className="text-sm font-medium text-gray-900">Valid for Membership Renewals & Registrations</span>
-                    </label>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddCoupon(false)}
-                    className="px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700"
-                  >
-                    Save Coupon
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          <div className="mt-4">
-            {coupons.length === 0 ? (
-              <p className="text-sm text-gray-500 italic">No coupons defined yet.</p>
-            ) : (
-              <div className="border border-gray-200 rounded-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Discount</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Uses</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {coupons.map((c) => {
-                      const isExpired = c.expiryDate && new Date(c.expiryDate) < new Date();
-                      const isMaxed = c.maxUses !== null && c.currentUses >= c.maxUses;
-                      const status = isExpired ? 'Expired' : isMaxed ? 'Max Uses Reached' : 'Active';
-                      return (
-                        <tr key={c.id}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{c.code}</td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            {c.discountType === 'FIXED' ? '$' : ''}{c.discountAmount}{c.discountType === 'PERCENT' ? '%' : ''}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            {c.currentUses} / {c.maxUses === null ? '∞' : c.maxUses}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-[10px] rounded-full uppercase font-bold ${status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                              {status}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                            <button onClick={() => handleEditCoupon(c)} className="text-primary-600 hover:text-primary-900 mr-3">Edit</button>
-                            <button onClick={() => handleDeleteCoupon(c.id)} className="text-red-600 hover:text-red-900">Delete</button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+            {heroImageUrl && (
+              <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
               </div>
             )}
           </div>
-        </div>
 
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Membership Plans
-          </h3>
-          <p className="text-sm text-gray-500 mb-6">
-            Manage the membership types and prices available for registration.
-            Archived plans cannot be selected by new members.
-          </p>
-
-          <div className="space-y-4 mb-8">
-            {plans.map((plan) => (
-              <div
-                key={plan.id}
-                className={`p-4 border rounded-md shadow-sm ${plan.isArchived ? "bg-gray-50 border-gray-400" : "bg-white border-gray-300"}`}
-              >
-                {editingPlanId === plan.id ? (
-                  <div className="flex flex-col space-y-3">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1"
-                        value={editPlanForm.name || ""}
-                        onChange={(e) =>
-                          setEditPlanForm({
-                            ...editPlanForm,
-                            name: e.target.value,
-                          })
-                        }
-                        placeholder="Plan Name"
-                      />
-                      <input
-                        type="number"
-                        className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
-                        value={editPlanForm.cost || 0}
-                        onChange={(e) =>
-                          setEditPlanForm({
-                            ...editPlanForm,
-                            cost: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        placeholder="Cost ($)"
-                      />
-                    </div>
-                    <input
-                      className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
-                      value={editPlanForm.description || ""}
-                      onChange={(e) =>
-                        setEditPlanForm({
-                          ...editPlanForm,
-                          description: e.target.value,
-                        })
-                      }
-                      placeholder="Description (Optional)"
-                    />
-                    <div className="flex justify-end space-x-2 pt-2">
-                      <button
-                        onClick={() => setEditingPlanId(null)}
-                        className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md border border-gray-300"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSaveEditPlan}
-                        className="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4
-                          className={`font-semibold ${plan.isArchived ? "text-gray-500" : "text-gray-900"}`}
-                        >
-                          {plan.name}
-                        </h4>
-                        <span className="text-sm font-medium text-green-600">
-                          ${plan.cost}
-                        </span>
-                        {plan.isArchived && (
-                          <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-medium">
-                            Archived
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-500">
-                        {plan.description || "No description provided."}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => handleStartEditPlan(plan)}
-                        className="text-sm text-blue-600 hover:text-blue-800 px-2 py-1"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleArchivePlan(plan)}
-                        className={`text-sm px-2 py-1 ${plan.isArchived ? "text-green-600 hover:text-green-800" : "text-orange-600 hover:text-orange-800"}`}
-                      >
-                        {plan.isArchived ? "Unarchive" : "Archive"}
-                      </button>
-                    </div>
+          <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
+            <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
+            <p className="text-xs text-gray-500 mb-2">
+              Display an event flyer or promotional banner on your homepage. Leave blank to hide.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/tournament-flyer.png"
+                  value={promoImageUrl}
+                  onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                />
+                {promoImageUrl && (
+                  <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
                   </div>
                 )}
               </div>
-            ))}
 
-            {plans.length === 0 && (
-              <p className="text-sm text-gray-500 italic">
-                No membership plans found.
-              </p>
-            )}
-          </div>
-
-          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="text-sm font-medium text-gray-900">
-                Add New Membership Plan
-              </h4>
-              <button
-                onClick={() => setShowAddPlan(!showAddPlan)}
-                className="text-primary-600 text-sm font-medium hover:text-primary-800"
-              >
-                {showAddPlan ? "Cancel" : "+ Add Plan"}
-              </button>
-            </div>
-            {showAddPlan && (
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center space-x-3">
-                  <input
-                    className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1"
-                    value={newPlan.name}
-                    onChange={(e) =>
-                      setNewPlan({ ...newPlan, name: e.target.value })
-                    }
-                    placeholder="Plan Name (e.g. Young Adult)"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
-                    value={newPlan.cost}
-                    onChange={(e) =>
-                      setNewPlan({
-                        ...newPlan,
-                        cost: parseFloat(e.target.value) || 0,
-                      })
-                    }
-                    placeholder="Cost ($)"
-                  />
-                </div>
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
                 <input
-                  className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
-                  value={newPlan.description}
-                  onChange={(e) =>
-                    setNewPlan({ ...newPlan, description: e.target.value })
-                  }
-                  placeholder="Description (Optional)"
+                  type="text"
+                  placeholder="https://example.com/register"
+                  value={promoLinkUrl}
+                  onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 />
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => {
-                      handleSaveNewPlan();
-                      setShowAddPlan(false);
-                    }}
-                    disabled={savingPlan || !newPlan.name}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {savingPlan ? "Adding..." : "Add Plan"}
-                  </button>
-                </div>
+                <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
               </div>
-            )}
+            </div>
           </div>
         </div>
 
-        <div className="pt-6 border-t mt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Booking Types
-          </h3>
-          <p className="text-sm text-gray-500 mb-6">
-            Manage the types of bookings available and customize their calendar
-            colors. "MEMBER" is a required system type that asks for playing
-            partners.
-          </p>
-          <div className="space-y-4 mb-6">
-            {bookingTypesLoading ? (
-              <p className="text-sm text-gray-500">Loading booking types...</p>
-            ) : (
-              bookingTypes.map((bt) => (
-                <div
-                  key={bt.id}
-                  className="border border-gray-400 rounded-md p-4 flex justify-between items-center bg-gray-50"
-                >
-                  {editingBookingTypeId === bt.id ? (
-                    <div className="w-full flex flex-col space-y-3">
-                      <div className="flex items-center space-x-3">
-                        <input
-                          className="border border-gray-300 rounded-md px-2 py-1 text-sm font-medium text-gray-900 flex-1 uppercase"
-                          value={editBookingTypeForm.name || ""}
-                          onChange={(e) =>
-                            setEditBookingTypeForm({
-                              ...editBookingTypeForm,
-                              name: e.target.value,
-                            })
-                          }
-                          placeholder="Booking Type Name"
-                          disabled={bt.isBuiltIn}
-                          title={
-                            bt.isBuiltIn ? "Cannot rename built-in types" : ""
-                          }
-                        />
-                        <input
-                          type="color"
-                          className="border border-gray-300 rounded-md h-8 w-12 cursor-pointer p-0.5"
-                          value={editBookingTypeForm.color || "#3b82f6"}
-                          onChange={(e) =>
-                            setEditBookingTypeForm({
-                              ...editBookingTypeForm,
-                              color: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-                      <div className="flex flex-col space-y-2 mt-2 bg-white p-3 rounded border border-gray-200">
-                        <label className="flex items-center space-x-2 text-sm text-gray-700">
-                          <input type="checkbox" checked={editBookingTypeForm.allowMemberRegistration || false} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, allowMemberRegistration: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-                          <span>Allow Member Registration (Block Bookings)</span>
-                        </label>
-                        {editBookingTypeForm.allowMemberRegistration && (
-                          <div className="grid grid-cols-3 gap-3 pt-2">
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">Min Participants</label>
-                              <input type="number" value={editBookingTypeForm.minParticipants || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, minParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No min" />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">Max Participants</label>
-                              <input type="number" value={editBookingTypeForm.maxParticipants || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, maxParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No max" />
-                            </div>
-                            <div>
-                              <label className="block text-xs text-gray-500 mb-1">Default Offline Fee ($)</label>
-                              <input type="number" step="0.01" value={editBookingTypeForm.defaultCost || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, defaultCost: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="0.00" />
-                            </div>
-                          </div>
+        <h4 className="text-md font-medium text-gray-900 mb-4">
+          Landing Page Content
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Hero Title</label>
+            <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+          </div>
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
+            <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
+            <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
+            <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
+            <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
+            <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
+            <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
+            <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+        </div>
+      </div>
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Website Pages Manager
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">Create dynamic, custom pages for your website (e.g. &quot;About Us&quot;, &quot;Club Rules&quot;).</p>
+            
+            <div className="space-y-4 mb-6">
+              {pagesLoading ? (
+                <p className="text-sm text-gray-500">Loading pages...</p>
+              ) : (
+                customPages.map(page => (
+                  <div key={page.id} className="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-200">
+                    <div>
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                        {page.title}
+                        {!page.isPublic && (
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                         )}
+                      </h4>
+                      <p className="text-xs text-gray-500">/p/{page.slug} • {page.isPublished ? 'Published' : 'Draft'}</p>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button onClick={() => handleStartEditPage(page)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
+                      <button onClick={() => handleDeletePage(page.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
+              {!pagesLoading && customPages.length === 0 && (
+                <p className="text-sm text-gray-500 italic">No custom pages created yet.</p>
+              )}
+            </div>
+
+            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-medium text-gray-900">
+                  {editingPageId ? 'Edit Page' : 'Add New Page'}
+                </h4>
+                <button
+                  onClick={() => {
+                    setShowAddPage(!showAddPage);
+                    if (editingPageId) {
+                      setEditingPageId(null);
+                      setPageForm({});
+                    }
+                  }}
+                  className="text-primary-600 text-sm font-medium hover:text-primary-800"
+                >
+                  {showAddPage ? "Cancel" : "+ Add Page"}
+                </button>
+              </div>
+              {showAddPage && (
+                <div className="flex flex-col space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
+                      <input type="text" value={pageForm.title || ''} onChange={e => setPageForm({...pageForm, title: e.target.value})} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Club Rules" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
+                      <div className="flex items-center">
+                        <span className="text-gray-500 text-sm bg-gray-100 border border-r-0 border-gray-300 rounded-l px-3 py-2">/p/</span>
+                        <input type="text" value={pageForm.slug || ''} onChange={e => setPageForm({...pageForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="flex-1 border border-gray-300 rounded-r px-3 py-2 text-sm" placeholder="e.g. club-rules" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-6 border-t pt-4">
+                    <label className="flex items-center space-x-2">
+                      <input type="checkbox" checked={pageForm.isPublished ?? true} onChange={e => setPageForm({...pageForm, isPublished: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
+                      <span className="text-sm text-gray-700">Published (Visible on site)</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input type="checkbox" checked={pageForm.isPublic ?? true} onChange={e => setPageForm({...pageForm, isPublic: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
+                      <span className="text-sm text-gray-700">Public (Uncheck for Members Only access)</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Page Content</label>
+                    <TipTapEditor
+                      value={pageForm.contentHtml || ""}
+                      onChange={(html) => setPageForm({...pageForm, contentHtml: html})}
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      onClick={handleSavePage}
+                      disabled={savingPage}
+                      className="px-4 py-2 bg-primary-600 text-white rounded shadow-sm hover:bg-primary-700 font-medium text-sm disabled:opacity-50"
+                    >
+                      {savingPage ? 'Saving...' : 'Save Page'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+</CollapsibleSection>
+<CollapsibleSection title="Court Booking">
+<div className="border-b pb-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Court Settings
+                    </h3>
+
+                    <div className="flex flex-col space-y-4">
+                      <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Allow Member Registration & Booking
+                        </label>
+                        <div className="flex items-center mt-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEnableMemberCourtBooking(!enableMemberCourtBooking);
+                              setIsDirty(true);
+                            }}
+                            className={`${
+                              enableMemberCourtBooking ? "bg-primary-600" : "bg-gray-200"
+                            } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
+                          >
+                            <span
+                              aria-hidden="true"
+                              className={`${
+                                enableMemberCourtBooking ? "translate-x-5" : "translate-x-0"
+                              } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                            />
+                          </button>
+                          <span className="ml-3 text-sm text-gray-500">
+                            {enableMemberCourtBooking
+                              ? "Members can book courts."
+                              : "Booking is disabled."}
+                          </span>
+                        </div>
+                      </div>
+
+                      
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Cancellation Cutoff (Minutes)
+                        </label>
+                        <p className="text-sm text-gray-500 mb-2">
+                          Members cannot cancel a booking if the start time is less than
+                          this many minutes away.
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="0"
+                            value={cutoffMinutes}
+                            onChange={(e) =>
+                              setCutoffMinutes(parseInt(e.target.value) || 0)
+                            }
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                          />
+                          <span className="text-gray-600">minutes</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Max Hours Per Day
+                        </label>
+                        <p className="text-sm text-gray-500 mb-2">
+                          The maximum number of hours a member can book courts per day.
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="1"
+                            max="24"
+                            value={maxHoursPerDay}
+                            onChange={(e) =>
+                              setMaxHoursPerDay(parseInt(e.target.value) || 1)
+                            }
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                          />
+                          <span className="text-gray-600">hours</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Max Days in Advance
+                        </label>
+                        <p className="text-sm text-gray-500 mb-2">
+                          How many days into the future a member is allowed to book a
+                          court.
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="1"
+                            max="365"
+                            value={maxDaysInAdvance}
+                            onChange={(e) =>
+                              setMaxDaysInAdvance(parseInt(e.target.value) || 1)
+                            }
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                          />
+                          <span className="text-gray-600">days</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Calendar View Span
+                        </label>
+                        <p className="text-sm text-gray-500 mb-2">
+                          How many days to show side-by-side on the booking calendar.
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="1"
+                            max="7"
+                            value={calendarDaysToShow}
+                            onChange={(e) =>
+                              setCalendarDaysToShow(parseInt(e.target.value) || 3)
+                            }
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                          />
+                          <span className="text-gray-600">days</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <label className="text-sm font-medium text-gray-700">
+                          Calendar Skip Amount
+                        </label>
+                        <p className="text-sm text-gray-500 mb-2">
+                          How many days the calendar jumps forward/backward when clicking
+                          Prev/Next.
+                        </p>
+                        <div className="flex items-center space-x-3">
+                          <input
+                            type="number"
+                            min="1"
+                            max="30"
+                            value={calendarSkipDays}
+                            onChange={(e) =>
+                              setCalendarSkipDays(parseInt(e.target.value) || 1)
+                            }
+                            className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                          />
+                          <span className="text-gray-600">days</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Court Operating Hours
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Open Time (0-23)
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  The hour (in 24h format) when the courts open.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={courtOpenTime}
+                    onChange={(e) =>
+                      setCourtOpenTime(parseInt(e.target.value) || 0)
+                    }
+                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                  />
+                  <span className="text-gray-600">:00</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Close Time (0-24)
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  The hour (in 24h format) when the courts close.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="number"
+                    min="1"
+                    max="24"
+                    value={courtCloseTime}
+                    onChange={(e) =>
+                      setCourtCloseTime(parseInt(e.target.value) || 24)
+                    }
+                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                  />
+                  <span className="text-gray-600">:00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Courts Management
+            </h3>
+            <div className="space-y-4 mb-6">
+              {courts.map((court) => (
+                <div
+                  key={court.id}
+                  className="border border-gray-400 rounded-md p-4 flex justify-between items-start bg-gray-50"
+                >
+                  {editingCourtId === court.id ? (
+                    <div className="w-full flex flex-col space-y-3">
+                      <input
+                        className="border border-gray-300 rounded-md px-2 py-1 text-sm font-medium text-gray-900 w-full"
+                        value={editCourtForm.name}
+                        onChange={(e) =>
+                          setEditCourtForm({
+                            ...editCourtForm,
+                            name: e.target.value,
+                          })
+                        }
+                        placeholder="Court Name"
+                      />
+                      <div className="flex items-center space-x-3 text-sm text-gray-600">
+                        <span>Open Time:</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="23"
+                          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                          value={editCourtForm.openTime ?? ""}
+                          onChange={(e) =>
+                            setEditCourtForm({
+                              ...editCourtForm,
+                              openTime: parseInt(e.target.value),
+                            })
+                          }
+                          placeholder="Global"
+                        />
+                        <span>Close Time:</span>
+                        <input
+                          type="number"
+                          min="0"
+                          max="23"
+                          className="border border-gray-300 rounded-md px-2 py-1 text-sm w-20"
+                          value={editCourtForm.closeTime ?? ""}
+                          onChange={(e) =>
+                            setEditCourtForm({
+                              ...editCourtForm,
+                              closeTime: parseInt(e.target.value),
+                            })
+                          }
+                          placeholder="Global"
+                        />
                       </div>
                       <div className="flex space-x-2 pt-2">
                         <button
-                          onClick={handleSaveEditBookingType}
+                          onClick={handleSaveEditCourt}
                           className="text-primary-600 hover:text-primary-900 text-sm font-medium"
                         >
                           Save
                         </button>
                         <button
-                          onClick={() => setEditingBookingTypeId(null)}
+                          onClick={() => setEditingCourtId(null)}
                           className="text-gray-500 hover:text-gray-700 text-sm font-medium"
                         >
                           Cancel
@@ -2689,487 +1977,926 @@ export default function AdminSettingsPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className="w-6 h-6 rounded border border-gray-300"
-                          style={{ backgroundColor: bt.color }}
-                        ></div>
+                      <div>
                         <h4 className="text-base font-medium text-gray-900">
-                          {bt.name}
+                          {court.name}
                         </h4>
-                        {bt.isBuiltIn && (
-                          <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
-                            System
-                          </span>
-                        )}
+                        <div className="text-sm text-gray-500 mt-1">
+                          Hours: {court.openTime ?? "Global"} to{" "}
+                          {court.closeTime ?? "Global"}
+                        </div>
                       </div>
                       <div className="flex space-x-3">
                         <button
-                          onClick={() => handleStartEditBookingType(bt)}
+                          onClick={() => handleStartEditCourt(court)}
                           className="text-primary-600 hover:text-primary-900 text-sm font-medium"
                         >
                           Edit
                         </button>
-                        {!bt.isBuiltIn && (
-                          <button
-                            onClick={() => handleDeleteBookingType(bt)}
-                            className="text-red-600 hover:text-red-900 text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleDeleteCourt(court)}
+                          className="text-red-600 hover:text-red-900 text-sm font-medium"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </>
                   )}
                 </div>
-              ))
-            )}
-            {!bookingTypesLoading && bookingTypes.length === 0 && (
-              <p className="text-sm text-gray-500 italic">
-                No booking types found.
-              </p>
-            )}
-          </div>
-
-          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="text-sm font-medium text-gray-900">
-                Add New Booking Type
-              </h4>
-              <button
-                onClick={() => setShowAddBookingType(!showAddBookingType)}
-                className="text-primary-600 text-sm font-medium hover:text-primary-800"
-              >
-                {showAddBookingType ? "Cancel" : "+ Add Booking Type"}
-              </button>
+              ))}
+              {courts.length === 0 && (
+                <p className="text-sm text-gray-500 italic">No courts found.</p>
+              )}
             </div>
-            {showAddBookingType && (
-              <div className="flex flex-col space-y-3">
-                <div className="flex items-center space-x-3">
-                  <input
-                    className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1 uppercase"
-                    value={newBookingType.name}
-                    onChange={(e) =>
-                      setNewBookingType({
-                        ...newBookingType,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="Name (e.g. TOURNAMENT)"
-                  />
-                  <input
-                    type="color"
-                    className="border border-gray-300 rounded-md h-9 w-14 cursor-pointer p-0.5"
-                    value={newBookingType.color}
-                    onChange={(e) =>
-                      setNewBookingType({
-                        ...newBookingType,
-                        color: e.target.value,
-                      })
-                    }
-                    title="Calendar Color"
-                  />
-                </div>
-                <div className="flex flex-col space-y-2 mt-2 bg-white p-3 rounded border border-gray-200">
-                  <label className="flex items-center space-x-2 text-sm text-gray-700">
-                    <input type="checkbox" checked={newBookingType.allowMemberRegistration || false} onChange={e => setNewBookingType({...newBookingType, allowMemberRegistration: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
-                    <span>Allow Member Registration (Block Bookings)</span>
-                  </label>
-                  {newBookingType.allowMemberRegistration && (
-                    <div className="grid grid-cols-3 gap-3 pt-2">
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Min Participants</label>
-                        <input type="number" value={newBookingType.minParticipants || ""} onChange={e => setNewBookingType({...newBookingType, minParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No min" />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Max Participants</label>
-                        <input type="number" value={newBookingType.maxParticipants || ""} onChange={e => setNewBookingType({...newBookingType, maxParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No max" />
-                      </div>
-                      <div>
-                        <label className="block text-xs text-gray-500 mb-1">Default Offline Fee ($)</label>
-                        <input type="number" step="0.01" value={newBookingType.defaultCost || ""} onChange={e => setNewBookingType({...newBookingType, defaultCost: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="0.00" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => {
-                      handleSaveNewBookingType();
-                      setShowAddBookingType(false);
-                    }}
-                    disabled={savingBookingType || !newBookingType.name}
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {savingBookingType ? "Adding..." : "Add Type"}
-                  </button>
-                </div>
+
+            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-medium text-gray-900">
+                  Add New Court
+                </h4>
+                <button
+                  onClick={() => setShowAddCourt(!showAddCourt)}
+                  className="text-primary-600 text-sm font-medium hover:text-primary-800"
+                >
+                  {showAddCourt ? "Cancel" : "+ Add Court"}
+                </button>
               </div>
-            )}
-          </div>
-        </div>
-
-        <div className="border-t pt-6 mt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Email Templates
-          </h3>
-          <p className="text-sm text-gray-500 mb-6">
-            Customize the automated emails sent to your members. Use HTML
-            formatting.
-          </p>
-
-          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Select Email to Edit
-              </label>
-              <select
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full bg-white"
-                value={selectedTemplateId}
-                onChange={(e) => handleTemplateSelect(e.target.value)}
-              >
-                <option value="">-- Select a template --</option>
-                <option value="WELCOME_EMAIL">Welcome Email</option>
-                <option value="REGISTRATION_PENDING">
-                  Registration Pending
-                </option>
-                <option value="PROFILE_UPDATED">Profile Updated</option>
-                <option value="BOOKING_CONFIRMATION">
-                  Booking Confirmation
-                </option>
-                <option value="INTEREST_CONFIRMATION">
-                  Interest Confirmation
-                </option>
-                <option value="ADMIN_NEW_REGISTRATION">
-                  Admin Alert: New Registration
-                </option>
-                <option value="IMPORT_WELCOME_EMAIL">
-                  Import Welcome Email
-                </option>
-              </select>
-            </div>
-
-            {selectedTemplateId && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email Subject
-                  </label>
+              {showAddCourt && (
+                <div className="flex flex-col space-y-3">
                   <input
-                    className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
-                    value={editTemplateForm.subject || ""}
+                    className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
+                    value={newCourt.name}
                     onChange={(e) =>
-                      setEditTemplateForm({
-                        ...editTemplateForm,
-                        subject: e.target.value,
-                      })
+                      setNewCourt({ ...newCourt, name: e.target.value })
                     }
-                    placeholder="Enter email subject..."
+                    placeholder="Court Name (e.g. Court 1)"
                   />
-                </div>
-                <div>
-                  <div className="flex justify-between items-end mb-1">
-                    <label className="block text-sm font-medium text-gray-700">
-                      HTML Body
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <select
-                        className="text-xs border border-primary-200 rounded px-2 py-1 bg-primary-50 text-primary-700 focus:ring-primary-500 focus:border-primary-500 cursor-pointer font-medium"
-                        onChange={(e) => {
-                          insertVariable(e.target.value);
-                          e.target.value = ""; // reset dropdown
-                        }}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>
-                          + Insert variable...
-                        </option>
-                        {TEMPLATE_VARIABLES[selectedTemplateId]?.map((v) => (
-                          <option key={v} value={v}>
-                            {v}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-4 mb-2">
-                    <button
-                      onClick={() => setEditorMode("visual")}
-                      className={`text-xs font-medium ${editorMode === "visual" ? "text-primary-700 font-bold" : "text-gray-500 hover:text-gray-700 underline"}`}
-                    >
-                      Visual Editor
-                    </button>
-                    <button
-                      onClick={() => setEditorMode("raw")}
-                      className={`text-xs font-medium ${editorMode === "raw" ? "text-primary-700 font-bold" : "text-gray-500 hover:text-gray-700 underline"}`}
-                    >
-                      Raw HTML
-                    </button>
-                    <button
-                      onClick={() => setEditorMode("preview")}
-                      className={`text-xs font-medium ${editorMode === "preview" ? "text-primary-700 font-bold" : "text-gray-500 hover:text-gray-700 underline"}`}
-                    >
-                      Preview
-                    </button>
-                  </div>
-                  {editorMode === "visual" && (
-                    <div className="bg-white">
-                      <TipTapEditor
-                        value={editTemplateForm.htmlBody || ""}
-                        onChange={(val: string) =>
-                          setEditTemplateForm({
-                            ...editTemplateForm,
-                            htmlBody: val,
-                          })
+                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                    <div className="flex items-center space-x-2">
+                      <span>Open Time:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="23"
+                        className="border border-gray-300 rounded-md px-2 py-1.5 text-sm w-20"
+                        value={newCourt.openTime}
+                        onChange={(e) =>
+                          setNewCourt({ ...newCourt, openTime: e.target.value })
                         }
-                        onEditorReady={setEditorInstance}
+                        placeholder="Global"
                       />
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <span>Close Time:</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="23"
+                        className="border border-gray-300 rounded-md px-2 py-1.5 text-sm w-20"
+                        value={newCourt.closeTime}
+                        onChange={(e) =>
+                          setNewCourt({ ...newCourt, closeTime: e.target.value })
+                        }
+                        placeholder="Global"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <button
+                      onClick={() => {
+                        handleSaveNewCourt();
+                        setShowAddCourt(false);
+                      }}
+                      disabled={!newCourt.name}
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add Court
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Check-In Settings
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Enable QR Code Check-In
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Allow members to check-in to their bookings by scanning a QR code at the club.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setEnableQrCheckIn(!enableQrCheckIn)}
+                    className={`${
+                      enableQrCheckIn ? "bg-primary-600" : "bg-gray-200"
+                    } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                    role="switch"
+                    aria-checked={enableQrCheckIn}
+                  >
+                    <span className="sr-only">Enable QR Check-In</span>
+                    <span
+                      aria-hidden="true"
+                      className={`${
+                        enableQrCheckIn ? "translate-x-5" : "translate-x-0"
+                      } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                    />
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    {enableQrCheckIn ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+                
+                {enableQrCheckIn && (
+                  <div className="mt-4">
+                    <a
+                      href="/check-in?print=true"
+                      target="_blank"
+                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none"
+                    >
+                      <svg className="mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                      </svg>
+                      Print Check-In QR Code
+                    </a>
+                  </div>
+                )}
+              </div>
+              
+              {enableQrCheckIn && (
+                <div className="flex flex-col space-y-4">
+                  <div className="flex flex-col space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Require GPS Location for Check-In
+                    </label>
+                    <p className="text-sm text-gray-500 mb-2">
+                      If enabled, members must be physically near the club to check in. (Requires HTTPS)
+                    </p>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setRequireGpsCheckIn(!requireGpsCheckIn)}
+                        className={`${
+                          requireGpsCheckIn ? "bg-primary-600" : "bg-gray-200"
+                        } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                        role="switch"
+                      >
+                        <span className="sr-only">Require GPS Check-In</span>
+                        <span
+                          aria-hidden="true"
+                          className={`${
+                            requireGpsCheckIn ? "translate-x-5" : "translate-x-0"
+                          } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                        />
+                      </button>
+                      <span className="text-sm text-gray-700">
+                        {requireGpsCheckIn ? "Required" : "Optional"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {requireGpsCheckIn && (
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Club Latitude</label>
+                        <input
+                          type="text"
+                          value={clubLatitude}
+                          onChange={(e) => setClubLatitude(e.target.value)}
+                          placeholder="e.g. 43.6532"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Club Longitude</label>
+                        <input
+                          type="text"
+                          value={clubLongitude}
+                          onChange={(e) => setClubLongitude(e.target.value)}
+                          placeholder="e.g. -79.3832"
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+                        />
+                      </div>
+                      <div className="col-span-2 text-xs text-gray-500">
+                        To find coordinates, right-click your club on Google Maps and click the lat/long numbers at the top.
+                      </div>
+                    </div>
                   )}
-                  {editorMode === "raw" && (
-                    <textarea
-                      ref={textareaRef}
-                      className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-primary-500 focus:border-primary-500"
-                      value={editTemplateForm.htmlBody || ""}
+                </div>
+              )}
+            </div>
+          </div>
+<div className="pt-6 border-t mt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Booking Types
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Manage the types of bookings available and customize their calendar
+              colors. &quot;MEMBER&quot; is a required system type that asks for playing
+              partners.
+            </p>
+            <div className="space-y-4 mb-6">
+              {bookingTypesLoading ? (
+                <p className="text-sm text-gray-500">Loading booking types...</p>
+              ) : (
+                bookingTypes.map((bt) => (
+                  <div
+                    key={bt.id}
+                    className="border border-gray-400 rounded-md p-4 flex justify-between items-center bg-gray-50"
+                  >
+                    {editingBookingTypeId === bt.id ? (
+                      <div className="w-full flex flex-col space-y-3">
+                        <div className="flex items-center space-x-3">
+                          <input
+                            className="border border-gray-300 rounded-md px-2 py-1 text-sm font-medium text-gray-900 flex-1 uppercase"
+                            value={editBookingTypeForm.name || ""}
+                            onChange={(e) =>
+                              setEditBookingTypeForm({
+                                ...editBookingTypeForm,
+                                name: e.target.value,
+                              })
+                            }
+                            placeholder="Booking Type Name"
+                            disabled={bt.isBuiltIn}
+                            title={
+                              bt.isBuiltIn ? "Cannot rename built-in types" : ""
+                            }
+                          />
+                          <input
+                            type="color"
+                            className="border border-gray-300 rounded-md h-8 w-12 cursor-pointer p-0.5"
+                            value={editBookingTypeForm.color || "#3b82f6"}
+                            onChange={(e) =>
+                              setEditBookingTypeForm({
+                                ...editBookingTypeForm,
+                                color: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="flex flex-col space-y-2 mt-2 bg-white p-3 rounded border border-gray-200">
+                          <label className="flex items-center space-x-2 text-sm text-gray-700">
+                            <input type="checkbox" checked={editBookingTypeForm.allowMemberRegistration || false} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, allowMemberRegistration: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                            <span>Allow Member Registration (Block Bookings)</span>
+                          </label>
+                          {editBookingTypeForm.allowMemberRegistration && (
+                            <div className="grid grid-cols-3 gap-3 pt-2">
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Min Participants</label>
+                                <input type="number" value={editBookingTypeForm.minParticipants || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, minParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No min" />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Max Participants</label>
+                                <input type="number" value={editBookingTypeForm.maxParticipants || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, maxParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No max" />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 mb-1">Default Offline Fee ($)</label>
+                                <input type="number" step="0.01" value={editBookingTypeForm.defaultCost || ""} onChange={e => setEditBookingTypeForm({...editBookingTypeForm, defaultCost: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="0.00" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex space-x-2 pt-2">
+                          <button
+                            onClick={handleSaveEditBookingType}
+                            className="text-primary-600 hover:text-primary-900 text-sm font-medium"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingBookingTypeId(null)}
+                            className="text-gray-500 hover:text-gray-700 text-sm font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className="w-6 h-6 rounded border border-gray-300"
+                            style={{ backgroundColor: bt.color }}
+                          ></div>
+                          <h4 className="text-base font-medium text-gray-900">
+                            {bt.name}
+                          </h4>
+                          {bt.isBuiltIn && (
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
+                              System
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => handleStartEditBookingType(bt)}
+                            className="text-primary-600 hover:text-primary-900 text-sm font-medium"
+                          >
+                            Edit
+                          </button>
+                          {!bt.isBuiltIn && (
+                            <button
+                              onClick={() => handleDeleteBookingType(bt)}
+                              className="text-red-600 hover:text-red-900 text-sm font-medium"
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))
+              )}
+              {!bookingTypesLoading && bookingTypes.length === 0 && (
+                <p className="text-sm text-gray-500 italic">
+                  No booking types found.
+                </p>
+              )}
+            </div>
+
+            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-medium text-gray-900">
+                  Add New Booking Type
+                </h4>
+                <button
+                  onClick={() => setShowAddBookingType(!showAddBookingType)}
+                  className="text-primary-600 text-sm font-medium hover:text-primary-800"
+                >
+                  {showAddBookingType ? "Cancel" : "+ Add Booking Type"}
+                </button>
+              </div>
+              {showAddBookingType && (
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1 uppercase"
+                      value={newBookingType.name}
+                      onChange={(e) =>
+                        setNewBookingType({
+                          ...newBookingType,
+                          name: e.target.value,
+                        })
+                      }
+                      placeholder="Name (e.g. TOURNAMENT)"
+                    />
+                    <input
+                      type="color"
+                      className="border border-gray-300 rounded-md h-9 w-14 cursor-pointer p-0.5"
+                      value={newBookingType.color}
+                      onChange={(e) =>
+                        setNewBookingType({
+                          ...newBookingType,
+                          color: e.target.value,
+                        })
+                      }
+                      title="Calendar Color"
+                    />
+                  </div>
+                  <div className="flex flex-col space-y-2 mt-2 bg-white p-3 rounded border border-gray-200">
+                    <label className="flex items-center space-x-2 text-sm text-gray-700">
+                      <input type="checkbox" checked={newBookingType.allowMemberRegistration || false} onChange={e => setNewBookingType({...newBookingType, allowMemberRegistration: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500 h-4 w-4" />
+                      <span>Allow Member Registration (Block Bookings)</span>
+                    </label>
+                    {newBookingType.allowMemberRegistration && (
+                      <div className="grid grid-cols-3 gap-3 pt-2">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Min Participants</label>
+                          <input type="number" value={newBookingType.minParticipants || ""} onChange={e => setNewBookingType({...newBookingType, minParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No min" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Max Participants</label>
+                          <input type="number" value={newBookingType.maxParticipants || ""} onChange={e => setNewBookingType({...newBookingType, maxParticipants: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="No max" />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Default Offline Fee ($)</label>
+                          <input type="number" step="0.01" value={newBookingType.defaultCost || ""} onChange={e => setNewBookingType({...newBookingType, defaultCost: e.target.value})} className="w-full border border-gray-300 rounded px-2 py-1 text-sm" placeholder="0.00" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-end pt-1">
+                    <button
+                      onClick={() => {
+                        handleSaveNewBookingType();
+                        setShowAddBookingType(false);
+                      }}
+                      disabled={savingBookingType || !newBookingType.name}
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {savingBookingType ? "Adding..." : "Add Type"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+</CollapsibleSection>
+<CollapsibleSection title="Membership & Registration">
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Registration Options
+            </h3>
+
+            <div className="flex flex-col space-y-2 max-w-lg">
+              <label className="text-sm font-medium text-gray-700">
+                Gender Options
+              </label>
+              <p className="text-sm text-gray-500 mb-2">
+                Comma-separated list of gender options available during
+                registration.
+              </p>
+              <input
+                type="text"
+                value={genderOptions}
+                onChange={(e) => setGenderOptions(e.target.value)}
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                placeholder="e.g. Male, Female, Non-Binary"
+              />
+            </div>
+          </div>
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Membership Plans
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Manage the membership types and prices available for registration.
+              Archived plans cannot be selected by new members.
+            </p>
+
+            <div className="space-y-4 mb-8">
+              {plans.map((plan) => (
+                <div
+                  key={plan.id}
+                  className={`p-4 border rounded-md shadow-sm ${plan.isArchived ? "bg-gray-50 border-gray-400" : "bg-white border-gray-300"}`}
+                >
+                  {editingPlanId === plan.id ? (
+                    <div className="flex flex-col space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <input
+                          className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1"
+                          value={editPlanForm.name || ""}
+                          onChange={(e) =>
+                            setEditPlanForm({
+                              ...editPlanForm,
+                              name: e.target.value,
+                            })
+                          }
+                          placeholder="Plan Name"
+                        />
+                        <input
+                          type="number"
+                          className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
+                          value={editPlanForm.cost || 0}
+                          onChange={(e) =>
+                            setEditPlanForm({
+                              ...editPlanForm,
+                              cost: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="Cost ($)"
+                        />
+                      </div>
+                      <input
+                        className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
+                        value={editPlanForm.description || ""}
+                        onChange={(e) =>
+                          setEditPlanForm({
+                            ...editPlanForm,
+                            description: e.target.value,
+                          })
+                        }
+                        placeholder="Description (Optional)"
+                      />
+                      <div className="flex justify-end space-x-2 pt-2">
+                        <button
+                          onClick={() => setEditingPlanId(null)}
+                          className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-md border border-gray-300"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveEditPlan}
+                          className="px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-sm"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4
+                            className={`font-semibold ${plan.isArchived ? "text-gray-500" : "text-gray-900"}`}
+                          >
+                            {plan.name}
+                          </h4>
+                          <span className="text-sm font-medium text-green-600">
+                            ${plan.cost}
+                          </span>
+                          {plan.isArchived && (
+                            <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-medium">
+                              Archived
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {plan.description || "No description provided."}
+                        </p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleStartEditPlan(plan)}
+                          className="text-sm text-blue-600 hover:text-blue-800 px-2 py-1"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleToggleArchivePlan(plan)}
+                          className={`text-sm px-2 py-1 ${plan.isArchived ? "text-green-600 hover:text-green-800" : "text-orange-600 hover:text-orange-800"}`}
+                        >
+                          {plan.isArchived ? "Unarchive" : "Archive"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {plans.length === 0 && (
+                <p className="text-sm text-gray-500 italic">
+                  No membership plans found.
+                </p>
+              )}
+            </div>
+
+            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-medium text-gray-900">
+                  Add New Membership Plan
+                </h4>
+                <button
+                  onClick={() => setShowAddPlan(!showAddPlan)}
+                  className="text-primary-600 text-sm font-medium hover:text-primary-800"
+                >
+                  {showAddPlan ? "Cancel" : "+ Add Plan"}
+                </button>
+              </div>
+              {showAddPlan && (
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      className="border border-gray-300 rounded-md px-3 py-1.5 text-sm flex-1"
+                      value={newPlan.name}
+                      onChange={(e) =>
+                        setNewPlan({ ...newPlan, name: e.target.value })
+                      }
+                      placeholder="Plan Name (e.g. Young Adult)"
+                    />
+                    <input
+                      type="number"
+                      min="0"
+                      className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-32"
+                      value={newPlan.cost}
+                      onChange={(e) =>
+                        setNewPlan({
+                          ...newPlan,
+                          cost: parseFloat(e.target.value) || 0,
+                        })
+                      }
+                      placeholder="Cost ($)"
+                    />
+                  </div>
+                  <input
+                    className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-full"
+                    value={newPlan.description}
+                    onChange={(e) =>
+                      setNewPlan({ ...newPlan, description: e.target.value })
+                    }
+                    placeholder="Description (Optional)"
+                  />
+                  <div className="flex justify-end pt-1">
+                    <button
+                      onClick={() => {
+                        handleSaveNewPlan();
+                        setShowAddPlan(false);
+                      }}
+                      disabled={savingPlan || !newPlan.name}
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {savingPlan ? "Adding..." : "Add Plan"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+</CollapsibleSection>\n\n\n<CollapsibleSection title="Member Data Settings">
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Member Data Settings
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Enable CSV Import
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Show the "Import CSV" button on the Admin Dashboard. Typically
+                  only needed during initial setup.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setEnableCsvImport(!enableCsvImport)}
+                    className={`${
+                      enableCsvImport ? "bg-primary-600" : "bg-gray-200"
+                    } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                    role="switch"
+                    aria-checked={enableCsvImport}
+                  >
+                    <span className="sr-only">Enable CSV Import</span>
+                    <span
+                      aria-hidden="true"
+                      className={`${
+                        enableCsvImport ? "translate-x-5" : "translate-x-0"
+                      } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                    />
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    {enableCsvImport ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Enable Welcome Emails
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Show the "Send Welcome Emails" button on the Admin Dashboard to
+                  manually trigger welcome emails for pending members.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setEnableWelcomeEmails(!enableWelcomeEmails)}
+                    className={`${
+                      enableWelcomeEmails ? "bg-primary-600" : "bg-gray-200"
+                    } relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500`}
+                    role="switch"
+                    aria-checked={enableWelcomeEmails}
+                  >
+                    <span className="sr-only">Enable Welcome Emails</span>
+                    <span
+                      aria-hidden="true"
+                      className={`${
+                        enableWelcomeEmails ? "translate-x-5" : "translate-x-0"
+                      } pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200`}
+                    />
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    {enableWelcomeEmails ? "Enabled" : "Disabled"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Club Logo URL
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Provide a URL to an image to replace the default logo. We recommend a transparent PNG with a max height of 40px.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                    placeholder="https://example.com/logo.png"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  External Website URL
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  If your club has its own website (e.g. www.myclub.com), enter it here. Visitors to the root of this app will automatically be redirected there instead of seeing our built-in landing page. <strong>Requires Super Admin privileges.</strong>
+                </p>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    value={externalWebsiteUrl}
+                    onChange={(e) => setExternalWebsiteUrl(e.target.value)}
+                    disabled={!isSuperAdmin}
+                    className="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border disabled:opacity-50 disabled:bg-gray-100"
+                    placeholder="https://www.myclub.com"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Active Season
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  The current active membership year. Change this to rollover to
+                  the next year.
+                </p>
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="text"
+                    value={activeSeason}
+                    onChange={(e) => setActiveSeason(e.target.value)}
+                    className="block w-24 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+                    placeholder="e.g. 2026"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+</CollapsibleSection>\n\n<CollapsibleSection title="Email Templates">
+<div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Email Templates
+            </h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Customize the automated emails sent to your members. Use HTML
+              formatting.
+            </p>
+
+            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Email to Edit
+                </label>
+                <select
+                  className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full bg-white"
+                  value={selectedTemplateId}
+                  onChange={(e) => handleTemplateSelect(e.target.value)}
+                >
+                  <option value="">-- Select a template --</option>
+                  <option value="WELCOME_EMAIL">Welcome Email</option>
+                  <option value="REGISTRATION_PENDING">
+                    Registration Pending
+                  </option>
+                  <option value="PROFILE_UPDATED">Profile Updated</option>
+                  <option value="BOOKING_CONFIRMATION">
+                    Booking Confirmation
+                  </option>
+                  <option value="INTEREST_CONFIRMATION">
+                    Interest Confirmation
+                  </option>
+                  <option value="ADMIN_NEW_REGISTRATION">
+                    Admin Alert: New Registration
+                  </option>
+                  <option value="IMPORT_WELCOME_EMAIL">
+                    Import Welcome Email
+                  </option>
+                </select>
+              </div>
+
+              {selectedTemplateId && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Subject
+                    </label>
+                    <input
+                      className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full"
+                      value={editTemplateForm.subject || ""}
                       onChange={(e) =>
                         setEditTemplateForm({
                           ...editTemplateForm,
-                          htmlBody: e.target.value,
+                          subject: e.target.value,
                         })
                       }
-                      placeholder="<p>Write your custom HTML email here...</p>"
+                      placeholder="Enter email subject..."
                     />
-                  )}
-                  {editorMode === "preview" && (
-                    <div className="border border-gray-300 rounded-md p-4 bg-white min-h-[300px] overflow-x-auto break-words">
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: Object.keys(MOCK_VARIABLES).reduce(
-                            (html, key) =>
-                              html.replaceAll(key, MOCK_VARIABLES[key]),
-                            editTemplateForm.htmlBody || "",
-                          ),
-                        }}
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-end mb-1">
+                      <label className="block text-sm font-medium text-gray-700">
+                        HTML Body
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          className="text-xs border border-primary-200 rounded px-2 py-1 bg-primary-50 text-primary-700 focus:ring-primary-500 focus:border-primary-500 cursor-pointer font-medium"
+                          onChange={(e) => {
+                            insertVariable(e.target.value);
+                            e.target.value = ""; // reset dropdown
+                          }}
+                          defaultValue=""
+                        >
+                          <option value="" disabled>
+                            + Insert variable...
+                          </option>
+                          {TEMPLATE_VARIABLES[selectedTemplateId]?.map((v) => (
+                            <option key={v} value={v}>
+                              {v}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-4 mb-2">
+                      <button
+                        onClick={() => setEditorMode("visual")}
+                        className={`text-xs font-medium ${editorMode === "visual" ? "text-primary-700 font-bold" : "text-gray-500 hover:text-gray-700 underline"}`}
+                      >
+                        Visual Editor
+                      </button>
+                      <button
+                        onClick={() => setEditorMode("raw")}
+                        className={`text-xs font-medium ${editorMode === "raw" ? "text-primary-700 font-bold" : "text-gray-500 hover:text-gray-700 underline"}`}
+                      >
+                        Raw HTML
+                      </button>
+                      <button
+                        onClick={() => setEditorMode("preview")}
+                        className={`text-xs font-medium ${editorMode === "preview" ? "text-primary-700 font-bold" : "text-gray-500 hover:text-gray-700 underline"}`}
+                      >
+                        Preview
+                      </button>
+                    </div>
+                    {editorMode === "visual" && (
+                      <div className="bg-white">
+                        <TipTapEditor
+                          value={editTemplateForm.htmlBody || ""}
+                          onChange={(val: string) =>
+                            setEditTemplateForm({
+                              ...editTemplateForm,
+                              htmlBody: val,
+                            })
+                          }
+                          onEditorReady={setEditorInstance}
+                        />
+                      </div>
+                    )}
+                    {editorMode === "raw" && (
+                      <textarea
+                        ref={textareaRef}
+                        className="border border-gray-300 rounded-md px-3 py-2 text-sm w-full font-mono h-64 focus:ring-primary-500 focus:border-primary-500"
+                        value={editTemplateForm.htmlBody || ""}
+                        onChange={(e) =>
+                          setEditTemplateForm({
+                            ...editTemplateForm,
+                            htmlBody: e.target.value,
+                          })
+                        }
+                        placeholder="<p>Write your custom HTML email here...</p>"
                       />
-                    </div>
-                  )}
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <button
-                    onClick={handleResetTemplate}
-                    disabled={savingTemplate}
-                    className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 focus:outline-none"
-                  >
-                    Reset to Default
-                  </button>
-                  <button
-                    onClick={handleSaveTemplate}
-                    disabled={
-                      savingTemplate ||
-                      !editTemplateForm.subject ||
-                      !editTemplateForm.htmlBody
-                    }
-                    className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-                  >
-                    {savingTemplate ? "Saving..." : "Save Template"}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="border-b pb-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">
-            Website Pages Manager
-          </h3>
-          <p className="text-sm text-gray-500 mb-4">Create dynamic, custom pages for your website (e.g. "About Us", "Club Rules").</p>
-          
-          <div className="space-y-4 mb-6">
-            {pagesLoading ? (
-              <p className="text-sm text-gray-500">Loading pages...</p>
-            ) : (
-              customPages.map(page => (
-                <div key={page.id} className="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-200">
-                  <div>
-                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                      {page.title}
-                      {!page.isPublic && (
-                        <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                      )}
-                    </h4>
-                    <p className="text-xs text-gray-500">/p/{page.slug} • {page.isPublished ? 'Published' : 'Draft'}</p>
+                    )}
+                    {editorMode === "preview" && (
+                      <div className="border border-gray-300 rounded-md p-4 bg-white min-h-[300px] overflow-x-auto break-words">
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html: Object.keys(MOCK_VARIABLES).reduce(
+                              (html, key) =>
+                                html.replaceAll(key, MOCK_VARIABLES[key]),
+                              editTemplateForm.htmlBody || "",
+                            ),
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
-                  <div className="flex space-x-3">
-                    <button onClick={() => handleStartEditPage(page)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
-                    <button onClick={() => handleDeletePage(page.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                  <div className="flex justify-between items-center mt-2">
+                    <button
+                      onClick={handleResetTemplate}
+                      disabled={savingTemplate}
+                      className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 focus:outline-none"
+                    >
+                      Reset to Default
+                    </button>
+                    <button
+                      onClick={handleSaveTemplate}
+                      disabled={
+                        savingTemplate ||
+                        !editTemplateForm.subject ||
+                        !editTemplateForm.htmlBody
+                      }
+                      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
+                    >
+                      {savingTemplate ? "Saving..." : "Save Template"}
+                    </button>
                   </div>
                 </div>
-              ))
-            )}
-            {!pagesLoading && customPages.length === 0 && (
-              <p className="text-sm text-gray-500 italic">No custom pages created yet.</p>
-            )}
-          </div>
-
-          <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
-            <div className="flex justify-between items-center mb-3">
-              <h4 className="text-sm font-medium text-gray-900">
-                {editingPageId ? 'Edit Page' : 'Add New Page'}
-              </h4>
-              <button
-                onClick={() => {
-                  setShowAddPage(!showAddPage);
-                  if (editingPageId) {
-                    setEditingPageId(null);
-                    setPageForm({});
-                  }
-                }}
-                className="text-primary-600 text-sm font-medium hover:text-primary-800"
-              >
-                {showAddPage ? "Cancel" : "+ Add Page"}
-              </button>
-            </div>
-            {showAddPage && (
-              <div className="flex flex-col space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
-                    <input type="text" value={pageForm.title || ''} onChange={e => setPageForm({...pageForm, title: e.target.value})} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Club Rules" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
-                    <div className="flex items-center">
-                      <span className="text-gray-500 text-sm bg-gray-100 border border-r-0 border-gray-300 rounded-l px-3 py-2">/p/</span>
-                      <input type="text" value={pageForm.slug || ''} onChange={e => setPageForm({...pageForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="flex-1 border border-gray-300 rounded-r px-3 py-2 text-sm" placeholder="e.g. club-rules" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex space-x-6 border-t pt-4">
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" checked={pageForm.isPublished ?? true} onChange={e => setPageForm({...pageForm, isPublished: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
-                    <span className="text-sm text-gray-700">Published (Visible on site)</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input type="checkbox" checked={pageForm.isPublic ?? true} onChange={e => setPageForm({...pageForm, isPublic: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
-                    <span className="text-sm text-gray-700">Public (Uncheck for Members Only access)</span>
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Page Content</label>
-                  <TipTapEditor
-                    value={pageForm.contentHtml || ""}
-                    onChange={(html) => setPageForm({...pageForm, contentHtml: html})}
-                  />
-                </div>
-
-                <div className="flex justify-end pt-2">
-                  <button
-                    onClick={handleSavePage}
-                    disabled={savingPage}
-                    className="px-4 py-2 bg-primary-600 text-white rounded shadow-sm hover:bg-primary-700 font-medium text-sm disabled:opacity-50"
-                  >
-                    {savingPage ? 'Saving...' : 'Save Page'}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={handleSave}
-            disabled={!isDirty || saving}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50"
-          >
-            {saving ? "Saving..." : "Save Settings"}
-          </button>
-          {message && (
-            <span
-              className={
-                message.includes("success")
-                  ? "text-green-600 text-sm font-medium"
-                  : "text-red-600 text-sm font-medium"
-              }
-            >
-              {message}
-            </span>
-          )}
-        </div>
-
-        <div className="border-t border-red-200 pt-6 mt-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-red-700 flex items-center">
-              <svg
-                className="w-5 h-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              Danger Zone
-            </h3>
-            <button
-              onClick={() => setShowDangerZone(!showDangerZone)}
-              className="px-3 py-1 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
-            >
-              {showDangerZone ? "Hide Danger Zone" : "Show Danger Zone"}
-            </button>
-          </div>
-          {showDangerZone && (
-            <div className="bg-red-50 p-4 border border-red-200 rounded-md shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-red-200 pb-4 mb-4">
-              <div>
-                <h4 className="text-sm font-bold text-red-900">
-                  Wipe All Bookings
-                </h4>
-                <p className="text-sm text-red-700 mt-1">
-                  Permanently delete all court bookings from the system. This
-                  action cannot be undone.
-                </p>
-              </div>
-              <button
-                onClick={handleWipeBookings}
-                disabled={wiping || wipingSystem}
-                className="mt-4 sm:mt-0 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 whitespace-nowrap"
-              >
-                {wiping ? "Wiping..." : "Wipe Bookings"}
-              </button>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <div>
-                <h4 className="text-sm font-bold text-red-900">
-                  Total System Wipe
-                </h4>
-                <p className="text-sm text-red-700 mt-1">
-                  Permanently delete ALL users, members, leads, and member bookings. 
-                  Only your Super Admin account, settings, coupons, events, and non-member bookings will survive.
-                </p>
-              </div>
-              <button
-                onClick={handleWipeSystem}
-                disabled={wiping || wipingSystem}
-                className="mt-4 sm:mt-0 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-red-800 hover:bg-red-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-900 disabled:opacity-50 whitespace-nowrap"
-              >
-                {wipingSystem ? "Wiping System..." : "WIPE SYSTEM"}
-              </button>
+              )}
             </div>
           </div>
-          )}
-        </div>
-      </div>
-
+</CollapsibleSection>\n\n</div>
       {showTopBtn && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
