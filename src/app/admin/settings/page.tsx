@@ -1136,570 +1136,6 @@ export default function AdminSettingsPage() {
         </div>
       </div>
       <div className="space-y-6" onChange={() => setIsDirty(true)}>
-<CollapsibleSection title="Website & Branding">
-<div className="border-b pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Landing Page Structure
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Use Simple Landing Page (Legacy)
-            </label>
-            <div className="flex items-center mt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setSimpleLandingPage(!simpleLandingPage);
-                  setIsDirty(true);
-                }}
-                className={`${
-                  simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
-                } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
-              >
-                <span
-                  aria-hidden="true"
-                  className={`${
-                    simpleLandingPage ? "translate-x-5" : "translate-x-0"
-                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-                />
-              </button>
-              <span className="ml-3 text-sm text-gray-500">
-                {simpleLandingPage
-                  ? "Hides extra marketing sections. Shows only the hero image and buttons."
-                  : "Shows the full marketing webpage with features and promos."}
-              </span>
-            </div>
-          </div>
-
-          <div className="flex flex-col space-y-2 mt-4">
-            <label className="text-sm font-medium text-gray-700">
-              Landing Page Theme
-            </label>
-            <p className="text-sm text-gray-500 mb-2">
-              Select the overall design and layout for the club's landing page.
-            </p>
-            <select
-              value={landingPageTheme}
-              onChange={(e) => {
-                setLandingPageTheme(e.target.value);
-                setIsDirty(true);
-              }}
-              className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
-            >
-              <option value="classic">Classic Theme (Dark Hero, 3-Column Features)</option>
-              <option value="modern-light">Modern Light Theme (Split Layout, Alternating Features)</option>
-            </select>
-          </div>
-            </div>
-          </div>
-<div className="border-b pb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Navigation Menu
-        </h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Manage the links that appear in the public navigation bar. Published custom pages will also appear automatically.
-        </p>
-        <div className="space-y-3 mb-4">
-          {navigationLinks.map((link, idx) => (
-            <div key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded border">
-              <input 
-                type="text" 
-                value={link.label}
-                onChange={e => {
-                  const newLinks = [...navigationLinks];
-                  newLinks[idx].label = e.target.value;
-                  setNavigationLinks(newLinks);
-                  setIsDirty(true);
-                }}
-                className="border rounded p-1 text-sm w-32"
-                placeholder="Label"
-              />
-              <input 
-                type="text" 
-                value={link.url}
-                onChange={e => {
-                  const newLinks = [...navigationLinks];
-                  newLinks[idx].url = e.target.value;
-                  setNavigationLinks(newLinks);
-                  setIsDirty(true);
-                }}
-                className="border rounded p-1 text-sm flex-1"
-                placeholder="URL (e.g. /interest or https://...)"
-              />
-              <label className="text-xs flex items-center gap-1">
-                <input 
-                  type="checkbox" 
-                  checked={link.isExternal}
-                  onChange={e => {
-                    const newLinks = [...navigationLinks];
-                    newLinks[idx].isExternal = e.target.checked;
-                    setNavigationLinks(newLinks);
-                    setIsDirty(true);
-                  }}
-                />
-                New Tab
-              </label>
-              <div className="flex items-center ml-2 border-l pl-2 gap-1">
-                <button 
-                  onClick={() => {
-                    if (idx === 0) return;
-                    const newLinks = [...navigationLinks];
-                    const temp = newLinks[idx - 1];
-                    newLinks[idx - 1] = newLinks[idx];
-                    newLinks[idx] = temp;
-                    setNavigationLinks(newLinks);
-                    setIsDirty(true);
-                  }}
-                  disabled={idx === 0}
-                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                  title="Move up"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
-                </button>
-                <button 
-                  onClick={() => {
-                    if (idx === navigationLinks.length - 1) return;
-                    const newLinks = [...navigationLinks];
-                    const temp = newLinks[idx + 1];
-                    newLinks[idx + 1] = newLinks[idx];
-                    newLinks[idx] = temp;
-                    setNavigationLinks(newLinks);
-                    setIsDirty(true);
-                  }}
-                  disabled={idx === navigationLinks.length - 1}
-                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                  title="Move down"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                </button>
-                <button 
-                  onClick={() => {
-                    const newLinks = navigationLinks.filter((_, i) => i !== idx);
-                    setNavigationLinks(newLinks);
-                    setIsDirty(true);
-                  }}
-                  className="text-red-400 hover:text-red-600 ml-1"
-                  title="Remove link"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setNavigationLinks([...navigationLinks, { label: "", url: "", isExternal: false }]);
-            setIsDirty(true);
-          }}
-          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-          Add Link
-        </button>
-      </div>
-<div className="border-b pb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">
-          Footer Sponsor Logos
-        </h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Manage sponsor logos that appear in the public footer. Logos will be displayed at exactly 101x94 pixels.
-        </p>
-        <div className="space-y-3 mb-4">
-          {sponsorLogos.map((logo, idx) => (
-            <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-gray-50 p-2 rounded border">
-              {logo.url && (
-                <div className="w-[101px] h-[94px] shrink-0 bg-white border rounded overflow-hidden flex items-center justify-center p-1">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logo.url} alt="Sponsor" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                </div>
-              )}
-              <div className="flex-1 space-y-2 w-full">
-                <input 
-                  type="text" 
-                  value={logo.url}
-                  onChange={e => {
-                    const newLogos = [...sponsorLogos];
-                    newLogos[idx].url = e.target.value;
-                    setSponsorLogos(newLogos);
-                    setIsDirty(true);
-                  }}
-                  className="border rounded p-1 text-sm w-full"
-                  placeholder="Image URL (e.g. https://.../logo.png)"
-                />
-                <input 
-                  type="text" 
-                  value={logo.link}
-                  onChange={e => {
-                    const newLogos = [...sponsorLogos];
-                    newLogos[idx].link = e.target.value;
-                    setSponsorLogos(newLogos);
-                    setIsDirty(true);
-                  }}
-                  className="border rounded p-1 text-sm w-full"
-                  placeholder="Link URL (e.g. https://sponsor-website.com)"
-                />
-              </div>
-              <div className="flex items-center w-full sm:w-auto mt-2 sm:mt-0">
-                <label className="text-xs flex items-center gap-1 ml-0 sm:ml-2 shrink-0 flex-1 sm:flex-none">
-                  <input 
-                    type="checkbox" 
-                    checked={logo.isExternal}
-                    onChange={e => {
-                      const newLogos = [...sponsorLogos];
-                      newLogos[idx].isExternal = e.target.checked;
-                      setSponsorLogos(newLogos);
-                      setIsDirty(true);
-                    }}
-                  />
-                  New Tab
-                </label>
-                <div className="flex flex-col sm:flex-row gap-1 shrink-0 ml-2 border-l pl-2">
-                  <div className="flex gap-1">
-                    <button 
-                      onClick={() => {
-                        if (idx === 0) return;
-                        const newLogos = [...sponsorLogos];
-                        const temp = newLogos[idx - 1];
-                        newLogos[idx - 1] = newLogos[idx];
-                        newLogos[idx] = temp;
-                        setSponsorLogos(newLogos);
-                        setIsDirty(true);
-                      }}
-                      disabled={idx === 0}
-                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                      title="Move up"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
-                    </button>
-                    <button 
-                      onClick={() => {
-                        if (idx === sponsorLogos.length - 1) return;
-                        const newLogos = [...sponsorLogos];
-                        const temp = newLogos[idx + 1];
-                        newLogos[idx + 1] = newLogos[idx];
-                        newLogos[idx] = temp;
-                        setSponsorLogos(newLogos);
-                        setIsDirty(true);
-                      }}
-                      disabled={idx === sponsorLogos.length - 1}
-                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
-                      title="Move down"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                    </button>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      const newLogos = sponsorLogos.filter((_, i) => i !== idx);
-                      setSponsorLogos(newLogos);
-                      setIsDirty(true);
-                    }}
-                    className="text-red-400 hover:text-red-600 flex justify-center mt-0 sm:mt-1 ml-2 sm:ml-0 border-l sm:border-l-0 pl-2 sm:pl-0"
-                    title="Remove logo"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => {
-            setSponsorLogos([...sponsorLogos, { url: "", link: "", isExternal: true }]);
-            setIsDirty(true);
-          }}
-          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-          Add Sponsor Logo
-        </button>
-      </div>
-<div className="border-b pb-6 mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Google Calendar Integration
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Paste the iframe embed code OR the "Public URL to this calendar" from Google Calendar to display it on the public events page.
-            </p>
-            <textarea
-              value={googleCalendarIframe}
-              onChange={(e) => {
-                setGoogleCalendarIframe(e.target.value);
-                setIsDirty(true);
-              }}
-              placeholder='https://calendar.google.com/calendar/embed?src=... OR <iframe src="..."></iframe>'
-              className="w-full h-24 p-3 border rounded-md font-mono text-sm"
-            />
-          </div>
-<div className="border-b pb-6">
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Primary Brand Colour
-            </label>
-            <p className="text-sm text-gray-500 mb-2">
-              The main colour used for buttons, links, and highlights across
-              the entire app.
-            </p>
-            <div className="flex items-center space-x-3">
-              <input
-                type="color"
-                value={primaryColor}
-                onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
-                className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
-              />
-              <input
-                type="text"
-                value={primaryColor}
-                onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
-                placeholder="#000000"
-                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Secondary Colour
-            </label>
-            <p className="text-xs text-gray-500 mb-2">
-              Used for accents, success states, and secondary buttons.
-            </p>
-            <div className="flex items-center space-x-3">
-              <input
-                type="color"
-                value={secondaryColor}
-                onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
-                className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
-              />
-              <input
-                type="text"
-                value={secondaryColor}
-                onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
-                placeholder="#000000"
-                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700">
-              Font Family
-            </label>
-            <select
-              value={fontFamily}
-              onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
-              className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            >
-              <option value="Inter">Inter (Modern, Clean)</option>
-              <option value="Roboto">Roboto (Classic, Readable)</option>
-              <option value="Outfit">Outfit (Geometric, Trendy)</option>
-              <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
-              <option value="Montserrat">Montserrat (Wide, Professional)</option>
-            </select>
-          </div>
-
-          <div className="flex flex-col space-y-2 md:col-span-2">
-            <label className="text-sm font-medium text-gray-700">
-              Hero Image URL
-            </label>
-            <p className="text-xs text-gray-500 mb-1">
-              Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
-            </p>
-            <input
-              type="text"
-              placeholder="https://example.com/my-club-hero.jpg"
-              value={heroImageUrl}
-              onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            />
-            {heroImageUrl && (
-              <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
-              </div>
-            )}
-          </div>
-
-          <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
-            <p className="text-xs text-gray-500 mb-2">
-              Display an event flyer or promotional banner on your homepage. Leave blank to hide.
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
-                <input
-                  type="text"
-                  placeholder="https://example.com/tournament-flyer.png"
-                  value={promoImageUrl}
-                  onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-                {promoImageUrl && (
-                  <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="https://example.com/register"
-                  value={promoLinkUrl}
-                  onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                />
-                <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <h4 className="text-md font-medium text-gray-900 mb-4">
-          Landing Page Content
-        </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">Hero Title</label>
-            <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-          </div>
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
-            <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
-            <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-            <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
-            <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-          </div>
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
-            <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-            <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
-            <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-          </div>
-          <div className="flex flex-col space-y-2">
-            <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
-            <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
-            <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
-            <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
-          </div>
-        </div>
-      </div>
-<div className="border-b pb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Website Pages Manager
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">Create dynamic, custom pages for your website (e.g. &quot;About Us&quot;, &quot;Club Rules&quot;).</p>
-            
-            <div className="space-y-4 mb-6">
-              {pagesLoading ? (
-                <p className="text-sm text-gray-500">Loading pages...</p>
-              ) : (
-                customPages.map(page => (
-                  <div key={page.id} className="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-200">
-                    <div>
-                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                        {page.title}
-                        {!page.isPublic && (
-                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                        )}
-                      </h4>
-                      <p className="text-xs text-gray-500">/p/{page.slug} • {page.isPublished ? 'Published' : 'Draft'}</p>
-                    </div>
-                    <div className="flex space-x-3">
-                      <button onClick={() => handleStartEditPage(page)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
-                      <button onClick={() => handleDeletePage(page.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
-                    </div>
-                  </div>
-                ))
-              )}
-              {!pagesLoading && customPages.length === 0 && (
-                <p className="text-sm text-gray-500 italic">No custom pages created yet.</p>
-              )}
-            </div>
-
-            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
-              <div className="flex justify-between items-center mb-3">
-                <h4 className="text-sm font-medium text-gray-900">
-                  {editingPageId ? 'Edit Page' : 'Add New Page'}
-                </h4>
-                <button
-                  onClick={() => {
-                    setShowAddPage(!showAddPage);
-                    if (editingPageId) {
-                      setEditingPageId(null);
-                      setPageForm({});
-                    }
-                  }}
-                  className="text-primary-600 text-sm font-medium hover:text-primary-800"
-                >
-                  {showAddPage ? "Cancel" : "+ Add Page"}
-                </button>
-              </div>
-              {showAddPage && (
-                <div className="flex flex-col space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
-                      <input type="text" value={pageForm.title || ''} onChange={e => setPageForm({...pageForm, title: e.target.value})} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Club Rules" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
-                      <div className="flex items-center">
-                        <span className="text-gray-500 text-sm bg-gray-100 border border-r-0 border-gray-300 rounded-l px-3 py-2">/p/</span>
-                        <input type="text" value={pageForm.slug || ''} onChange={e => setPageForm({...pageForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="flex-1 border border-gray-300 rounded-r px-3 py-2 text-sm" placeholder="e.g. club-rules" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex space-x-6 border-t pt-4">
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" checked={pageForm.isPublished ?? true} onChange={e => setPageForm({...pageForm, isPublished: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
-                      <span className="text-sm text-gray-700">Published (Visible on site)</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" checked={pageForm.isPublic ?? true} onChange={e => setPageForm({...pageForm, isPublic: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
-                      <span className="text-sm text-gray-700">Public (Uncheck for Members Only access)</span>
-                    </label>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Page Content</label>
-                    <TipTapEditor
-                      value={pageForm.contentHtml || ""}
-                      onChange={(html) => setPageForm({...pageForm, contentHtml: html})}
-                    />
-                  </div>
-
-                  <div className="flex justify-end pt-2">
-                    <button
-                      onClick={handleSavePage}
-                      disabled={savingPage}
-                      className="px-4 py-2 bg-primary-600 text-white rounded shadow-sm hover:bg-primary-700 font-medium text-sm disabled:opacity-50"
-                    >
-                      {savingPage ? 'Saving...' : 'Save Page'}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-</CollapsibleSection>
 <CollapsibleSection title="Court Booking">
 <div className="border-b pb-6">
                     <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -2896,7 +2332,572 @@ export default function AdminSettingsPage() {
               )}
             </div>
           </div>
-</CollapsibleSection>\n\n</div>
+</CollapsibleSection>\n\n
+<CollapsibleSection title="Website & Branding">
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Landing Page Structure
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Use Simple Landing Page (Legacy)
+            </label>
+            <div className="flex items-center mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSimpleLandingPage(!simpleLandingPage);
+                  setIsDirty(true);
+                }}
+                className={`${
+                  simpleLandingPage ? "bg-primary-600" : "bg-gray-200"
+                } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-600 focus:ring-offset-2`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`${
+                    simpleLandingPage ? "translate-x-5" : "translate-x-0"
+                  } pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
+                />
+              </button>
+              <span className="ml-3 text-sm text-gray-500">
+                {simpleLandingPage
+                  ? "Hides extra marketing sections. Shows only the hero image and buttons."
+                  : "Shows the full marketing webpage with features and promos."}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-2 mt-4">
+            <label className="text-sm font-medium text-gray-700">
+              Landing Page Theme
+            </label>
+            <p className="text-sm text-gray-500 mb-2">
+              Select the overall design and layout for the club's landing page.
+            </p>
+            <select
+              value={landingPageTheme}
+              onChange={(e) => {
+                setLandingPageTheme(e.target.value);
+                setIsDirty(true);
+              }}
+              className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border"
+            >
+              <option value="classic">Classic Theme (Dark Hero, 3-Column Features)</option>
+              <option value="modern-light">Modern Light Theme (Split Layout, Alternating Features)</option>
+            </select>
+          </div>
+            </div>
+          </div>
+<div className="border-b pb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Navigation Menu
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Manage the links that appear in the public navigation bar. Published custom pages will also appear automatically.
+        </p>
+        <div className="space-y-3 mb-4">
+          {navigationLinks.map((link, idx) => (
+            <div key={idx} className="flex items-center gap-2 bg-gray-50 p-2 rounded border">
+              <input 
+                type="text" 
+                value={link.label}
+                onChange={e => {
+                  const newLinks = [...navigationLinks];
+                  newLinks[idx].label = e.target.value;
+                  setNavigationLinks(newLinks);
+                  setIsDirty(true);
+                }}
+                className="border rounded p-1 text-sm w-32"
+                placeholder="Label"
+              />
+              <input 
+                type="text" 
+                value={link.url}
+                onChange={e => {
+                  const newLinks = [...navigationLinks];
+                  newLinks[idx].url = e.target.value;
+                  setNavigationLinks(newLinks);
+                  setIsDirty(true);
+                }}
+                className="border rounded p-1 text-sm flex-1"
+                placeholder="URL (e.g. /interest or https://...)"
+              />
+              <label className="text-xs flex items-center gap-1">
+                <input 
+                  type="checkbox" 
+                  checked={link.isExternal}
+                  onChange={e => {
+                    const newLinks = [...navigationLinks];
+                    newLinks[idx].isExternal = e.target.checked;
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                />
+                New Tab
+              </label>
+              <div className="flex items-center ml-2 border-l pl-2 gap-1">
+                <button 
+                  onClick={() => {
+                    if (idx === 0) return;
+                    const newLinks = [...navigationLinks];
+                    const temp = newLinks[idx - 1];
+                    newLinks[idx - 1] = newLinks[idx];
+                    newLinks[idx] = temp;
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                  disabled={idx === 0}
+                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  title="Move up"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
+                </button>
+                <button 
+                  onClick={() => {
+                    if (idx === navigationLinks.length - 1) return;
+                    const newLinks = [...navigationLinks];
+                    const temp = newLinks[idx + 1];
+                    newLinks[idx + 1] = newLinks[idx];
+                    newLinks[idx] = temp;
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                  disabled={idx === navigationLinks.length - 1}
+                  className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                  title="Move down"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                </button>
+                <button 
+                  onClick={() => {
+                    const newLinks = navigationLinks.filter((_, i) => i !== idx);
+                    setNavigationLinks(newLinks);
+                    setIsDirty(true);
+                  }}
+                  className="text-red-400 hover:text-red-600 ml-1"
+                  title="Remove link"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setNavigationLinks([...navigationLinks, { label: "", url: "", isExternal: false }]);
+            setIsDirty(true);
+          }}
+          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+          Add Link
+        </button>
+      </div>
+<div className="border-b pb-6">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Footer Sponsor Logos
+        </h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Manage sponsor logos that appear in the public footer. Logos will be displayed at exactly 101x94 pixels.
+        </p>
+        <div className="space-y-3 mb-4">
+          {sponsorLogos.map((logo, idx) => (
+            <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 bg-gray-50 p-2 rounded border">
+              {logo.url && (
+                <div className="w-[101px] h-[94px] shrink-0 bg-white border rounded overflow-hidden flex items-center justify-center p-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={logo.url} alt="Sponsor" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                </div>
+              )}
+              <div className="flex-1 space-y-2 w-full">
+                <input 
+                  type="text" 
+                  value={logo.url}
+                  onChange={e => {
+                    const newLogos = [...sponsorLogos];
+                    newLogos[idx].url = e.target.value;
+                    setSponsorLogos(newLogos);
+                    setIsDirty(true);
+                  }}
+                  className="border rounded p-1 text-sm w-full"
+                  placeholder="Image URL (e.g. https://.../logo.png)"
+                />
+                <input 
+                  type="text" 
+                  value={logo.link}
+                  onChange={e => {
+                    const newLogos = [...sponsorLogos];
+                    newLogos[idx].link = e.target.value;
+                    setSponsorLogos(newLogos);
+                    setIsDirty(true);
+                  }}
+                  className="border rounded p-1 text-sm w-full"
+                  placeholder="Link URL (e.g. https://sponsor-website.com)"
+                />
+              </div>
+              <div className="flex items-center w-full sm:w-auto mt-2 sm:mt-0">
+                <label className="text-xs flex items-center gap-1 ml-0 sm:ml-2 shrink-0 flex-1 sm:flex-none">
+                  <input 
+                    type="checkbox" 
+                    checked={logo.isExternal}
+                    onChange={e => {
+                      const newLogos = [...sponsorLogos];
+                      newLogos[idx].isExternal = e.target.checked;
+                      setSponsorLogos(newLogos);
+                      setIsDirty(true);
+                    }}
+                  />
+                  New Tab
+                </label>
+                <div className="flex flex-col sm:flex-row gap-1 shrink-0 ml-2 border-l pl-2">
+                  <div className="flex gap-1">
+                    <button 
+                      onClick={() => {
+                        if (idx === 0) return;
+                        const newLogos = [...sponsorLogos];
+                        const temp = newLogos[idx - 1];
+                        newLogos[idx - 1] = newLogos[idx];
+                        newLogos[idx] = temp;
+                        setSponsorLogos(newLogos);
+                        setIsDirty(true);
+                      }}
+                      disabled={idx === 0}
+                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      title="Move up"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" /></svg>
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (idx === sponsorLogos.length - 1) return;
+                        const newLogos = [...sponsorLogos];
+                        const temp = newLogos[idx + 1];
+                        newLogos[idx + 1] = newLogos[idx];
+                        newLogos[idx] = temp;
+                        setSponsorLogos(newLogos);
+                        setIsDirty(true);
+                      }}
+                      disabled={idx === sponsorLogos.length - 1}
+                      className="text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                      title="Move down"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    </button>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const newLogos = sponsorLogos.filter((_, i) => i !== idx);
+                      setSponsorLogos(newLogos);
+                      setIsDirty(true);
+                    }}
+                    className="text-red-400 hover:text-red-600 flex justify-center mt-0 sm:mt-1 ml-2 sm:ml-0 border-l sm:border-l-0 pl-2 sm:pl-0"
+                    title="Remove logo"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            setSponsorLogos([...sponsorLogos, { url: "", link: "", isExternal: true }]);
+            setIsDirty(true);
+          }}
+          className="text-sm text-primary-600 hover:text-primary-800 font-medium flex items-center gap-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+          Add Sponsor Logo
+        </button>
+      </div>
+<div className="border-b pb-6 mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Google Calendar Integration
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              Paste the iframe embed code OR the "Public URL to this calendar" from Google Calendar to display it on the public events page.
+            </p>
+            <textarea
+              value={googleCalendarIframe}
+              onChange={(e) => {
+                setGoogleCalendarIframe(e.target.value);
+                setIsDirty(true);
+              }}
+              placeholder='https://calendar.google.com/calendar/embed?src=... OR <iframe src="..."></iframe>'
+              className="w-full h-24 p-3 border rounded-md font-mono text-sm"
+            />
+          </div>
+<div className="border-b pb-6">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Primary Brand Colour
+            </label>
+            <p className="text-sm text-gray-500 mb-2">
+              The main colour used for buttons, links, and highlights across
+              the entire app.
+            </p>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={primaryColor}
+                onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
+                className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+              />
+              <input
+                type="text"
+                value={primaryColor}
+                onChange={(e) => { setPrimaryColor(e.target.value); setIsDirty(true); }}
+                placeholder="#000000"
+                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Secondary Colour
+            </label>
+            <p className="text-xs text-gray-500 mb-2">
+              Used for accents, success states, and secondary buttons.
+            </p>
+            <div className="flex items-center space-x-3">
+              <input
+                type="color"
+                value={secondaryColor}
+                onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                className="block h-10 w-20 cursor-pointer rounded border border-gray-300 shadow-sm"
+              />
+              <input
+                type="text"
+                value={secondaryColor}
+                onChange={(e) => { setSecondaryColor(e.target.value); setIsDirty(true); }}
+                placeholder="#000000"
+                className="block w-32 rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-2 md:col-span-2">
+            <label className="text-sm font-medium text-gray-700">
+              Font Family
+            </label>
+            <select
+              value={fontFamily}
+              onChange={(e) => { setFontFamily(e.target.value); setIsDirty(true); }}
+              className="block w-full max-w-sm rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            >
+              <option value="Inter">Inter (Modern, Clean)</option>
+              <option value="Roboto">Roboto (Classic, Readable)</option>
+              <option value="Outfit">Outfit (Geometric, Trendy)</option>
+              <option value="Playfair Display">Playfair Display (Elegant, Serif)</option>
+              <option value="Montserrat">Montserrat (Wide, Professional)</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col space-y-2 md:col-span-2">
+            <label className="text-sm font-medium text-gray-700">
+              Hero Image URL
+            </label>
+            <p className="text-xs text-gray-500 mb-1">
+              Enter a link to a high-quality image to display on the landing page. Leave blank to use the default image.
+            </p>
+            <input
+              type="text"
+              placeholder="https://example.com/my-club-hero.jpg"
+              value={heroImageUrl}
+              onChange={(e) => { setHeroImageUrl(e.target.value); setIsDirty(true); }}
+              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+            />
+            {heroImageUrl && (
+              <div className="mt-3 relative h-32 w-full max-w-md rounded-md overflow-hidden border border-gray-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={heroImageUrl} alt="Hero Preview" className="absolute inset-0 w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-col space-y-2 md:col-span-2 mt-6 pt-6 border-t border-gray-200">
+            <h4 className="text-md font-medium text-gray-900">Promotional Showcase</h4>
+            <p className="text-xs text-gray-500 mb-2">
+              Display an event flyer or promotional banner on your homepage. Leave blank to hide.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">Promo Image URL</label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/tournament-flyer.png"
+                  value={promoImageUrl}
+                  onChange={(e) => { setPromoImageUrl(e.target.value); setIsDirty(true); }}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                />
+                {promoImageUrl && (
+                  <div className="mt-2 relative h-32 w-full max-w-sm rounded-md overflow-hidden border border-gray-200 bg-gray-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={promoImageUrl} alt="Promo Preview" className="absolute inset-0 w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=Invalid+Image+URL' }} />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">Promo Link URL (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/register"
+                  value={promoLinkUrl}
+                  onChange={(e) => { setPromoLinkUrl(e.target.value); setIsDirty(true); }}
+                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                />
+                <p className="text-xs text-gray-500">If provided, clicking the promo image will send the user here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 className="text-md font-medium text-gray-900 mb-4">
+          Landing Page Content
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Hero Title</label>
+            <input type="text" value={heroTitle} onChange={(e) => setHeroTitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+          </div>
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Hero Subtitle</label>
+            <textarea value={heroSubtitle} onChange={(e) => setHeroSubtitle(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Feature 1 Title</label>
+            <input type="text" value={feature1Title} onChange={(e) => setFeature1Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            <label className="text-sm font-medium text-gray-700 mt-2">Feature 1 Description</label>
+            <textarea value={feature1Desc} onChange={(e) => setFeature1Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Feature 2 Title</label>
+            <input type="text" value={feature2Title} onChange={(e) => setFeature2Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            <label className="text-sm font-medium text-gray-700 mt-2">Feature 2 Description</label>
+            <textarea value={feature2Desc} onChange={(e) => setFeature2Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <label className="text-sm font-medium text-gray-700">Feature 3 Title</label>
+            <input type="text" value={feature3Title} onChange={(e) => setFeature3Title(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" />
+            <label className="text-sm font-medium text-gray-700 mt-2">Feature 3 Description</label>
+            <textarea value={feature3Desc} onChange={(e) => setFeature3Desc(e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 p-2 border" rows={3}></textarea>
+          </div>
+        </div>
+      </div>
+<div className="border-b pb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Website Pages Manager
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">Create dynamic, custom pages for your website (e.g. &quot;About Us&quot;, &quot;Club Rules&quot;).</p>
+            
+            <div className="space-y-4 mb-6">
+              {pagesLoading ? (
+                <p className="text-sm text-gray-500">Loading pages...</p>
+              ) : (
+                customPages.map(page => (
+                  <div key={page.id} className="flex justify-between items-center bg-gray-50 p-3 rounded border border-gray-200">
+                    <div>
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                        {page.title}
+                        {!page.isPublic && (
+                          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                        )}
+                      </h4>
+                      <p className="text-xs text-gray-500">/p/{page.slug} • {page.isPublished ? 'Published' : 'Draft'}</p>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button onClick={() => handleStartEditPage(page)} className="text-primary-600 hover:text-primary-900 text-sm font-medium">Edit</button>
+                      <button onClick={() => handleDeletePage(page.id)} className="text-red-600 hover:text-red-900 text-sm font-medium">Delete</button>
+                    </div>
+                  </div>
+                ))
+              )}
+              {!pagesLoading && customPages.length === 0 && (
+                <p className="text-sm text-gray-500 italic">No custom pages created yet.</p>
+              )}
+            </div>
+
+            <div className="bg-gray-50 p-4 border border-gray-400 rounded-md shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="text-sm font-medium text-gray-900">
+                  {editingPageId ? 'Edit Page' : 'Add New Page'}
+                </h4>
+                <button
+                  onClick={() => {
+                    setShowAddPage(!showAddPage);
+                    if (editingPageId) {
+                      setEditingPageId(null);
+                      setPageForm({});
+                    }
+                  }}
+                  className="text-primary-600 text-sm font-medium hover:text-primary-800"
+                >
+                  {showAddPage ? "Cancel" : "+ Add Page"}
+                </button>
+              </div>
+              {showAddPage && (
+                <div className="flex flex-col space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Page Title</label>
+                      <input type="text" value={pageForm.title || ''} onChange={e => setPageForm({...pageForm, title: e.target.value})} className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g. Club Rules" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">URL Slug</label>
+                      <div className="flex items-center">
+                        <span className="text-gray-500 text-sm bg-gray-100 border border-r-0 border-gray-300 rounded-l px-3 py-2">/p/</span>
+                        <input type="text" value={pageForm.slug || ''} onChange={e => setPageForm({...pageForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-')})} className="flex-1 border border-gray-300 rounded-r px-3 py-2 text-sm" placeholder="e.g. club-rules" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-6 border-t pt-4">
+                    <label className="flex items-center space-x-2">
+                      <input type="checkbox" checked={pageForm.isPublished ?? true} onChange={e => setPageForm({...pageForm, isPublished: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
+                      <span className="text-sm text-gray-700">Published (Visible on site)</span>
+                    </label>
+                    <label className="flex items-center space-x-2">
+                      <input type="checkbox" checked={pageForm.isPublic ?? true} onChange={e => setPageForm({...pageForm, isPublic: e.target.checked})} className="rounded text-primary-600 focus:ring-primary-500" />
+                      <span className="text-sm text-gray-700">Public (Uncheck for Members Only access)</span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Page Content</label>
+                    <TipTapEditor
+                      value={pageForm.contentHtml || ""}
+                      onChange={(html) => setPageForm({...pageForm, contentHtml: html})}
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      onClick={handleSavePage}
+                      disabled={savingPage}
+                      className="px-4 py-2 bg-primary-600 text-white rounded shadow-sm hover:bg-primary-700 font-medium text-sm disabled:opacity-50"
+                    >
+                      {savingPage ? 'Saving...' : 'Save Page'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+</CollapsibleSection>
+</div>
       {showTopBtn && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}

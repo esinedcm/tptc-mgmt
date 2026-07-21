@@ -42,6 +42,7 @@ export default function AdminEventsPage() {
   const [currentEvent, setCurrentEvent] = useState<Partial<ClubEvent>>({});
   
   const [viewingRegistrationsEvent, setViewingRegistrationsEvent] = useState<ClubEvent | null>(null);
+  const [viewingDetailsEvent, setViewingDetailsEvent] = useState<ClubEvent | null>(null);
   const [registrations, setRegistrations] = useState<any[]>([]);
 
   const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
@@ -171,9 +172,6 @@ export default function AdminEventsPage() {
           </p>
         </div>
         <div className="flex items-center gap-6">
-          <Link href="/admin" className="text-gray-600 hover:text-gray-900 font-medium flex items-center">
-            &larr; Back to Dashboard
-          </Link>
           <div className="flex gap-4">
             <Link href="/portal/calendar" className="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center bg-indigo-50 px-3 py-1.5 rounded-md">
               View Member Calendar
@@ -349,74 +347,110 @@ export default function AdminEventsPage() {
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white shadow-sm rounded-lg border border-gray-200 overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registrations</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date/Time</th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Regs</th>
+              <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {events.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                   No upcoming social events found.
                 </td>
               </tr>
             ) : events.map(event => (
               <tr key={event.id}>
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: event.colorHex }}></div>
-                    <div>
-                      <div className="font-medium text-gray-900">{event.title}</div>
-                      {event.description && <div className="text-sm text-gray-500 truncate max-w-md">{event.description}</div>}
+                <td className="px-3 py-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: event.colorHex }}></div>
+                    <div className="min-w-0">
+                      <button 
+                        onClick={() => setViewingDetailsEvent(event)}
+                        className="font-medium text-indigo-600 hover:text-indigo-900 text-left text-sm md:text-base underline decoration-dotted underline-offset-2 break-words"
+                      >
+                        {event.title}
+                      </button>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-4 text-xs md:text-sm text-gray-500 break-words">
                   {new Date(event.startDate).toLocaleDateString()}
-                  {!event.isAllDay && ` • ${new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+                  {!event.isAllDay && <><br className="block sm:hidden" /><span className="hidden sm:inline"> • </span>{new Date(event.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</>}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {event._count?.registrations || 0} {event.maxParticipants ? `/ ${event.maxParticipants}` : ''} registered
-                  {event.cost ? ` • $${event.cost.toFixed(2)}` : ''}
+                <td className="px-3 py-4 text-xs md:text-sm text-gray-500 break-words">
+                  {event._count?.registrations || 0}{event.maxParticipants ? `/${event.maxParticipants}` : ''} reg
+                  {event.cost ? <><br/>${event.cost.toFixed(2)}</> : ''}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => openRegistrations(event)}
-                    className="text-primary-600 hover:text-primary-900 mr-4"
-                  >
-                    View Registrations
-                  </button>
-                  {new Date(event.endDate) > new Date() && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setCurrentEvent(event);
-                          setIsEditing(true);
-                        }}
-                        className="text-indigo-600 hover:text-indigo-900 mr-4"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(event.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )}
+                <td className="px-3 py-4 text-right text-xs md:text-sm font-medium">
+                  <div className="flex flex-col sm:flex-row justify-end gap-2">
+                    <button
+                      onClick={() => openRegistrations(event)}
+                      className="text-primary-600 hover:text-primary-900"
+                    >
+                      Regs
+                    </button>
+                    {new Date(event.endDate) > new Date() && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setCurrentEvent(event);
+                            setIsEditing(true);
+                          }}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {viewingDetailsEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6 relative">
+            <button onClick={() => setViewingDetailsEvent(null)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h2 className="text-2xl font-bold mb-4 pr-8">{viewingDetailsEvent.title}</h2>
+            
+            <div className="space-y-3 text-sm text-gray-700">
+              <p><strong>Date:</strong> {new Date(viewingDetailsEvent.startDate).toLocaleDateString()}</p>
+              {!viewingDetailsEvent.isAllDay && (
+                <p><strong>Time:</strong> {new Date(viewingDetailsEvent.startDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {new Date(viewingDetailsEvent.endDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+              )}
+              {viewingDetailsEvent.cost != null && (
+                <p><strong>Cost:</strong> ${viewingDetailsEvent.cost.toFixed(2)}</p>
+              )}
+              {viewingDetailsEvent.maxParticipants && (
+                <p><strong>Max Participants:</strong> {viewingDetailsEvent.maxParticipants}</p>
+              )}
+              {viewingDetailsEvent.description && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <h3 className="font-semibold text-gray-900 mb-2">Description</h3>
+                  <p className="whitespace-pre-wrap">{viewingDetailsEvent.description}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {viewingRegistrationsEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

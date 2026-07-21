@@ -82,7 +82,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href={fontLink} rel="stylesheet" />
         <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
-        <Script id="club-logo-url" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `window.CLUB_LOGO_URL = "${logoUrl}";` }} />
+        <Script id="club-logo-url" dangerouslySetInnerHTML={{ __html: `window.CLUB_LOGO_URL = "${logoUrl}";` }} />
       </head>
       <body className="h-full bg-gray-50 flex flex-col min-h-screen" style={{ fontFamily: `'${fontFamily}', sans-serif` }}>
         <main className="flex-1 flex flex-col">
