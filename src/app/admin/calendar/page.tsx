@@ -91,7 +91,7 @@ export default function AdminCalendarPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 print:mb-2">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight print:text-2xl">
-            Club Calendar
+            {process.env.NEXT_PUBLIC_CLUB_NAME || "Tennis Club"} Club Calendar
           </h1>
           <p className="mt-1 text-sm text-gray-500 print:hidden">
             {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })} - Club Events & Schedules
