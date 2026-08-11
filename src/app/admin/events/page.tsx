@@ -395,25 +395,21 @@ export default function AdminEventsPage() {
                     >
                       Regs
                     </button>
-                    {new Date(event.endDate) > new Date() && (
-                      <>
-                        <button
-                          onClick={() => {
-                            setCurrentEvent(event);
-                            setIsEditing(true);
-                          }}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(event.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
+                    <button
+                      onClick={() => {
+                        setCurrentEvent(event);
+                        setIsEditing(true);
+                      }}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(event.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>
