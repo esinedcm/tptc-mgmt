@@ -4,8 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-export function AdminSidebar() {
+export function AdminSidebar({ activeModules = ['core'] }: { activeModules?: string[] }) {
   const pathname = usePathname();
+  const hasCourts = activeModules.includes('courts');
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -17,7 +18,7 @@ export function AdminSidebar() {
       title: 'Main',
       items: [
         { name: 'Dashboard', href: '/admin' },
-        { name: 'Calendar', href: '/admin/calendar' },
+        ...(hasCourts ? [{ name: 'Calendar', href: '/admin/calendar' }] : []),
       ]
     },
     {
@@ -25,12 +26,13 @@ export function AdminSidebar() {
       items: [
         { name: 'Directory', href: '/admin/members' },
         { name: 'Staff / Admins', href: '/admin/staff' },
+        { name: 'Import', href: '/admin/members/import' },
       ]
     },
     {
       title: 'Bookings',
       items: [
-        { name: 'Manage Bookings', href: '/admin/bookings' },
+        ...(hasCourts ? [{ name: 'Manage Bookings', href: '/admin/bookings' }] : []),
         { name: 'Social Events', href: '/admin/events' },
       ]
     },
@@ -44,8 +46,17 @@ export function AdminSidebar() {
     }
   ];
 
+  const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
+  const clubName = process.env.NEXT_PUBLIC_CLUB_NAME || "Tennis Club";
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setLogoUrl((window as any).CLUB_LOGO_URL || process.env.NEXT_PUBLIC_CLUB_LOGO_URL || null);
+    }
+  }, []);
+
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-full min-h-screen flex flex-col shadow-sm flex-shrink-0">
+    <div className="w-64 bg-white border-r border-gray-200 h-full min-h-screen flex flex-col shadow-sm flex-shrink-0 print:hidden">
       <div className="flex-1 overflow-y-auto py-6 px-4">
         {menuGroups.map((group, idx) => (
           <div key={idx} className="mb-6">
